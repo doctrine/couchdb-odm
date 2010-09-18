@@ -7,6 +7,9 @@ namespace Doctrine\ODM\CouchDB\HTTP;
 
 /**
  * Connection handler using PHPs stream wrappers.
+ *
+ * Requires PHP being compiled with --with-curlwrappers for now, since the PHPs 
+ * own HTTP implementation is somehow b0rked.
  */
 class StreamClient extends Client
 {
