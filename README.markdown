@@ -5,9 +5,10 @@
 ##Problem 1: Query API
 
 * Views
+    * including ability to define limit, sort direction, include docs
 * CouchDB-Lucene hidden transparently in the Background
-** Allows a dynamic query language to be implemented
-** Depending on the search backend (query language translator)
+    * Allows a dynamic query language to be implemented
+    * Depending on the search backend (query language translator)
 
 ##Problem 2: Lazy Loading
 
@@ -46,6 +47,7 @@ Just have mapping type "array".
 ## Problem 7: "Eventual Migration" / Liberal Reads
 
 MongoODM has solution for that
+http://www.doctrine-project.org/projects/mongodb_odm/1.0/docs/reference/migrating-schemas/en#migrating-schemas
 
 ## Problem 8: Write/Flushing changes
 
