@@ -197,7 +197,7 @@ class BasicDocumentPersister
      *                          the identifier is derived from the $sourcedocument.
      * @return object The loaded and managed document instance or NULL if the document can not be found.
      */
-    public function loadOneToOnedocument(array $assoc, $sourcedocument, $targetdocument, array $identifier = array())
+    public function loadOneToOneDocument(array $assoc, $sourcedocument, $targetdocument, array $identifier = array())
     {
         //TODO: implement
     }
@@ -221,30 +221,6 @@ class BasicDocumentPersister
      * @return array
      */
     public function loadAll(array $criteria = array())
-    {
-        //TODO: implement
-    }
-
-    /**
-     * Loads a collection of entities of a many-to-many association.
-     *
-     * @param ManyToManyMapping $assoc The association mapping of the association being loaded.
-     * @param object $sourcedocument The document that owns the collection.
-     * @param PersistentCollection $coll The collection to fill.
-     */
-    public function loadManyToManyCollection(array $assoc, $sourcedocument, PersistentCollection $coll)
-    {
-        //TODO: implement
-    }
-
-    /**
-     * Loads a collection of entities in a one-to-many association.
-     *
-     * @param OneToManyMapping $assoc
-     * @param array $criteria The criteria by which to select the entities.
-     * @param PersistentCollection The collection to load/fill.
-     */
-    public function loadOneToManyCollection(array $assoc, $sourcedocument, PersistentCollection $coll)
     {
         //TODO: implement
     }

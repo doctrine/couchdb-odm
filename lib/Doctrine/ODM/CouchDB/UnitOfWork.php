@@ -101,26 +101,6 @@ class UnitOfWork
         return $this->persisters[$documentName];
     }
 
-    /**
-     * Gets a collection persister for a collection-valued association.
-     *
-     * @param AssociationMapping $association
-     * @return Doctrine\ODM\CouchDB\Persisters\AbstractCollectionPersister
-     */
-    public function getCollectionPersister(array $association)
-    {
-        $type = $association['type'];
-        if ( ! isset($this->collectionPersisters[$type])) {
-            if ($type == ClassMetadata::ONE_TO_MANY) {
-                $persister = new Persisters\OneToManyPersister($this->dm);
-            } else if ($type == ClassMetadata::MANY_TO_MANY) {
-                $persister = new Persisters\ManyToManyPersister($this->dm);
-            }
-            $this->collectionPersisters[$type] = $persister;
-        }
-        return $this->collectionPersisters[$type];
-    }
-
     public function scheduleInsert($object)
     {
         if ($this->getDocumentState($object) != self::STATE_NEW) {
