@@ -54,4 +54,27 @@ class DocumentManager
     {
         
     }
+
+    public function persist($object)
+    {
+        $this->unitOfWork->scheduleInsert($object);
+    }
+
+    public function remove($object)
+    {
+        $this->unitOfWork->scheduleRemove($object);
+    }
+
+    public function flush()
+    {
+        
+    }
+
+    /**
+     * @return UnitOfWork
+     */
+    public function getUnitOfWork()
+    {
+        return $this->unitOfWork;
+    }
 }
