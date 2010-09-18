@@ -11,6 +11,11 @@ class ClassMetadataFactory
         $this->metadatas[$metadata->name] = $metadata;
     }
 
+    public function hasMetadataFor($class)
+    {
+        return isset($this->metadatas[$class]);
+    }
+
     public function getMetadataFor($class)
     {
         if (!isset($this->metadatas[$class])) {
