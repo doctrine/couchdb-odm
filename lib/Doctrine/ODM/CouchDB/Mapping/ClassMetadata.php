@@ -4,7 +4,12 @@ namespace Doctrine\ODM\CouchDB\Mapping;
 
 class ClassMetadata
 {
+    const IDGENERATOR_UUID = 1;
+    const IDGENERATOR_ASSIGNED = 2;
+
     public $name;
+
+    public $idGenerator = self::IDGENERATOR_ASSIGNED;
 
     public $properties = array();
 
@@ -48,5 +53,26 @@ class ClassMetadata
             );
         }
         return clone $this->prototype;
+    }
+
+    /**
+     * Extracts the identifier values of an entity of this class.
+     *
+     * For composite identifiers, the identifier values are returned as an array
+     * with the same order as the field order in {@link identifier}.
+     *
+     * @param object $doc
+     * @return array
+     */
+    public function getIdentifierValues($doc)
+    {
+        $id = array();
+        foreach ($this->identifier as $idProperty) {
+            $value = $this->reflProps[$idProperty]->getValue($doc);
+            if ($value !== null) {
+                $id[$idProperty] = $value;
+            }
+        }
+        return $id;
     }
 }

@@ -31,4 +31,14 @@ class DocumentManagerTest extends CouchDBTestCase
 
         $this->assertType('Doctrine\ODM\CouchDB\Mapping\ClassMetadata', $dm->getClassMetadata('stdClass'));
     }
+
+    /**
+     * @return \Doctrine\ODM\CouchDB\DocumentManager
+     */
+    private function createTestDocumentManager()
+    {
+        $config = new \Doctrine\ODM\CouchDB\Configuration();
+        $dm = $config->newDocumentManager();
+        return $dm;
+    }
 }
