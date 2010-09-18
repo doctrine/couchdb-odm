@@ -125,7 +125,6 @@ class BasicDocumentPersister
     private function createDocument($response, $document = null, array $hints = array())
     {
         if ($response->status > 400) {
-            var_dump($response->status);
             return null;
         }
 
