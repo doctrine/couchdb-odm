@@ -30,6 +30,7 @@ class BasicDocumentPersister
         $this->dm = $dm;
         $this->class = $class;
         $this->database = $this->dm->getConfiguration()->getDatabaseName();
+        // TODO: add a wrapper here that knows the database and makes it easy to construct CouchDB REST requests
         $this->httpClient = $this->dm->getConfiguration()->getHttpClient();
     }
 
@@ -115,8 +116,9 @@ class BasicDocumentPersister
      */
     public function load(array $criteria, $document = null, $assoc = null, array $hints = array())
     {
-        // TODO: what structure do we need here? for now assume its a safe CouchDB document id
-        $response = $this->httpClient->request( 'GET', $this->database.'/'.$criteria );
+        // TODO: what structure should criteria have? for now assume its a plain CouchDB document id as a string
+        $documentPath = urlencode($this->database) . '/' . urlencode($criteria);
+        $response = $this->httpClient->request( 'GET', $documentPath );
         return $this->createDocument($response, $document, $hints);
     }
 
