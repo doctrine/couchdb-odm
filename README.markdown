@@ -24,6 +24,7 @@ We need some matadata to be stored in doctrine couchdb odm documents: "type", "r
 2 possibilities: embedded, with ids
 
 "Foreign Keys":
+
 * one-to-many: save one key-reference in each "many"-document
 * many-to-many: save ids in the owning-side document
 * one-to-one: maybe good use-case for embedded documents
