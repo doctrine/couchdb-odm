@@ -37,14 +37,11 @@ class SocketClient extends Client
         {
             // This is a bit hackisch...
             $this->connection = null;
-            throw new ConnectionException(
-                "Could not connect to server at %ip:%port: '%errno: %error'",
-                array(
-                    'ip'    => $this->options['ip'],
-                    'port'  => $this->options['port'],
-                    'error' => $errstr,
-                    'errno' => $errno,
-                )
+            throw HTTPException::connectionFailure(
+                $this->options['ip'],
+                $this->options['port'],
+                $errstr,
+                $errno
             );
         }
     }
@@ -108,7 +105,7 @@ class SocketClient extends Client
      * @param bool $raw
      * @return Response
      */
-    public function request( $method, $path, $data, $raw = false )
+    public function request( $method, $path, $data = null, $raw = false )
     {
         // Try establishing the connection to the server
         $this->checkConnection();
@@ -123,13 +120,6 @@ class SocketClient extends Client
             // exception on failure.
             $this->connection = null;
             return $this->request( $method, $path, $data, $raw );
-        }
-
-        // If requested log request information to http log
-        if ( $this->options['http-log'] !== false )
-        {
-            $fp = fopen( $this->options['http-log'], 'a' );
-            fwrite( $fp, "\n\n" . $request );
         }
 
         // Read server response headers
@@ -229,13 +219,6 @@ class SocketClient extends Client
             $this->connection = null;
         }
 
-        // If requested log response information to http log
-        if ( $this->options['http-log'] !== false )
-        {
-            fwrite( $fp, "\n" . $rawHeaders . "\n" . $body . "\n" );
-            fclose( $fp );
-        }
-
         // Handle some response state as special cases
         switch ( $headers['status'] )
         {
@@ -248,7 +231,15 @@ class SocketClient extends Client
         }
 
         // Create repsonse object from couch db response
-        return new Response( $headers, $body, $raw );
+        if ( $raw )
+        {
+            return new RawResponse( $headers['status'], $headers, $body );
+        }
+        elseif ( $headers['status'] >= 400 )
+        {
+            return new ErrorResponse( $headers['status'], $headers, $body );
+        }
+        return new Response( $headers['status'], $headers, $body );
     }
 }
 

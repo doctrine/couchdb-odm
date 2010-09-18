@@ -26,21 +26,19 @@ abstract class Client
     );
 
     /**
-     * Construct a couch DB connection
+     * Construct a CouchDB connection
      *
-     * Construct a couch DB connection from basic connection parameters for one
+     * Construct a CouchDB connection from basic connection parameters for one
      * given database.
      *
-     * In most cases you want to use the createInstance() method to register
-     * the connection instance, so it can be used by the document and view
-     * classes. If you want to operate directly on a raw connection you may
-     * also instantiate it directly, though.
-     *
-     * @param string $host
-     * @param int $port
-     * @return phpillowConnection
+     * @param string $host 
+     * @param int $port 
+     * @param string $username 
+     * @param string $password 
+     * @param string $ip 
+     * @return void
      */
-    public function __construct( $host, $port, $username = null, $password = null, $ip = null )
+    public function __construct( $host = 'localhost', $port = 5984, $username = null, $password = null, $ip = null )
     {
         $this->options['host']     = (string) $host;
         $this->options['port']     = (int) $port;
@@ -82,7 +80,7 @@ abstract class Client
                 break;
 
             default:
-                throw new phpillowOptionException( $option );
+                throw new \InvalidArgumentException( "Unknown option $option." );
         }
     }
 
@@ -100,6 +98,6 @@ abstract class Client
      * @param bool $raw
      * @return phpillowResponse
      */
-    abstract public function request( $method, $path, $data, $raw = false );
+    abstract public function request( $method, $path, $data = null, $raw = false );
 }
 
