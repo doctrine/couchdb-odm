@@ -15,7 +15,7 @@
 How to implement object-graph traversal transparently?
 
 * two views required, because bi-directional relationships?
-* emit([doc.type, doc.field, doc._id], 0); (triple)
+* `emit([doc.type, doc.field, doc._id], 0);` (triple)
 
 We need some matadata to be stored in doctrine couchdb odm documents: "type", "relations"
 
@@ -38,7 +38,7 @@ Value objects (Color example)
 * By default we dump everything that isnt mapped to a property into a "values" array
 * Optionally provide a way to map these values to a key so that we can provide an associative array
 
-## Problem 6: @DynamicFields
+## Problem 6: `@DynamicFields`
 
 Just have mapping type "array".
 
@@ -78,7 +78,7 @@ Easily lazyloaded by resource handle or "transparent" proxy
 
 # Requirements
 
-1. type of the document in each couchdb "doc" (
+1. type of the document in each couchdb "doc"
 2. Expose revision to the user!!!
 3. metadata field in each "doctrine handled" document
 
@@ -96,7 +96,7 @@ Easily lazyloaded by resource handle or "transparent" proxy
         "embeddedA": [{...}, {...}]
     }
 
-## Natural Key
+## Also Natural Key Support
     class User
     {
         /** @Id @Field */
