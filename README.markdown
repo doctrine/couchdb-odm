@@ -96,6 +96,44 @@ Easily lazyloaded by resource handle or "transparent" proxy
         "embeddedA": [{...}, {...}]
     }
 
+## Views for relation retrieval
+
+Related objects (works for 1:1, 1:n, n:1 and n:m)
+
+	function (doc)
+	{
+		if (doc.doctrine_metadata &&
+			doc.doctrine_metadata.relations)
+		{
+			var relations = doc.doctrine_metadata.relations;
+			for ( type in relations )
+			{
+				for ( var i = 0; i < relations[type].length; ++i )
+				{
+					emit([doc._id, type, relations[type][i]], {"_id": relations[type][i]} );
+				}
+			}
+		}
+	}
+
+Reverse relations objects (works for 1:1, 1:n, n:1 and n:m)
+
+	function (doc)
+	{
+		if (doc.doctrine_metadata &&
+			doc.doctrine_metadata.relations)
+		{
+			var relations = doc.doctrine_metadata.relations;
+			for ( type in relations )
+			{
+				for ( var i = 0; i < relations[type].length; ++i )
+				{
+					emit([relations[type][i], type, doc._id], {"_id": relations[type][i]} );
+				}
+			}
+		}
+	}
+
 ## Also Natural Key Support
     class User
     {
