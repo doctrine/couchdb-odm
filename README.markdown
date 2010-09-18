@@ -35,6 +35,9 @@ Value objects (Color example)
 
 ## Problem 5: Computed Values from View
 
+* By default we dump everything that isnt mapped to a property into a "values" array
+* Optionally provide a way to map these values to a key so that we can provide an associative array
+
 ## Problem 6: @DynamicFields
 
 Just have mapping type "array".
@@ -93,6 +96,7 @@ Easily lazyloaded by resource handle or "transparent" proxy
         "embeddedA": [{...}, {...}]
     }
 
+## Natural Key
     class User
     {
         /** @Id @Field */
