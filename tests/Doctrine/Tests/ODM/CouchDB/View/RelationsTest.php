@@ -15,6 +15,8 @@ class RelationsTest extends CouchDBTestCase
     {
         $config = new \Doctrine\ODM\CouchDB\Configuration();
         $config->setHttpClient( new SocketClient() );
+        $config->setDatabaseName( "doctrine_odm_test" );
+
         $this->dm = $config->newDocumentManager();
     }
 

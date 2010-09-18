@@ -50,9 +50,7 @@ abstract class Handler
             "GET",
             $path = sprintf(
                 "/%s/_design/%s/_view/%s?%s",
-                // @TODO: Replace the hardcoded database name bz this:
-//                $this->documentManager->getConfiguration()->getDatabaseName(),
-                "doctrine_odm_test",
+                $this->documentManager->getConfiguration()->getDatabaseName(),
                 $this->name,
                 $name,
                 http_build_query( array_map( "json_encode", $parameters ) )
@@ -87,9 +85,7 @@ abstract class Handler
             "PUT",
             sprintf(
                 "/%s/_design/%s",
-                // @TODO: Replace the hardcoded database name bz this:
-//                $this->documentManager->getConfiguration()->getDatabaseName(),
-                "doctrine_odm_test",
+                $this->documentManager->getConfiguration()->getDatabaseName(),
                 $this->name
             ),
             json_encode( array(
