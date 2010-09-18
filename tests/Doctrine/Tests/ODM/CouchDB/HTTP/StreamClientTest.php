@@ -23,13 +23,12 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
      */
     public function setUp()
     {
-        /*
         ob_start();
         phpinfo();
         if ( strpos( ob_get_clean(), 'curlwrappers' ) === false )
         {
             $this->markTestSkipped( 'Enable --with-curlwrappers to run this test.' );
-        } // */
+        }
     }
 
     public function testNoConnectionPossible()
