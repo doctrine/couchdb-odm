@@ -81,7 +81,7 @@ class UnitOfWork
             }
         }
 
-        $this->documentState[spl_object_hash($doc)] = self::STATE_MANAGED;
+        $this->registerManaged($doc, null);
 
         return $doc;
     }
@@ -160,5 +160,28 @@ class UnitOfWork
         foreach ($this->scheduledInsertions AS $entity) {
             
         }
+    }
+
+    public function registerManaged($document, $identifier)
+    {
+        $this->documentState[spl_object_hash($document)] = self::STATE_MANAGED;
+    }
+
+    /**
+     * Tries to find an entity with the given identifier in the identity map of
+     * this UnitOfWork.
+     *
+     * @param mixed $id The entity identifier to look for.
+     * @param string $rootClassName The name of the root class of the mapped entity hierarchy.
+     * @return mixed Returns the entity with the specified identifier if it exists in
+     *               this UnitOfWork, FALSE otherwise.
+     */
+    public function tryGetById($id, $rootClassName)
+    {
+        $idHash = implode(' ', (array) $id);
+        if (isset($this->identityMap[$rootClassName][$idHash])) {
+            return $this->identityMap[$rootClassName][$idHash];
+        }
+        return false;
     }
 }

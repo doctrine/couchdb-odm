@@ -43,6 +43,15 @@ class UnitOfWorkTest extends CouchDBTestCase
         $this->assertSame($user1, $user2);
     }
 
+    public function testTryGetById()
+    {
+        $user1 = $this->uow->createDocument('Doctrine\Tests\ODM\CouchDB\UoWUser', array('id' => '1', 'username' => 'foo'));
+
+        $user2 = $this->uow->tryGetById(1, 'Doctrine\Tests\ODM\CouchDB\UoWUser');
+
+        $this->assertSame($user1, $user2);
+    }
+
     public function testScheduleInsertion()
     {
         $object = new UoWUser();
