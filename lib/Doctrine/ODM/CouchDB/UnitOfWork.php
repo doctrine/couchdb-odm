@@ -20,7 +20,7 @@ class UnitOfWork
      *
      * @var array
      */
-    private $persisters = array();
+    private $persister = null;
 
     /**
      * The collection persister instances used to persist collections.
@@ -89,16 +89,14 @@ class UnitOfWork
     /**
      * Gets the DocumentPersister for an Entity.
      *
-     * @param string $documentName  The name of the Document.
      * @return Doctrine\ODM\CouchDB\Persisters\BasicDocumentPersister
      */
-    public function getDocumentPersister($documentName)
+    public function getDocumentPersister()
     {
-        if ( ! isset($this->persisters[$documentName])) {
-            $class = $this->dm->getClassMetadata($documentName);
-            $this->persisters[$documentName] = new Persisters\BasicDocumentPersister($this->dm, $class);
+        if ( $this->persister === null) {
+            $this->persister = new Persisters\BasicDocumentPersister($this->dm);
         }
-        return $this->persisters[$documentName];
+        return $this->persister;
     }
 
     public function scheduleInsert($object)

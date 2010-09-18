@@ -13,7 +13,9 @@ class FindDocumentTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTest
         $resp = $httpClient->request('PUT', '/' . $database);
         $this->assertEquals(201, $resp->status);
 
-        $resp = $httpClient->request('PUT', '/' . $database . '/1', '{"_id":"1","username":"lsmith"}');
+        $data = json_encode(
+                array('_id' => "1", 'username' => 'lsmith', 'doctrine_metadata' => array('type' => 'Doctrine\Tests\ODM\CouchDB\Functional\User')));
+        $resp = $httpClient->request('PUT', '/' . $database . '/1', $data);
         $this->assertEquals(201, $resp->status);
 
         $config = new \Doctrine\ODM\CouchDB\Configuration();
@@ -29,7 +31,7 @@ class FindDocumentTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTest
         $metadata->idGenerator = \Doctrine\ODM\CouchDB\Mapping\ClassMetadata::IDGENERATOR_ASSIGNED;
         $cmf->setMetadataFor($metadata);
 
-        $user = $dm->find('Doctrine\Tests\ODM\CouchDB\Functional\User', 1);
+        $user = $dm->find(1);
 
         $this->assertType('Doctrine\Tests\ODM\CouchDB\Functional\User', $user);
         $this->assertEquals('1', $user->id);

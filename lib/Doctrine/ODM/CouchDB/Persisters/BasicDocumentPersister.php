@@ -28,10 +28,9 @@ class BasicDocumentPersister
      */
     private $dm = null;
 
-    public function __construct(DocumentManager $dm, ClassMetadata $class)
+    public function __construct(DocumentManager $dm)
     {
         $this->dm = $dm;
-        $this->class = $class;
         $this->database = $this->dm->getConfiguration()->getDatabaseName();
         // TODO: add a wrapper here that knows the database and makes it easy to construct CouchDB REST requests
         $this->httpClient = $this->dm->getConfiguration()->getHttpClient();
@@ -97,16 +96,6 @@ class BasicDocumentPersister
     }
 
     /**
-     * Gets the ClassMetadata instance of the document class this persister is used for.
-     *
-     * @return Doctrine\ORM\Mapping\ClassMetadata
-     */
-    public function getClassMetadata()
-    {
-        return $this->class;
-    }
-
-    /**
      * Loads an document by a list of field criteria.
      *
      * @param string $id The criteria by which to load the document.
@@ -136,25 +125,26 @@ class BasicDocumentPersister
     private function createDocument($response, $document = null, array $hints = array())
     {
         if ($response->status > 400) {
+            var_dump($response->status);
             return null;
         }
 
-        list($documentName, $data) = $this->processResponseBody($response->body);
+        list($class, $data) = $this->processResponseBody($response->body);
 
         if ($document !== null) {
             $hints[Query::HINT_REFRESH] = true;
             $id = array();
-            if ($this->class->isIdentifierComposite) {
-                foreach ($this->class->identifier as $fieldName) {
+            if ($class->isIdentifierComposite) {
+                foreach ($class->identifier as $fieldName) {
                     $id[$fieldName] = $data[$fieldName];
                 }
             } else {
-                $id = array($this->class->identifier[0] => $data[$this->class->identifier[0]]);
+                $id = array($class->identifier[0] => $data[$class->identifier[0]]);
             }
             $this->dm->getUnitOfWork()->registerManaged($document, $id, $data);
         }
 
-        return $this->dm->getUnitOfWork()->createDocument($documentName, $data, $hints);
+        return $this->dm->getUnitOfWork()->createDocument($class->name, $data, $hints);
     }
 
     /**
@@ -172,17 +162,23 @@ class BasicDocumentPersister
      */
     protected function processResponseBody(array $responseBody)
     {
+        if (!isset($responseBody['doctrine_metadata'])) {
+            throw new Exception("Illegal Doctrine Entity, cannot hydrate (yet)!");
+        }
+        $type = $responseBody['doctrine_metadata']['type'];
+        $class = $this->dm->getClassMetadata($type);
+
         $data = array();
         foreach ($responseBody as $resultKey => $value) {
             // TODO: Check how ORM does this? Method or public property?
-            if (isset($this->class->resultKeyProperties[$resultKey])) {
-                $property = $this->class->resultKeyProperties[$resultKey];
+            if (isset($class->resultKeyProperties[$resultKey])) {
+                $property = $class->resultKeyProperties[$resultKey];
                 // TODO: type conversion should probably be handled in the UnitOfWork
                 $data[$property] = $value;
             }
         }
 
-        return array($this->class->name, $data);
+        return array($class, $data);
     }
 
     /**
