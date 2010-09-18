@@ -55,6 +55,9 @@ class SocketClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testForErrorOnDatabaseRecreation()
     {
         $db = new HTTP\SocketClient();
@@ -74,6 +77,9 @@ class SocketClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testGetDatabaseInformation()
     {
         $db = new HTTP\SocketClient();
@@ -90,6 +96,9 @@ class SocketClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testAddDocumentToDatabase()
     {
         $db = new HTTP\SocketClient();
@@ -106,6 +115,9 @@ class SocketClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testGetAllDocsFormDatabase()
     {
         $db = new HTTP\SocketClient();
@@ -128,6 +140,9 @@ class SocketClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testGetSingleDocumentFromDatabase()
     {
         $db = new HTTP\SocketClient();
@@ -153,6 +168,9 @@ class SocketClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testGetUnknownDocumentFromDatabase()
     {
         $db = new HTTP\SocketClient();
@@ -172,6 +190,9 @@ class SocketClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testGetDocumentFromNotExistantDatabase()
     {
         $db = new HTTP\SocketClient();
@@ -196,6 +217,9 @@ class SocketClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testDeleteUnknownDocumentFromDatabase()
     {
         $db = new HTTP\SocketClient();
@@ -216,6 +240,9 @@ class SocketClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testDeleteSingleDocumentFromDatabase()
     {
         $db = new HTTP\SocketClient();
@@ -239,6 +266,9 @@ class SocketClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testDeleteDatabase()
     {
         $db = new HTTP\SocketClient();
@@ -255,6 +285,9 @@ class SocketClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testArrayResponse()
     {
         $db = new HTTP\SocketClient();
@@ -275,6 +308,9 @@ class SocketClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testCloseConnection()
     {
         $db = new HTTP\SocketClient();
@@ -297,6 +333,9 @@ class SocketClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testKeepAliveConnection()
     {
         $db = new HTTP\SocketClient();
@@ -319,6 +358,9 @@ class SocketClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testUnknownOption()
     {
         $db = new HTTP\SocketClient();

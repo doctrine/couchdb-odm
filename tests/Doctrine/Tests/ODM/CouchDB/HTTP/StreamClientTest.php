@@ -11,10 +11,10 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
      *
      * @return PHPUnit_Framework_TestSuite
      */
-	public static function suite()
-	{
-		return new \PHPUnit_Framework_TestSuite( __CLASS__ );
-	}
+    public static function suite()
+    {
+        return new \PHPUnit_Framework_TestSuite( __CLASS__ );
+    }
 
     /**
      * Check that curl-wrapers are enabled, test cases fail otherwise.
@@ -73,6 +73,9 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testForErrorOnDatabaseRecreation()
     {
         $db = new HTTP\StreamClient();
@@ -92,6 +95,9 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testGetDatabaseInformation()
     {
         $db = new HTTP\StreamClient();
@@ -108,6 +114,9 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testAddDocumentToDatabase()
     {
         $db = new HTTP\StreamClient();
@@ -124,6 +133,9 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testGetAllDocsFormDatabase()
     {
         $db = new HTTP\StreamClient();
@@ -146,6 +158,9 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testGetSingleDocumentFromDatabase()
     {
         $db = new HTTP\StreamClient();
@@ -171,6 +186,9 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testGetUnknownDocumentFromDatabase()
     {
         $db = new HTTP\StreamClient();
@@ -190,6 +208,9 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testGetDocumentFromNotExistantDatabase()
     {
         $db = new HTTP\StreamClient();
@@ -213,6 +234,9 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testDeleteUnknownDocumentFromDatabase()
     {
         $db = new HTTP\StreamClient();
@@ -232,6 +256,9 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testDeleteSingleDocumentFromDatabase()
     {
         $db = new HTTP\StreamClient();
@@ -256,6 +283,9 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testDeleteDatabase()
     {
         $db = new HTTP\StreamClient();
@@ -272,6 +302,9 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testArrayResponse()
     {
         $db = new HTTP\StreamClient();
@@ -294,6 +327,9 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testCloseConnection()
     {
         $db = new HTTP\StreamClient();
@@ -316,6 +352,9 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testKeepAliveConnection()
     {
         $db = new HTTP\StreamClient();
@@ -338,6 +377,9 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testCreateDatabase
+     */
     public function testUnknownOption()
     {
         $db = new HTTP\StreamClient();
