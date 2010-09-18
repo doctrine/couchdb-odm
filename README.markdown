@@ -1,5 +1,16 @@
 # CouchDB ODM
 
+# Current Status:
+
+* find() by id implemented
+* metadata mapping needs to be registered manually (no annotation, xml, yml support yet)
+* proxy classes implemented
+* relation view defined
+* still missing logic for lazy loading
+* check out the tests for how to use everything
+* consider moving the HTTP classes out of the CouchDB namespace
+* plenty of TODO's noted through out the source code
+
 # Hackaton Discussions: CouchDB + Doctrine
 
 ##Problem 1: Query API
