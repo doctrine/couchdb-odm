@@ -8,7 +8,7 @@ namespace Doctrine\ODM\CouchDB\HTTP;
 /**
  * Connection handler using PHPs stream wrappers.
  */
-class SocketClient extends Client
+class StreamClient extends Client
 {
     /**
      * Perform a request to the server and return the result
@@ -23,7 +23,7 @@ class SocketClient extends Client
      * @param string $data
      * @return Response
      */
-    public function request( $method, $path, $data, $raw = false )
+    public function request( $method, $path, $data = null, $raw = false )
     {
         $basicAuth = '';
         if ( $this->options['username'] )
@@ -31,16 +31,17 @@ class SocketClient extends Client
             $basicAuth .= "{$this->options['username']}:{$this->options['password']}@";
         }
 
-        $url = 'http://' . $basicAuth . $this->options['host']  . ':' . $this->options['port'] . $path;
-
         $httpFilePointer = @fopen(
-            $url = 'http://' . $this->options['host']  . ':' . $this->options['port'] . $path, 'r', false,
+            'http://' . $basicAuth . $this->options['host']  . ':' . $this->options['port'] . $path,
+            'r',
+            false,
             stream_context_create(
                 array(
                     'http' => array(
                         'method'        => $method,
                         'content'       => $data,
                         'ignore_errors' => true,
+                        'max_redirects' => 0,
                         'user_agent'    => 'PHPillow $Revision$',
                         'timeout'       => $this->options['timeout'],
                         'header'        => 'Content-type: application/json',
@@ -53,13 +54,11 @@ class SocketClient extends Client
         if ( $httpFilePointer === false )
         {
             $error = error_get_last();
-            throw new ConnectionException(
-                "Could not connect to server at %ip:%port: %error",
-                array(
-                    'ip'    => $this->options['ip'],
-                    'port'  => $this->options['port'],
-                    'error' => $error['message'],
-                )
+            throw HTTPException::connectionFailure(
+                $this->options['ip'],
+                $this->options['port'],
+                $error['message'],
+                0
             );
         }
 
@@ -91,20 +90,16 @@ class SocketClient extends Client
             }
         }
 
-        // If requested log response information to http log
-        if ( $this->options['http-log'] !== false )
-        {
-            file_put_contents( $this->options['http-log'],
-                sprintf( "Requested: %s\n\n%s\n\n%s\n\n",
-                    $url,
-                    implode( "\n", $rawHeaders ),
-                    $body
-                )
-            );
-        }
-
         // Create repsonse object from couch db response
-        return new Response( $headers, $body, $raw );
+        if ( $raw )
+        {
+            return new RawResponse( $headers['status'], $headers, $body );
+        }
+        elseif ( $headers['status'] >= 400 )
+        {
+            return new ErrorResponse( $headers['status'], $headers, $body );
+        }
+        return new Response( $headers['status'], $headers, $body );
     }
 }
 
