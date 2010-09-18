@@ -18,6 +18,11 @@ class Configuration
         return $this->options['httpclient'];
     }
 
+    public function getDatabaseName()
+    {
+        return $this->options['databaseName'];
+    }
+
     public function newDocumentManager()
     {
         return new DocumentManager($this);

@@ -14,9 +14,9 @@ class BasicDocumentPersister
     /**
      * The underlying HTTP Connection of the used DocumentManager.
      *
-     * @var Doctrine\ODM\CouchDB\HTTP\Client $client
+     * @var Doctrine\ODM\CouchDB\HTTP\Client $httpClient
      */
-    private $client;
+    private $httpClient;
 
     /**
      * The documentManager instance.
@@ -29,7 +29,8 @@ class BasicDocumentPersister
     {
         $this->dm = $dm;
         $this->class = $class;
-        $this->client = $this->dm->getConfiguration()->getHttpClient();
+        $this->database = $this->dm->getConfiguration()->getDatabaseName();
+        $this->httpClient = $this->dm->getConfiguration()->getHttpClient();
     }
 
     /**
@@ -98,7 +99,7 @@ class BasicDocumentPersister
      */
     public function getClassMetadata()
     {
-        return $this->client;
+        return $this->class;
     }
 
     /**
@@ -114,7 +115,76 @@ class BasicDocumentPersister
      */
     public function load(array $criteria, $document = null, $assoc = null, array $hints = array())
     {
-        //TODO: implement
+        // TODO: what structure do we need here? for now assume its a safe CouchDB document id
+        $response = $this->httpClient->request( 'GET', $this->database.'/'.$criteria );
+        return $this->createDocument($response, $document, $hints);
+    }
+
+    /**
+     * Creates or fills a single document object from a result.
+     *
+     * @param $response The http response.
+     * @param object $document The document object to fill, if any.
+     * @param array $hints Hints for document creation.
+     * @return object The filled and managed document object or NULL, if the result is empty.
+     */
+    private function createDocument($response, $document = null, array $hints = array())
+    {
+        if ($response->status > 400) {
+            return null;
+        }
+
+        list($documentName, $data) = $this->processResponse($response);
+
+        if ($document !== null) {
+            $hints[Query::HINT_REFRESH] = true;
+            $id = array();
+            if ($this->class->isIdentifierComposite) {
+                foreach ($this->class->identifier as $fieldName) {
+                    $id[$fieldName] = $data[$fieldName];
+                }
+            } else {
+                $id = array($this->class->identifier[0] => $data[$this->class->identifier[0]]);
+            }
+            $this->dm->getUnitOfWork()->registerManaged($document, $id, $data);
+        }
+
+        return $this->dm->getUnitOfWork()->createDocument($documentName, $data, $hints);
+    }
+
+    /**
+     * Processes an result set row that contains data for an document of the type
+     * this persister is responsible for.
+     *
+     * Subclasses are supposed to override this method if they need to change the
+     * hydration procedure for entities loaded through basic find operations or
+     * lazy-loading (not DQL).
+     *
+     * @param array $response The response process.
+     * @return array A tuple where the first value is the actual type of the document and
+     *               the second value the prepared data of the document (a map from field
+     *               names to values).
+     */
+    protected function processResponse(array $response)
+    {
+        $data = array();
+        foreach ($response as $column => $value) {
+            $column = $this->resultColumnNames[$column];
+            if (isset($this->class->fieldNames[$column])) {
+                // TODO: type conversion should probably be handled in the UnitOfWork
+                $field = $this->class->fieldNames[$column];
+//                if (isset($data[$field])) {
+                    $data[$column] = $value;
+//                } else {
+//                    $data[$field] = Type::getType($this->class->fieldMappings[$field]['type'])
+//                            ->convertToPHPValue($value);
+//                }
+            } else {
+                $data[$column] = $value;
+            }
+        }
+
+        return array($this->class->name, $data);
     }
 
     /**
