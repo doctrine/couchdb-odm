@@ -24,7 +24,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
         $cm->mapProperty(array('name' => 'id', 'id' => true));
 
         $this->assertTrue(isset($cm->properties['id']));
-        $this->assertEquals(array('name' => 'id', 'id' => true, 'type' => 'string'), $cm->properties['id']);
+        $this->assertEquals(array('name' => 'id', 'id' => true, 'type' => 'string', 'resultkey' => 'id'), $cm->properties['id']);
 
         $this->assertEquals(array('id'), $cm->identifier);
 
@@ -42,8 +42,8 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
         $this->assertTrue(isset($cm->properties['username']));
         $this->assertTrue(isset($cm->properties['created']));
 
-        $this->assertEquals(array('name' => 'username', 'type' => 'string'), $cm->properties['username']);
-        $this->assertEquals(array('name' => 'created', 'type' => 'datetime'), $cm->properties['created']);
+        $this->assertEquals(array('name' => 'username', 'type' => 'string', 'resultkey' => 'username'), $cm->properties['username']);
+        $this->assertEquals(array('name' => 'created', 'type' => 'datetime', 'resultkey' => 'created'), $cm->properties['created']);
 
         return $cm;
     }
@@ -75,7 +75,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
 
         $cm->mapProperty(array('name' => 'username'));
 
-        $this->assertEquals(array('name' => 'username', 'type' => 'string'), $cm->properties['username']);
+        $this->assertEquals(array('name' => 'username', 'type' => 'string', 'resultkey' => 'username'), $cm->properties['username']);
     }
 }
 

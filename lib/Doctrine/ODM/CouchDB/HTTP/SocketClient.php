@@ -132,7 +132,7 @@ class SocketClient extends Client
         while ( ( ( $line = fgets( $this->connection ) ) !== false ) &&
                 ( ( $lineContent = rtrim( $line ) ) === '' ) );
 
-        // Thow exception, if connection has been aborted by the server, and
+        // Throw exception, if connection has been aborted by the server, and
         // leave handling to the user for now.
         if ( $line === false )
         {

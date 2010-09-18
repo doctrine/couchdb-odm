@@ -23,6 +23,11 @@ class Configuration
         return $this->options['databaseName'];
     }
 
+    public function setDatabaseName($name)
+    {
+        $this->options['databaseName'] = $name;
+    }
+
     public function newDocumentManager()
     {
         return new DocumentManager($this);

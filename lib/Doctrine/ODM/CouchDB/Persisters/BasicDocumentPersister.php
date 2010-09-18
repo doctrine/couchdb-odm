@@ -2,6 +2,9 @@
 
 namespace Doctrine\ODM\CouchDB\Persisters;
 
+use Doctrine\ODM\CouchDB\DocumentManager;
+use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
+
 class BasicDocumentPersister
 {
     /**
@@ -106,7 +109,7 @@ class BasicDocumentPersister
     /**
      * Loads an document by a list of field criteria.
      *
-     * @param array $criteria The criteria by which to load the document.
+     * @param string $id The criteria by which to load the document.
      * @param object $document The document to load the data into. If not specified,
      *        a new document is created.
      * @param $assoc The association that connects the document to load to another document, if any.
@@ -114,10 +117,10 @@ class BasicDocumentPersister
      * @return object The loaded and managed document instance or NULL if the document can not be found.
      * @todo Check iddocument map? loadById method? Try to guess whether $criteria is the id?
      */
-    public function load(array $criteria, $document = null, $assoc = null, array $hints = array())
+    public function load($id, $document = null, $assoc = null, array $hints = array())
     {
         // TODO: what structure should criteria have? for now assume its a plain CouchDB document id as a string
-        $documentPath = urlencode($this->database) . '/' . urlencode($criteria);
+        $documentPath = '/' . urlencode($this->database) . '/' . urlencode($id);
         $response = $this->httpClient->request( 'GET', $documentPath );
         return $this->createDocument($response, $document, $hints);
     }
@@ -136,7 +139,7 @@ class BasicDocumentPersister
             return null;
         }
 
-        list($documentName, $data) = $this->processResponse($response);
+        list($documentName, $data) = $this->processResponse($response->body);
 
         if ($document !== null) {
             $hints[Query::HINT_REFRESH] = true;
@@ -170,19 +173,12 @@ class BasicDocumentPersister
     protected function processResponse(array $response)
     {
         $data = array();
-        foreach ($response as $column => $value) {
-            $column = $this->resultColumnNames[$column];
-            if (isset($this->class->fieldNames[$column])) {
+        foreach ($response as $resultKey => $value) {
+            // TODO: Check how ORM does this? Method or public property?
+            if (isset($this->class->resultKeyProperties[$resultKey])) {
+                $property = $this->class->resultKeyProperties[$resultKey];
                 // TODO: type conversion should probably be handled in the UnitOfWork
-                $field = $this->class->fieldNames[$column];
-//                if (isset($data[$field])) {
-                    $data[$column] = $value;
-//                } else {
-//                    $data[$field] = Type::getType($this->class->fieldMappings[$field]['type'])
-//                            ->convertToPHPValue($value);
-//                }
-            } else {
-                $data[$column] = $value;
+                $data[$property] = $value;
             }
         }
 
