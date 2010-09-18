@@ -16,11 +16,11 @@ How to implement object-graph traversal transparently?
 * two views required, because bi-directional relationships?
 * emit([doc.type, doc.field, doc._id], 0); (triple)
 
-Dafür sind folgende Felder nötig in einem Couchdb+Doctrine Document: "type", "relations"
+We need some matadata to be stored in doctrine couchdb odm documents: "type", "relations"
 
 Problem 3: Joins
 
-2 Möglichkeiten: embedded, mit ids
+2 possibilities: embedded, mit ids
 
 "Foreign Keys":
     one-to-many:
