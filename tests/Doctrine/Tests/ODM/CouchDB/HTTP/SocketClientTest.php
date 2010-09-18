@@ -20,13 +20,11 @@ class SocketClientTestCase extends \PHPUnit_Framework_TestCase
     {
         $db = new HTTP\SocketClient( '127.0.0.1', 12345 );
 
-        try
-        {
+        try {
             $response = $db->request( 'GET', '/doctrine_odm_test' );
             $this->fail( 'Expected HTTPException.' );
-        }
-        catch ( HTTP\HTTPException $e )
-        {
+        } catch ( HTTP\HTTPException $e ) {
+            // TODO do we have an issue here with OSX, seems to return 61 here
             $this->assertSame(
                 'Could not connect to server at 127.0.0.1:12345: \'111: Connection refused\'',
                 $e->getMessage()
