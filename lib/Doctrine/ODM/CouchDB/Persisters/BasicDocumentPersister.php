@@ -139,7 +139,7 @@ class BasicDocumentPersister
             return null;
         }
 
-        list($documentName, $data) = $this->processResponse($response->body);
+        list($documentName, $data) = $this->processResponseBody($response->body);
 
         if ($document !== null) {
             $hints[Query::HINT_REFRESH] = true;
@@ -158,22 +158,22 @@ class BasicDocumentPersister
     }
 
     /**
-     * Processes an result set row that contains data for an document of the type
+     * Processes a response body that contains data for an document of the type
      * this persister is responsible for.
      *
      * Subclasses are supposed to override this method if they need to change the
      * hydration procedure for entities loaded through basic find operations or
      * lazy-loading (not DQL).
      *
-     * @param array $response The response process.
+     * @param array $responseBody The response body to process.
      * @return array A tuple where the first value is the actual type of the document and
      *               the second value the prepared data of the document (a map from field
      *               names to values).
      */
-    protected function processResponse(array $response)
+    protected function processResponseBody(array $responseBody)
     {
         $data = array();
-        foreach ($response as $resultKey => $value) {
+        foreach ($responseBody as $resultKey => $value) {
             // TODO: Check how ORM does this? Method or public property?
             if (isset($this->class->resultKeyProperties[$resultKey])) {
                 $property = $this->class->resultKeyProperties[$resultKey];
