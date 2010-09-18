@@ -12,6 +12,7 @@ class ClassMetadata
     public $idGenerator = self::IDGENERATOR_ASSIGNED;
 
     public $properties = array();
+    public $resultKeyProperties = array();
 
     public $reflClass = null;
     public $reflProps = array();
@@ -28,6 +29,10 @@ class ClassMetadata
 
     public function mapProperty($mapping)
     {
+        if (!isset($mapping['resultkey'])) {
+            $mapping['resultkey'] = $mapping['name'];
+        }
+
         if (!isset($mapping['type'])) {
             $mapping['type'] = "string";
         }
@@ -39,6 +44,8 @@ class ClassMetadata
 
         $this->reflProps[$mapping['name']] = $this->reflClass->getProperty($mapping['name']);
         $this->reflProps[$mapping['name']]->setAccessible(true);
+
+        $this->resultKeyProperties[$mapping['resultkey']] = $mapping['name'];
     }
 
     public function newInstance()

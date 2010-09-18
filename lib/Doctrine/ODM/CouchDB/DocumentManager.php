@@ -52,7 +52,7 @@ class DocumentManager
 
     public function find($class, $id)
     {
-        
+        return $this->unitOfWork->getDocumentPersister($class)->load($id);
     }
 
     public function persist($object)
