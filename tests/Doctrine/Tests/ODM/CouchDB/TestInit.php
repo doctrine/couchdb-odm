@@ -1,6 +1,6 @@
 <?php
 
-$commonPath = __DIR__ . "./../../../../lib/vendor/doctrine-common/lib/";
+$commonPath = __DIR__ . "./../../../../../lib/vendor/doctrine-common/lib/";
 
 require_once $commonPath . "Doctrine/Common/ClassLoader.php";
 
