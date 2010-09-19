@@ -24,7 +24,7 @@ abstract class IdGenerator
                     $instance = new AssignedIdGenerator();
                     break;
                 case ClassMetadata::IDGENERATOR_UUID:
-                    $instance = new CouchUuidGenerator();
+                    $instance = new CouchUUIDGenerator();
                     break;
                 default:
                     throw \Exception("ID Generator does not exist!");

@@ -16,13 +16,32 @@ class DocumentManager
      */
     private $metadataFactory;
 
+    /**
+     * @var UnitOfWork
+     */
     private $unitOfWork = null;
+
+    /**
+     * @var CouchDBClient
+     */
+    private $couchClient = null;
 
     public function __construct(Configuration $config)
     {
         $this->config = $config;
         $this->metadataFactory = new ClassMetadataFactory();
         $this->unitOfWork = new UnitOfWork($this);
+    }
+
+    /**
+     * @return CouchDBClient
+     */
+    public function getCouchDBClient()
+    {
+        if ($this->couchClient === null) {
+            $this->couchClient = new CouchDBClient($this->config);
+        }
+        return $this->couchClient;
     }
 
     /**

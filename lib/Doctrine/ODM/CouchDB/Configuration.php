@@ -30,6 +30,10 @@ class Configuration
 
     public function newDocumentManager()
     {
+        if (!isset($this->options['httpclient'])) {
+            $this->options['httpclient'] = new HTTP\SocketClient();
+        }
+
         return new DocumentManager($this);
     }
 }

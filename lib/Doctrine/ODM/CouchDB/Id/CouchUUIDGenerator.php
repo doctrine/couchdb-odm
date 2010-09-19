@@ -5,18 +5,15 @@ namespace Doctrine\ODM\CouchDB\Id;
 use Doctrine\ODM\CouchDB\DocumentManager;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 
-class CouchUuidGenerator extends IdGenerator
+class CouchUUIDGenerator extends IdGenerator
 {
     private $uuids = array();
 
     public function generate($document, ClassMetadata $cm, DocumentManager $dm)
     {
-        // TODO: Allow to configure UUID Generation number
         if (count($this->uuids) == 0) {
-            $client = $dm->getConfiguration()->getHttpClient();
-            $response = $client->request('GET', '/_uuids');
-
-            $this->uuids = $response->body['uuids'];
+            // TODO: Allow to configure UUID Generation number
+            $this->uuids = $dm->getCouchDBClient()->getUuids(20);
         }
 
         $id =  array (0 => array_pop($this->uuids));

@@ -76,7 +76,7 @@ class UnitOfWorkTest extends CouchDBTestCase
         $client = $this->getMock('Doctrine\ODM\CouchDB\Http\Client', array('request'));
         $client->expects($this->once())
                ->method('request')
-               ->with($this->equalTo('GET'), $this->equalTo('/_uuids'))
+               ->with($this->equalTo('GET'), $this->equalTo('/_uuids?count=20'))
                ->will($this->returnValue(new \Doctrine\ODM\CouchDB\HTTP\Response(200, array(), '{"uuids":["4db492fb9e96682601d3f62b0797a8c0","c3cee9c45f2fc2a3803ed26fdbceb3b4","691f868266b6b45a867bfcb4b41a694e","e2c4783e9ff922eefe869998a01828b2"]}')));
         $this->dm->getConfiguration()->setHttpClient($client);
 
