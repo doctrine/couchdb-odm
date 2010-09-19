@@ -107,12 +107,7 @@ class UnitOfWork
 
         $cm = $this->dm->getClassMetadata(get_class($object));
 
-        if ($cm->idGenerator == Mapping\ClassMetadata::IDGENERATOR_ASSIGNED) {
-            $id = $cm->getIdentifierValues($object);
-            if (!$id) {
-                throw new \Exception("no id");
-            }
-        }
+        $id = Id\IdGenerator::get($cm->idGenerator)->generate($object, $cm, $this->dm);
 
         $oid = \spl_object_hash($object);
         $this->scheduledInsertions[$oid] = $object;

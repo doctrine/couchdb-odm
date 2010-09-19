@@ -73,6 +73,13 @@ class UnitOfWorkTest extends CouchDBTestCase
 
     public function testScheduleInsert_ForUuidGenerator_QueriesUuidGenerator()
     {
+        $client = $this->getMock('Doctrine\ODM\CouchDB\Http\Client', array('request'));
+        $client->expects($this->once())
+               ->method('request')
+               ->with($this->equalTo('GET'), $this->equalTo('/_uuids'))
+               ->will($this->returnValue(new \Doctrine\ODM\CouchDB\HTTP\Response(200, array(), '{"uuids":["4db492fb9e96682601d3f62b0797a8c0","c3cee9c45f2fc2a3803ed26fdbceb3b4","691f868266b6b45a867bfcb4b41a694e","e2c4783e9ff922eefe869998a01828b2"]}')));
+        $this->dm->getConfiguration()->setHttpClient($client);
+
         $object = new UoWUser();
         $object->username = "bar";
 
@@ -81,6 +88,7 @@ class UnitOfWorkTest extends CouchDBTestCase
         $this->uow->scheduleInsert($object);
 
         $this->assertNotNull($object->id);
+        $this->assertEquals('e2c4783e9ff922eefe869998a01828b2', $object->id);
     }
 
     public function testSCheduleInsert_IdentityMapObject_ThrowsException()
