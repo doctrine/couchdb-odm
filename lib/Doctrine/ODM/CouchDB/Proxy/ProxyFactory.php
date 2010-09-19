@@ -41,7 +41,7 @@ class ProxyFactory
     /** The namespace that contains all proxy classes. */
     private $proxyNamespace;
     /** The directory that contains all proxy classes. */
-    private $_proxyDir;
+    private $proxyDir;
 
     /**
      * Initializes a new instance of the <tt>ProxyFactory</tt> class that is

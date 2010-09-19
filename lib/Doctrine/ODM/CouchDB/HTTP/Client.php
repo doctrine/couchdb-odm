@@ -59,7 +59,7 @@ abstract class Client
      * Set option value
      *
      * Set the value for an connection option. Throws an
-     * phpillowOptionException for unknown options.
+     * InvalidArgumentException for unknown options.
      * 
      * @param string $option 
      * @param mixed $value 
@@ -88,7 +88,7 @@ abstract class Client
      * Perform a request to the server and return the result
      *
      * Perform a request to the server and return the result converted into a
-     * phpillowResponse object. If you do not expect a JSON structure, which
+     * Response object. If you do not expect a JSON structure, which
      * could be converted in such a response object, set the fourth parameter to
      * true, and you get a response object retuerned, containing the raw body.
      *
@@ -96,7 +96,7 @@ abstract class Client
      * @param string $path
      * @param string $data
      * @param bool $raw
-     * @return phpillowResponse
+     * @return Response
      */
     abstract public function request( $method, $path, $data = null, $raw = false );
 }

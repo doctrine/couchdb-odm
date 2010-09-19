@@ -29,8 +29,26 @@ class Configuration
         $this->options['databaseName'] = $name;
     }
 
+    public function setProxyDir($directory)
+    {
+        $this->options['proxydir'] = $directory;
+    }
+
+    public function getProxyDir()
+    {
+        if (!isset($this->options['proxydir'])) {
+            $this->options['proxydir'] = \sys_get_temp_dir();
+        }
+
+        return $this->options['proxydir'];
+    }
+
     public function newDocumentManager()
     {
+        if (!isset($this->options['httpclient'])) {
+            $this->options['httpclient'] = new HTTP\SocketClient();
+        }
+
         return new DocumentManager($this);
     }
 }
