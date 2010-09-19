@@ -17,7 +17,7 @@ class UnitOfWorkTest extends CouchDBTestCase
         $this->uow = new UnitOfWork($this->dm);
 
         $metadata = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata('Doctrine\Tests\ODM\CouchDB\UoWUser');
-        $metadata->mapProperty(array('name' => 'id', 'type' => 'string', 'id' => true));
+        $metadata->mapId(array('name' => 'id'));
         $metadata->mapProperty(array('name' => 'username', 'type' => 'string'));
         $metadata->idGenerator = \Doctrine\ODM\CouchDB\Mapping\ClassMetadata::IDGENERATOR_ASSIGNED;
 

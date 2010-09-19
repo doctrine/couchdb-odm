@@ -21,10 +21,10 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
      */
     public function testMapId($cm)
     {
-        $cm->mapProperty(array('name' => 'id', 'id' => true));
+        $cm->mapId(array('name' => 'id'));
 
         $this->assertTrue(isset($cm->properties['id']));
-        $this->assertEquals(array('name' => 'id', 'id' => true, 'type' => 'string', 'resultkey' => 'id'), $cm->properties['id']);
+        $this->assertEquals(array('name' => 'id', 'resultkey' => '_id', 'type' => 'string'), $cm->properties['id']);
 
         $this->assertEquals('id', $cm->identifier);
 

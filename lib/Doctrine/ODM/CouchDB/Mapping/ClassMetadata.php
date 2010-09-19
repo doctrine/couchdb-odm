@@ -27,6 +27,15 @@ class ClassMetadata
         $this->reflClass = new \ReflectionClass($name);
     }
 
+    public function mapId($mapping)
+    {
+        $mapping['resultkey'] = '_id';
+        $mapping['type'] = 'string'; // TODO: Really?
+        $this->mapProperty($mapping);
+
+        $this->identifier = $mapping['name'];
+    }
+
     public function mapProperty($mapping)
     {
         if (!isset($mapping['resultkey'])) {
@@ -37,10 +46,6 @@ class ClassMetadata
             $mapping['type'] = "string";
         }
         $this->properties[$mapping['name']] = $mapping;
-
-        if (isset($mapping['id'])) {
-            $this->identifier = $mapping['name'];
-        }
 
         $this->reflProps[$mapping['name']] = $this->reflClass->getProperty($mapping['name']);
         $this->reflProps[$mapping['name']]->setAccessible(true);
