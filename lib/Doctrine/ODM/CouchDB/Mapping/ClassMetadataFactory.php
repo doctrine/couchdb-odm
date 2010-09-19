@@ -6,9 +6,16 @@ class ClassMetadataFactory
 {
     private $metadatas = array();
 
-    public function setMetadataFor(ClassMetadata $metadata)
+    /**
+     *
+     * @param ClassMetadata $metadata
+     * @param string $name
+     */
+    public function setMetadataFor(ClassMetadata $metadata, $name = null)
     {
-        $this->metadatas[$metadata->name] = $metadata;
+        $name = $name ?: $metadata->name;
+
+        $this->metadatas[$name] = $metadata;
     }
 
     public function hasMetadataFor($class)

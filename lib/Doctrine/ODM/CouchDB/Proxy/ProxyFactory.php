@@ -86,7 +86,7 @@ class ProxyFactory
         }
 
         if ( ! $this->dm->getMetadataFactory()->hasMetadataFor($fqn)) {
-            $this->dm->getMetadataFactory()->setMetadataFor($this->dm->getClassMetadata($className));
+            $this->dm->getMetadataFactory()->setMetadataFor($this->dm->getClassMetadata($className), $fqn);
         }
 
         /**

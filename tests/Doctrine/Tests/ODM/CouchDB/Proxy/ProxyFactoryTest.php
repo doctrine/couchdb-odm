@@ -63,6 +63,8 @@ class ProxyFactoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCase
 
         $proxy = $this->proxyFactory->getProxy($modelClass, $identifier);
 
+        $this->assertType('Doctrine\ODM\CouchDB\Proxy\Proxy', $proxy);
+
         $proxy->getDescription();
     }
 
