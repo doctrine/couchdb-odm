@@ -15,6 +15,7 @@ class Configuration
 
     public function getHttpClient()
     {
+        // TODO: automatically set a client if non is set
         return $this->options['httpclient'];
     }
 
