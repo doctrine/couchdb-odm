@@ -67,7 +67,7 @@ class DocumentManager
 
     public function flush()
     {
-        
+        $this->unitOfWork->flush(); // todo: rename commit
     }
 
     /**
@@ -76,5 +76,11 @@ class DocumentManager
     public function getUnitOfWork()
     {
         return $this->unitOfWork;
+    }
+
+    public function clear()
+    {
+        // Todo: Do a real delegated clear?
+        $this->unitOfWork = new UnitOfWork($this);
     }
 }

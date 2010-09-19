@@ -130,8 +130,19 @@ class UnitOfWork
 
     public function flush()
     {
-        foreach ($this->scheduledInsertions AS $entity) {
-            
+        /* @var $client Client */
+        $client = $this->dm->getConfiguration()->getHttpClient();
+
+        foreach ($this->scheduledInsertions AS $document) {
+            $data = array('doctrine_metadata' => array('type' => get_class($document)));
+            $cm = $this->dm->getClassMetadata(get_class($document));
+            foreach ($cm->reflProps AS $name => $reflProp) {
+                /* @var $reflProp ReflectionProperty */
+                // TODO: Type casting here
+                $data[$cm->properties[$name]['resultkey']] = $reflProp->getValue($document);
+            }
+
+            $response = $client->request('POST', '/' . $this->dm->getConfiguration()->getDatabaseName(), json_encode($data));
         }
     }
 

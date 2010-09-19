@@ -162,7 +162,7 @@ class BasicDocumentPersister
     protected function processResponseBody(array $responseBody)
     {
         if (!isset($responseBody['doctrine_metadata'])) {
-            throw new Exception("Illegal Doctrine Entity, cannot hydrate (yet)!");
+            throw new \Exception("Illegal Doctrine Entity, cannot hydrate (yet)!");
         }
         $type = $responseBody['doctrine_metadata']['type'];
         $class = $this->dm->getClassMetadata($type);
