@@ -19,7 +19,12 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $this->assertEquals(201, $resp->status);
 
         $data = json_encode(
-                array('_id' => "1", 'username' => 'lsmith', 'doctrine_metadata' => array('type' => 'Doctrine\Tests\ODM\CouchDB\Functional\User')));
+            array(
+                '_id' => "1",
+                'username' => 'lsmith',
+                'doctrine_metadata' => array('type' => 'Doctrine\Tests\ODM\CouchDB\Functional\User')
+            )
+        );
         $resp = $httpClient->request('PUT', '/' . $database . '/1', $data);
         $this->assertEquals(201, $resp->status);
 
@@ -60,6 +65,39 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
 
         $this->assertNotNull($userNew, "Have to hydrate user object!");
         $this->assertEquals($user->id, $userNew->id);
+        $this->assertEquals($user->username, $userNew->username);
+    }
+
+    public function testDelete()
+    {
+        $user = $this->dm->find(1);
+
+        $this->dm->remove($user);
+        $this->dm->flush();
+        $this->dm->clear();
+
+        $userRemoved = $this->dm->find(1);
+
+        $this->assertNull($userRemoved, "Have to delete user object!");
+    }
+
+    public function testUpdate()
+    {
+        $user = new User();
+        $user->id = "myuser-1234";
+        $user->username = "test";
+
+        $this->dm->persist($user);
+        $this->dm->flush();
+        $this->dm->clear();
+
+        $user->username = "test2";
+
+        $this->dm->flush();
+        $this->dm->clear();
+
+        $userNew = $this->dm->find($user->id);
+
         $this->assertEquals($user->username, $userNew->username);
     }
 }
