@@ -155,14 +155,15 @@ class BasicDocumentPersister
      * lazy-loading (not DQL).
      *
      * @param array $responseBody The response body to process.
-     * @return array A tuple where the first value is the actual type of the document and
-     *               the second value the prepared data of the document (a map from field
-     *               names to values).
+     * @return array A tuple where the first value is an instance of
+     *               Doctrine\ODM\CouchDB\Mapping\ClassMetadata and the
+     *              second value the prepared data of the document
+     *              (a map from field names to values).
      */
     protected function processResponseBody(array $responseBody)
     {
         if (!isset($responseBody['doctrine_metadata'])) {
-            throw new \Exception("Illegal Doctrine Entity, cannot hydrate (yet)!");
+            throw new \InvalidArgumentException("Missing Doctrine metadata in the Document, cannot hydrate (yet)!");
         }
         $type = $responseBody['doctrine_metadata']['type'];
         $class = $this->dm->getClassMetadata($type);
@@ -172,7 +173,6 @@ class BasicDocumentPersister
             // TODO: Check how ORM does this? Method or public property?
             if (isset($class->resultKeyProperties[$resultKey])) {
                 $property = $class->resultKeyProperties[$resultKey];
-                // TODO: type conversion should probably be handled in the UnitOfWork
                 $data[$property] = $value;
             }
         }

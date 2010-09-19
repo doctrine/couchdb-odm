@@ -93,7 +93,8 @@ class UnitOfWork
      */
     public function getDocumentPersister()
     {
-        if ( $this->persister === null) {
+        // TODO do we need to support multiple persister?
+        if ($this->persister === null) {
             $this->persister = new Persisters\BasicDocumentPersister($this->dm);
         }
         return $this->persister;
@@ -142,7 +143,8 @@ class UnitOfWork
                 $data[$cm->properties[$name]['resultkey']] = $reflProp->getValue($document);
             }
 
-            $response = $client->request('POST', '/' . $this->dm->getConfiguration()->getDatabaseName(), json_encode($data));
+            $documentPath = '/' . urlencode($this->dm->getConfiguration()->getDatabaseName());
+            $response = $client->request('POST', $documentPath , json_encode($data));
         }
     }
 
