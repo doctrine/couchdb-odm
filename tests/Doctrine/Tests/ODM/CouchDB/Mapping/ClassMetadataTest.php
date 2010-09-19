@@ -51,6 +51,30 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
     /**
      * @depends testMapProperty
      */
+    public function testMapPropertyWithoutNameThrowsException($cm)
+    {
+        $this->setExpectedException('Doctrine\ODM\CouchDB\Mapping\MappingException');
+
+        $cm->mapProperty(array());
+
+        return $cm;
+    }
+
+    /**
+     * @depends testMapProperty
+     */
+    public function testMapUnknownPropertyThrowsReflectionException($cm)
+    {
+        $this->setExpectedException('ReflectionException');
+
+        $cm->mapProperty(array('name' => 'foobar'));
+        
+        return $cm;
+    }
+
+    /**
+     * @depends testMapProperty
+     */
     public function testReflectionProperties($cm)
     {
         $this->assertType('ReflectionProperty', $cm->reflProps['username']);
@@ -77,6 +101,26 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
 
         $this->assertEquals(array('name' => 'username', 'type' => 'string', 'resultkey' => 'username'), $cm->properties['username']);
     }
+
+    /**
+     * @param ClassMetadata $cm
+     * @depends testClassName
+     */
+    public function testMapAssociationManyToOne($cm)
+    {
+        $cm->mapManyToOne(array('name' => 'address', 'targetDocument' => 'Doctrine\Tests\ODM\CouchDB\Mapping\Address'));
+
+        $this->assertTrue(isset($cm->associations['address']), "No 'address' in associations map.");
+        $this->assertEquals(array(
+            'name' => 'address',
+            'targetDocument' => 'Doctrine\Tests\ODM\CouchDB\Mapping\Address',
+            'sourceDocument' => 'Doctrine\Tests\ODM\CouchDB\Mapping\User',
+            'isOwning' => true,
+            'type' => ClassMetadata::MANY_TO_ONE,
+        ), $cm->associations['address']);
+
+        return $cm;
+    }
 }
 
 class User
@@ -86,4 +130,11 @@ class User
     public $username;
 
     public $created;
+
+    public $address;
+}
+
+class Address
+{
+    public $id;
 }
