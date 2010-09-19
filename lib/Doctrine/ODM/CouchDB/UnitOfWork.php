@@ -142,7 +142,7 @@ class UnitOfWork
                 $data[$cm->properties[$name]['resultkey']] = $reflProp->getValue($document);
             }
 
-            $response = $client->request('POST', '/' . $this->dm->getConfiguration()->getDatabaseName(), json_encode($data));
+            $response = $this->dm->getCouchDBClient()->postDocument($data);
         }
     }
 

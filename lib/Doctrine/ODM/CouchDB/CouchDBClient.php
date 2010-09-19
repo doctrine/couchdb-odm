@@ -35,4 +35,34 @@ class CouchDBClient
 
         return $response->body['uuids'];
     }
+
+    /**
+     * @param  string $id
+     * @return Response
+     */
+    public function findDocument($id)
+    {
+        $documentPath = '/' . $this->config->getDatabaseName() . '/' . urlencode($id);
+        return $this->config->getHttpClient()->request( 'GET', $documentPath );
+    }
+
+    /**
+     * @param array $data
+     * @return Response
+     */
+    public function postDocument(array $data)
+    {
+        return $this->config->getHttpClient()
+                            ->request('POST', '/' . $this->config->getDatabaseName() , json_encode($data));
+    }
+
+    public function putDocument(array $data, $id, $rev = null)
+    {
+        
+    }
+
+    public function deleteDocument($id, $rev)
+    {
+
+    }
 }

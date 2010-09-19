@@ -17,9 +17,9 @@ class BasicDocumentPersister
     /**
      * The underlying HTTP Connection of the used DocumentManager.
      *
-     * @var Doctrine\ODM\CouchDB\HTTP\Client $httpClient
+     * @var Doctrine\ODM\CouchDB\CouchDBClient
      */
-    private $httpClient;
+    private $couchClient;
 
     /**
      * The documentManager instance.
@@ -31,9 +31,7 @@ class BasicDocumentPersister
     public function __construct(DocumentManager $dm)
     {
         $this->dm = $dm;
-        $this->database = $this->dm->getConfiguration()->getDatabaseName();
-        // TODO: add a wrapper here that knows the database and makes it easy to construct CouchDB REST requests
-        $this->httpClient = $this->dm->getConfiguration()->getHttpClient();
+        $this->couchClient = $dm->getCouchDBClient();
     }
 
     /**
@@ -108,9 +106,7 @@ class BasicDocumentPersister
      */
     public function load($id, $document = null, $assoc = null, array $hints = array())
     {
-        // TODO: what structure should criteria have? for now assume its a plain CouchDB document id as a string
-        $documentPath = '/' . urlencode($this->database) . '/' . urlencode($id);
-        $response = $this->httpClient->request( 'GET', $documentPath );
+        $response = $this->couchClient->findDocument($id);
         return $this->createDocument($response, $document, $hints);
     }
 
