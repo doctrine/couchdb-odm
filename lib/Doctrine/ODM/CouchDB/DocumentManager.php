@@ -26,11 +26,23 @@ class DocumentManager
      */
     private $couchClient = null;
 
+    private $proxyFactory = null;
+
     public function __construct(Configuration $config)
     {
         $this->config = $config;
         $this->metadataFactory = new ClassMetadataFactory();
         $this->unitOfWork = new UnitOfWork($this);
+        // TODO: Add configuration!
+        $this->proxyFactory = new Proxy\ProxyFactory($this, $this->config->getProxyDir(), 'MyProxies', true);
+    }
+
+    /**
+     * @return ClassMetadataFactory
+     */
+    public function getMetadataFactory()
+    {
+        return $this->metadataFactory;
     }
 
     /**
@@ -82,6 +94,28 @@ class DocumentManager
     public function remove($object)
     {
         $this->unitOfWork->scheduleRemove($object);
+    }
+
+    /**
+     * Gets a reference to the entity identified by the given type and identifier
+     * without actually loading it, if the entity is not yet loaded.
+     *
+     * @param string $documentName The name of the entity type.
+     * @param mixed $identifier The entity identifier.
+     * @return object The entity reference.
+     */
+    public function getReference($documentName, $identifier)
+    {
+        $class = $this->metadataFactory->getMetadataFor(ltrim($documentName, '\\'));
+
+        // Check identity map first, if its already in there just return it.
+        if ($document = $this->unitOfWork->tryGetById($identifier)) {
+            return $document;
+        }
+        $document = $this->proxyFactory->getProxy($class->name, $identifier);
+        $this->unitOfWork->registerManaged($document, $identifier, null);
+
+        return $document;
     }
 
     public function flush()

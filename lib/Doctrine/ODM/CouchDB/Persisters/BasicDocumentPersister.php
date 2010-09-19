@@ -125,8 +125,9 @@ class BasicDocumentPersister
         }
 
         list($class, $data) = $this->processResponseBody($response->body);
+        $hints = array('refresh' => true);
 
-        return $this->dm->getUnitOfWork()->createDocument($class->name, $data, $response->body["_id"], $response->body["_rev"]);
+        return $this->dm->getUnitOfWork()->createDocument($class->name, $data, $response->body["_id"], $response->body["_rev"], $hints);
     }
 
     /**

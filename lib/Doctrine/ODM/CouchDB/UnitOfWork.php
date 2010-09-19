@@ -71,18 +71,18 @@ class UnitOfWork
      * @param array $data
      * @param string $id
      * @param string $rev
+     * @param array $hints
      * @return object
      */
-    public function createDocument($class, $data, $id, $rev = null)
+    public function createDocument($class, $data, $id, $rev = null, array &$hints = array())
     {
         $metadata = $this->dm->getClassMetadata($class);
 
-        $overrideLocalValues = true;
         if (isset($this->identityMap[$id])) {
             $doc = $this->identityMap[$id];
             $overrideLocalValues = false;
 
-            if ($doc instanceof Proxy && $doc->__isInitialized__) {
+            if ( ($doc instanceof Proxy && !$doc->__isInitialized__) || isset($hints['refresh'])) {
                 $overrideLocalValues = true;
                 $oid = spl_object_hash($doc);
             }
@@ -94,6 +94,7 @@ class UnitOfWork
             $this->documentState[$oid] = self::STATE_MANAGED;
             $this->documentIdentifiers[$oid] = $id;
             $this->documentRevisions[$oid] = $rev;
+            $overrideLocalValues = true;
         }
 
         if ($overrideLocalValues) {
@@ -240,6 +241,7 @@ class UnitOfWork
         $this->documentState[$oid] = self::STATE_MANAGED;
         $this->documentIdentifiers[$oid] = $identifier;
         $this->documentRevisions[$oid] = $revision;
+        $this->identityMap[$identifier] = $document;
     }
 
     /**
@@ -251,7 +253,7 @@ class UnitOfWork
      * @return mixed Returns the entity with the specified identifier if it exists in
      *               this UnitOfWork, FALSE otherwise.
      */
-    public function tryGetById($id, $rootClassName)
+    public function tryGetById($id)
     {
         if (isset($this->identityMap[$id])) {
             return $this->identityMap[$id];
