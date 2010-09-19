@@ -6,9 +6,9 @@ class FindDocumentTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTest
 {
     public function testFindById()
     {
-        $database = 'doctrine_find_id_test';
-
-        $httpClient = new \Doctrine\ODM\CouchDB\HTTP\SocketClient();
+        $database = $this->getTestDatabase();
+        $httpClient = $this->getHttpClient();
+        
         $httpClient->request('DELETE', '/' . $database);
         $resp = $httpClient->request('PUT', '/' . $database);
         $this->assertEquals(201, $resp->status);

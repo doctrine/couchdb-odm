@@ -1,1 +1,5 @@
-<phpunit bootstrap="./Doctrine/Tests/ODM/CouchDB/TestInit.php" />
+<phpunit bootstrap="./Doctrine/Tests/ODM/CouchDB/TestInit.php">
+    <php>
+        <var name="DOCTRINE_COUCHDB_DATABASE" value="doctrine_test_database" />
+    </php>
+</phpunit>

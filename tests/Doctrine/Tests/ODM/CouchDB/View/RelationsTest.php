@@ -6,7 +6,7 @@ use Doctrine\ODM\CouchDB\HTTP\SocketClient;
 use Doctrine\ODM\CouchDB\View\Relations;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 
-class RelationsTest extends CouchDBTestCase
+class RelationsTest extends CouchDBFunctionalTestCase
 {
     private $dm;
     private $uow;
@@ -15,7 +15,7 @@ class RelationsTest extends CouchDBTestCase
     {
         $config = new \Doctrine\ODM\CouchDB\Configuration();
         $config->setHttpClient( new SocketClient() );
-        $config->setDatabaseName( "doctrine_odm_test" );
+        $config->setDatabaseName( $this->getTestDatabase() );
 
         $this->dm = $config->newDocumentManager();
     }
@@ -26,12 +26,12 @@ class RelationsTest extends CouchDBTestCase
 
         // Force empty test database
         try {
-            $db->request( 'DELETE', '/doctrine_odm_test' );
+            $db->request( 'DELETE', '/' . $this->getTestDatabase() . '' );
         } catch ( \Exception $e ) { /* Irrelevant exception */ }
-        $db->request( 'PUT', '/doctrine_odm_test' );
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '' );
 
         // Create some "interesting" documents
-        $response = $db->request( 'PUT', '/doctrine_odm_test/doc_a', json_encode( array(
+        $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '/doc_a', json_encode( array(
             "_id" => "doc_a",
             "doctrine_metadata" => array(
                 "type" => "type_a",
@@ -41,7 +41,7 @@ class RelationsTest extends CouchDBTestCase
                 ),
             ),
         ) ) );
-        $response = $db->request( 'PUT', '/doctrine_odm_test/doc_b', json_encode( array(
+        $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '/doc_b', json_encode( array(
             "_id" => "doc_b",
             "doctrine_metadata" => array(
                 "type" => "type_b",
@@ -50,14 +50,14 @@ class RelationsTest extends CouchDBTestCase
                 ),
             ),
         ) ) );
-        $response = $db->request( 'PUT', '/doctrine_odm_test/doc_c', json_encode( array(
+        $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '/doc_c', json_encode( array(
             "_id" => "doc_c",
             "doctrine_metadata" => array(
                 "type" => "type_c",
                 "relations" => array(),
             ),
         ) ) );
-        $response = $db->request( 'PUT', '/doctrine_odm_test/doc_d', json_encode( array(
+        $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '/doc_d', json_encode( array(
             "_id" => "doc_d",
             "doctrine_metadata" => array(
                 "type" => "type_c",

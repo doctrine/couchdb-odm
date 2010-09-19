@@ -4,7 +4,7 @@ namespace Doctrine\Tests\ODM\CouchDB\HTTP;
 
 use Doctrine\ODM\CouchDB\HTTP;
 
-class StreamClientTestCase extends \PHPUnit_Framework_TestCase
+class StreamClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 {
     /**
      * Return test suite
@@ -38,7 +38,7 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
 
         try
         {
-            $response = $db->request( 'GET', '/doctrine_odm_test' );
+            $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '' );
             $this->fail( 'Expected HTTP\HTTPException.' );
         }
         catch ( HTTP\HTTPException $e )
@@ -46,8 +46,8 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
             $this->assertTrue(
                 // Message depends on whether the internal stream wrapper or 
                 // the curlwrappers are used
-                $e->getMessage() === 'Could not connect to server at 127.0.0.1:12345: \'0: fopen(http://127.0.0.1:12345/doctrine_odm_test): failed to open stream: operation failed\'' ||
-                $e->getMessage() === 'Could not connect to server at 127.0.0.1:12345: \'0: fopen(http://127.0.0.1:12345/doctrine_odm_test): failed to open stream: Connection refused\''
+                $e->getMessage() === 'Could not connect to server at 127.0.0.1:12345: \'0: fopen(http://127.0.0.1:12345/'.$this->getTestDatabase().'): failed to open stream: operation failed\'' ||
+                $e->getMessage() === 'Could not connect to server at 127.0.0.1:12345: \'0: fopen(http://127.0.0.1:12345/'.$this->getTestDatabase().'): failed to open stream: Connection refused\''
             );
         }
     }
@@ -58,10 +58,10 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
 
         // Remove maybe existing database
         try {
-            $response = $db->request( 'DELETE', '/doctrine_odm_test' );
+            $response = $db->request( 'DELETE', '/' . $this->getTestDatabase() . '' );
         } catch ( \Exception $e ) { /* Irrelevant exception */ }
 
-        $response = $db->request( 'PUT', '/doctrine_odm_test' );
+        $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '' );
 
         $this->assertTrue(
             $response instanceof HTTP\Response
@@ -80,7 +80,7 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
     {
         $db = new HTTP\StreamClient();
 
-        $response = $db->request( 'PUT', '/doctrine_odm_test' );
+        $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '' );
         $this->assertTrue(
             $response instanceof HTTP\ErrorResponse
         );
@@ -121,7 +121,7 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
     {
         $db = new HTTP\StreamClient();
 
-        $response = $db->request( 'PUT', '/doctrine_odm_test/123', '{"_id":"123","data":"Foo"}' );
+        $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '/123', '{"_id":"123","data":"Foo"}' );
 
         $this->assertTrue(
             $response instanceof HTTP\Response
@@ -140,8 +140,8 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
     {
         $db = new HTTP\StreamClient();
 
-        $response = $db->request( 'PUT', '/doctrine_odm_test/123', '{"_id":"123","data":"Foo"}' );
-        $response = $db->request( 'GET', '/doctrine_odm_test/_all_docs' );
+        $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '/123', '{"_id":"123","data":"Foo"}' );
+        $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/_all_docs' );
 
         $this->assertTrue(
             $response instanceof HTTP\Response
@@ -165,8 +165,8 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
     {
         $db = new HTTP\StreamClient();
 
-        $response = $db->request( 'PUT', '/doctrine_odm_test/123', '{"_id":"123","data":"Foo"}' );
-        $response = $db->request( 'GET', '/doctrine_odm_test/123' );
+        $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '/123', '{"_id":"123","data":"Foo"}' );
+        $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/123' );
 
         $this->assertTrue(
             $response instanceof HTTP\Response
@@ -193,7 +193,7 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
     {
         $db = new HTTP\StreamClient();
 
-        $response = $db->request( 'GET', '/doctrine_odm_test/not_existant' );
+        $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/not_existant' );
         $this->assertTrue(
             $response instanceof HTTP\ErrorResponse
         );
@@ -216,10 +216,10 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
         $db = new HTTP\StreamClient();
 
         try {
-            $response = $db->request( 'DELETE', '/doctrine_odm_test' );
+            $response = $db->request( 'DELETE', '/' . $this->getTestDatabase() . '' );
         } catch ( \Exception $e ) { /* Ignore */ }
 
-        $response = $db->request( 'GET', '/doctrine_odm_test/not_existant' );
+        $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/not_existant' );
         $this->assertTrue(
             $response instanceof HTTP\ErrorResponse
         );
@@ -241,7 +241,7 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
     {
         $db = new HTTP\StreamClient();
 
-        $response = $db->request( 'DELETE', '/doctrine_odm_test/not_existant' );
+        $response = $db->request( 'DELETE', '/' . $this->getTestDatabase() . '/not_existant' );
         $this->assertTrue(
             $response instanceof HTTP\ErrorResponse
         );
@@ -263,12 +263,12 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
     {
         $db = new HTTP\StreamClient();
 
-        $db->request( 'PUT', '/doctrine_odm_test' );
-        $db->request( 'PUT', '/doctrine_odm_test/123', '{"_id":"123","data":"Foo"}' );
-        $response = $db->request( 'GET', '/doctrine_odm_test/123' );
-        $db->request( 'DELETE', '/doctrine_odm_test/123?rev=' . $response->body['_rev'] );
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '' );
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '/123', '{"_id":"123","data":"Foo"}' );
+        $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/123' );
+        $db->request( 'DELETE', '/' . $this->getTestDatabase() . '/123?rev=' . $response->body['_rev'] );
 
-        $response = $db->request( 'GET', '/doctrine_odm_test/123' );
+        $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/123' );
         $this->assertTrue(
             $response instanceof HTTP\ErrorResponse
         );
@@ -290,7 +290,7 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
     {
         $db = new HTTP\StreamClient();
 
-        $response = $db->request( 'DELETE', '/doctrine_odm_test' );
+        $response = $db->request( 'DELETE', '/' . $this->getTestDatabase() . '' );
 
         $this->assertTrue(
             $response instanceof HTTP\Response
@@ -310,7 +310,7 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
         $db = new HTTP\StreamClient();
 
         try {
-            $db->request( 'PUT', '/doctrine_odm_test' );
+            $db->request( 'PUT', '/' . $this->getTestDatabase() . '' );
         } catch ( \Exception $e ) { /* Ignore */ }
         $response = $db->request( 'GET', '/_all_dbs' );
 
@@ -335,12 +335,12 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
         $db = new HTTP\StreamClient();
         $db->setOption( 'keep-alive', false );
 
-        $db->request( 'PUT', '/doctrine_odm_test/123', '{"_id":"123","data":"Foo"}' );
-        $db->request( 'PUT', '/doctrine_odm_test/456', '{"_id":"456","data":"Foo"}' );
-        $db->request( 'PUT', '/doctrine_odm_test/789', '{"_id":"789","data":"Foo"}' );
-        $db->request( 'PUT', '/doctrine_odm_test/012', '{"_id":"012","data":"Foo"}' );
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '/123', '{"_id":"123","data":"Foo"}' );
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '/456', '{"_id":"456","data":"Foo"}' );
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '/789', '{"_id":"789","data":"Foo"}' );
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '/012', '{"_id":"012","data":"Foo"}' );
 
-        $response = $db->request( 'GET', '/doctrine_odm_test/_all_docs' );
+        $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/_all_docs' );
 
         $this->assertTrue(
             $response instanceof HTTP\Response
@@ -360,12 +360,12 @@ class StreamClientTestCase extends \PHPUnit_Framework_TestCase
         $db = new HTTP\StreamClient();
         $db->setOption( 'keep-alive', true );
 
-        $db->request( 'PUT', '/doctrine_odm_test/123', '{"_id":"123","data":"Foo"}' );
-        $db->request( 'PUT', '/doctrine_odm_test/456', '{"_id":"456","data":"Foo"}' );
-        $db->request( 'PUT', '/doctrine_odm_test/789', '{"_id":"789","data":"Foo"}' );
-        $db->request( 'PUT', '/doctrine_odm_test/012', '{"_id":"012","data":"Foo"}' );
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '/123', '{"_id":"123","data":"Foo"}' );
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '/456', '{"_id":"456","data":"Foo"}' );
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '/789', '{"_id":"789","data":"Foo"}' );
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '/012', '{"_id":"012","data":"Foo"}' );
 
-        $response = $db->request( 'GET', '/doctrine_odm_test/_all_docs' );
+        $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/_all_docs' );
 
         $this->assertTrue(
             $response instanceof HTTP\Response

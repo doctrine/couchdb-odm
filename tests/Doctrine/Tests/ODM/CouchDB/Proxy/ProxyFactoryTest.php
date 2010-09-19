@@ -81,7 +81,7 @@ class UnitOfWorkMock extends \Doctrine\ODM\CouchDB\UnitOfWork
         $this->persisterMock = $persisterMock;
     }
 
-    public function getDocumentPersister($class)
+    public function getDocumentPersister()
     {
         return $this->persisterMock;
     }
