@@ -2,6 +2,8 @@
 
 namespace Doctrine\ODM\CouchDB;
 
+use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
+
 class UnitOfWork
 {
     const STATE_NEW = 1;
@@ -39,11 +41,6 @@ class UnitOfWork
      */
     private $documentRevisions = array();
 
-    /**
-     * @var array
-     */
-    private $scheduledInsertions = array();
-
     private $documentState = array();
 
     private $originalData = array();
@@ -51,6 +48,8 @@ class UnitOfWork
     private $documentChangesets = array();
 
     /**
+     * Contrary to the ORM, CouchDB only knows "updates". The question is wheater a revion exists (Real update vs insert).
+     *
      * @var array
      */
     private $scheduledUpdates = array();
@@ -134,15 +133,11 @@ class UnitOfWork
             throw new \Exception("Object is already managed!");
         }
 
-        $cm = $this->dm->getClassMetadata(get_class($object));
+        $class = $this->dm->getClassMetadata(get_class($object));
 
-        $id = Id\IdGenerator::get($cm->idGenerator)->generate($object, $cm, $this->dm);
+        $id = Id\IdGenerator::get($class->idGenerator)->generate($object, $class, $this->dm);
 
-        $oid = \spl_object_hash($object);
-        $this->scheduledInsertions[$oid] = $object;
-        $this->documentIdentifiers[$oid] = $id;
-        $this->documentRevisions[$oid] = null;
-        $this->identityMap[$id] = $object;
+        $this->registerManaged($object, $id, null);
     }
 
     public function scheduleRemove($object)
@@ -162,19 +157,37 @@ class UnitOfWork
 
     private function detectChangedDocuments()
     {
-        foreach ($this->identityMap AS $id => $object) {
-            $state = $this->getDocumentState($object);
+        foreach ($this->identityMap AS $id => $document) {
+            $state = $this->getDocumentState($document);
             if ($state == self::STATE_MANAGED) {
-                $cm = $this->dm->getClassMetadata(get_class($object));
-                $data = array();
-                foreach ($cm->reflProps AS $propName => $reflProp) {
-                    $data[$propName] = $reflProp->getValue($object);
-                }
-                $oid = \spl_object_hash($object);
-                if (\array_diff($data, $this->originalData[$oid])) {
-                    $this->documentChangesets[$oid] = $data;
-                    $this->scheduledUpdates[] = $object;
-                }
+                $class = $this->dm->getClassMetadata(get_class($document));
+                $this->computeChangeSet($class, $document);
+            }
+        }
+    }
+
+    public function computeChangeSet(ClassMetadata $class, $document)
+    {
+        $oid = \spl_object_hash($document);
+        $actualData = array();
+        foreach ($class->reflProps AS $propName => $reflProp) {
+            $actualData[$propName] = $reflProp->getValue($document);
+            // TODO: ORM transforms arrays and collections into persistent collections
+        }
+
+        if (!isset($this->originalData[$oid])) {
+            // Entity is New and should be inserted
+            $this->originalData[$oid] = $actualData;
+
+            $this->documentChangesets[$oid] = $actualData;
+            $this->scheduledUpdates[] = $document;
+        } else {
+            // Entity is "fully" MANAGED: it was already fully persisted before
+            // and we have a copy of the original data
+
+            if (array_diff($actualData, $this->originalData[$oid])) {
+                $this->documentChangesets[$oid] = $actualData;
+                $this->scheduledUpdates[] = $document;
             }
         }
     }
@@ -198,41 +211,30 @@ class UnitOfWork
                       $this->documentState[$oid]);
             }
         }
-
-        foreach ($this->scheduledInsertions AS $document) {
-            $data = array('doctrine_metadata' => array('type' => get_class($document)));
-            $cm = $this->dm->getClassMetadata(get_class($document));
-            foreach ($cm->reflProps AS $name => $reflProp) {
-                /* @var $reflProp ReflectionProperty */
-                // TODO: Type casting here
-                $data[$cm->properties[$name]['resultkey']] = $reflProp->getValue($document);
-            }
-
-            $response = $couchClient->postDocument($data);
-            if ($response->status === 201 && $response->body['ok'] == true) {
-                $oid = spl_object_hash($document);
-                $this->documentRevisions[$oid] = $response->body['rev'];
-            }
-        }
-
         foreach ($this->scheduledUpdates AS $document) {
             $oid = spl_object_hash($document);
+            $data = array();
+            $class = $this->dm->getClassMetadata(get_class($document));
+            foreach ($this->documentChangesets[$oid] AS $k => $v) {
+                $data[$class->properties[$k]['resultkey']] = $v;
+            }
+            $data['doctrine_metadata'] = array('type' => get_class($document));
 
-            $data = array('doctrine_metadata' => array('type' => get_class($document)));
-            $cm = $this->dm->getClassMetadata(get_class($document));
-            foreach ($cm->reflProps AS $name => $reflProp) {
-                /* @var $reflProp ReflectionProperty */
-                // TODO: Type casting here
-                $data[$cm->properties[$name]['resultkey']] = $reflProp->getValue($document);
+            if (isset($this->documentRevisions[$oid])) {
+                $response = $couchClient->putDocument($data, $this->documentIdentifiers[$oid], $this->documentRevisions[$oid]);
+            } else {
+                $response = $couchClient->postDocument($data);
             }
 
-            $response = $couchClient->putDocument($data, $this->documentIdentifiers[$oid], $this->documentRevisions[$oid]);
-
-            if ($response->status === 200 && $response->body['ok'] == true) {
+            if ( ($response->status === 200 || $response->status == 201) && $response->body['ok'] == true) {
                 $this->documentRevisions[$oid] = $response->body['rev'];
             } else {
                 $errors[] = $document;
             }
+        }
+
+        if (count($errors)) {
+            throw new \Exception("Errors happend: " . count($errors));
         }
     }
 

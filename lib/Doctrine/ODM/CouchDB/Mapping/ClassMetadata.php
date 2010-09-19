@@ -16,7 +16,7 @@ class ClassMetadata
 
     public $name;
 
-    public $idGenerator = self::IDGENERATOR_ASSIGNED;
+    public $idGenerator = self::IDGENERATOR_UUID;
 
     public $properties = array();
     public $resultKeyProperties = array();
