@@ -11,6 +11,15 @@
 * consider moving the HTTP classes out of the CouchDB namespace
 * plenty of TODO's noted through out the source code
 
+# Use cases
+
+* load document (done)
+* insert document (done)
+* update document
+* delete document
+* lazy load related document
+* annotation/xml/yml metadata definition support
+
 # Hackaton Discussions: CouchDB + Doctrine
 
 ##Problem 1: Query API
