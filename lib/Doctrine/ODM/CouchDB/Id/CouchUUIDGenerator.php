@@ -16,8 +16,8 @@ class CouchUUIDGenerator extends IdGenerator
             $this->uuids = $dm->getCouchDBClient()->getUuids(20);
         }
 
-        $id =  array (0 => array_pop($this->uuids));
-        $cm->reflProps[$cm->identifier[0]]->setValue($document, $id[0]);
+        $id =  array_pop($this->uuids);
+        $cm->reflProps[$cm->identifier]->setValue($document, $id);
         return $id;
     }
 }

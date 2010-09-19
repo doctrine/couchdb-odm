@@ -17,7 +17,7 @@ class ClassMetadata
     public $reflClass = null;
     public $reflProps = array();
 
-    public $identifier = array();
+    public $identifier = null;
 
     public $prototype = null;
 
@@ -39,7 +39,7 @@ class ClassMetadata
         $this->properties[$mapping['name']] = $mapping;
 
         if (isset($mapping['id'])) {
-            $this->identifier[] = $mapping['name'];
+            $this->identifier = $mapping['name'];
         }
 
         $this->reflProps[$mapping['name']] = $this->reflClass->getProperty($mapping['name']);
@@ -73,13 +73,6 @@ class ClassMetadata
      */
     public function getIdentifierValues($doc)
     {
-        $id = array();
-        foreach ($this->identifier as $idProperty) {
-            $value = $this->reflProps[$idProperty]->getValue($doc);
-            if ($value !== null) {
-                $id[$idProperty] = $value;
-            }
-        }
-        return $id;
+        return $value = $this->reflProps[$this->identifier]->getValue($doc);
     }
 }

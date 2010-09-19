@@ -43,7 +43,12 @@ class CouchDBClient
     public function findDocument($id)
     {
         $documentPath = '/' . $this->config->getDatabaseName() . '/' . urlencode($id);
-        return $this->config->getHttpClient()->request( 'GET', $documentPath );
+        $response =  $this->config->getHttpClient()->request( 'GET', $documentPath );
+
+        if ($response->status == 404) {
+            throw new DocumentNotFoundException($id);
+        }
+        return $response;
     }
 
     /**
@@ -58,11 +63,17 @@ class CouchDBClient
 
     public function putDocument(array $data, $id, $rev = null)
     {
-        
+        $data['_id'] = $id;
+        if ($rev) {
+            $data['_rev'] = $rev;
+        }
+        return $this->config->getHttpClient()
+                    ->request('PUT', '/' . $this->config->getDatabaseName() . '/' . $id , json_encode($data));
     }
 
     public function deleteDocument($id, $rev)
     {
-
+        return $this->config->getHttpClient()
+                    ->request('DELETE', '/' . $this->config->getDatabaseName() . '/' . $id . '?rev=' . $rev);
     }
 }

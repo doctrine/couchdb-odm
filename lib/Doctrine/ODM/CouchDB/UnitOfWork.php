@@ -32,9 +32,23 @@ class UnitOfWork
     /**
      * @var array
      */
+    private $documentIdentifiers = array();
+
+    /**
+     * @var array
+     */
+    private $documentRevisions = array();
+
+    /**
+     * @var array
+     */
     private $scheduledInsertions = array();
 
     private $documentState = array();
+
+    private $originalData = array();
+
+    private $documentChangesets = array();
 
     /**
      * @var array
@@ -51,39 +65,52 @@ class UnitOfWork
         $this->dm = $dm;
     }
 
-    public function createDocument($class, $data)
+    /**
+     * Create a document given class, data and the doc-id and revision
+     * @param string $class
+     * @param array $data
+     * @param string $id
+     * @param string $rev
+     * @return object
+     */
+    public function createDocument($class, $data, $id, $rev = null)
     {
         $metadata = $this->dm->getClassMetadata($class);
 
-        $idHash = array();
-        foreach ($metadata->identifier AS $idProperty) {
-            $idHash[] = $data[$idProperty];
-        }
-        $idHash = implode(" ", $idHash);
-
         $overrideLocalValues = true;
-        if (isset($this->identityMap[$metadata->name][$idHash])) {
-            $doc = $this->identityMap[$metadata->name][$idHash];
+        if (isset($this->identityMap[$id])) {
+            $doc = $this->identityMap[$id];
             $overrideLocalValues = false;
 
             if ($doc instanceof Proxy && $doc->__isInitialized__) {
                 $overrideLocalValues = true;
+                $oid = spl_object_hash($doc);
             }
         } else {
             $doc = $metadata->newInstance();
-            $this->identityMap[$metadata->name][$idHash] = $doc;
+            $this->identityMap[$id] = $doc;
+
+            $oid = spl_object_hash($doc);
+            $this->documentState[$oid] = self::STATE_MANAGED;
+            $this->documentIdentifiers[$oid] = $id;
+            $this->documentRevisions[$oid] = $rev;
         }
 
         if ($overrideLocalValues) {
             foreach ($metadata->reflProps AS $prop => $reflProp) {
                 /* @var $reflProp ReflectionProperty */
-                $reflProp->setValue($doc, $data[$prop]);
+                $value = $data[$prop];
+                $reflProp->setValue($doc, $value);
+                $this->originalData[$oid][$prop] = $value;
             }
         }
 
-        $this->registerManaged($doc, null);
-
         return $doc;
+    }
+
+    public function getOriginalData($object)
+    {
+        return $this->originalData[\spl_object_hash($object)];
     }
 
     /**
@@ -111,12 +138,15 @@ class UnitOfWork
 
         $oid = \spl_object_hash($object);
         $this->scheduledInsertions[$oid] = $object;
+        $this->documentIdentifiers[$oid] = $id;
+        $this->documentRevisions[$oid] = null;
+        $this->identityMap[$id] = $object;
     }
 
     public function scheduleRemove($object)
     {
         $oid = \spl_object_hash($object);
-        $this->scheduledInsertions[$oid] = $object;
+        $this->scheduledRemovals[$oid] = $object;
     }
 
     public function getDocumentState($object)
@@ -128,10 +158,44 @@ class UnitOfWork
         return self::STATE_NEW;
     }
 
+    private function detectChangedDocuments()
+    {
+        foreach ($this->identityMap AS $id => $object) {
+            $state = $this->getDocumentState($object);
+            if ($state == self::STATE_MANAGED) {
+                $cm = $this->dm->getClassMetadata(get_class($object));
+                $data = array();
+                foreach ($cm->reflProps AS $propName => $reflProp) {
+                    $data[$propName] = $reflProp->getValue($object);
+                }
+                $oid = \spl_object_hash($object);
+                if (\array_diff($data, $this->originalData[$oid])) {
+                    $this->documentChangesets[$oid] = $data;
+                    $this->scheduledUpdates[] = $object;
+                }
+            }
+        }
+    }
+
     public function flush()
     {
-        /* @var $client Client */
-        $client = $this->dm->getConfiguration()->getHttpClient();
+        $this->detectChangedDocuments();
+
+        /* @var $client CouchDBClient */
+        $couchClient = $this->dm->getCouchDBClient();
+        $errors = array();
+
+        foreach ($this->scheduledRemovals AS $document) {
+            $oid = spl_object_hash($document);
+            $response = $couchClient->deleteDocument($this->documentIdentifiers[$oid], $this->documentRevisions[$oid]);
+
+            if ($response->status == 200) {
+                unset($this->identityMap[$this->documentIdentifiers[$oid]],
+                      $this->documentIdentifiers[$oid],
+                      $this->documentRevisions[$oid],
+                      $this->documentState[$oid]);
+            }
+        }
 
         foreach ($this->scheduledInsertions AS $document) {
             $data = array('doctrine_metadata' => array('type' => get_class($document)));
@@ -142,13 +206,40 @@ class UnitOfWork
                 $data[$cm->properties[$name]['resultkey']] = $reflProp->getValue($document);
             }
 
-            $response = $this->dm->getCouchDBClient()->postDocument($data);
+            $response = $couchClient->postDocument($data);
+            if ($response->status === 201 && $response->body['ok'] == true) {
+                $oid = spl_object_hash($document);
+                $this->documentRevisions[$oid] = $response->body['rev'];
+            }
+        }
+
+        foreach ($this->scheduledUpdates AS $document) {
+            $oid = spl_object_hash($document);
+
+            $data = array('doctrine_metadata' => array('type' => get_class($document)));
+            $cm = $this->dm->getClassMetadata(get_class($document));
+            foreach ($cm->reflProps AS $name => $reflProp) {
+                /* @var $reflProp ReflectionProperty */
+                // TODO: Type casting here
+                $data[$cm->properties[$name]['resultkey']] = $reflProp->getValue($document);
+            }
+
+            $response = $couchClient->putDocument($data, $this->documentIdentifiers[$oid], $this->documentRevisions[$oid]);
+
+            if ($response->status === 200 && $response->body['ok'] == true) {
+                $this->documentRevisions[$oid] = $response->body['rev'];
+            } else {
+                $errors[] = $document;
+            }
         }
     }
 
-    public function registerManaged($document, $identifier)
+    public function registerManaged($document, $identifier, $revision)
     {
-        $this->documentState[spl_object_hash($document)] = self::STATE_MANAGED;
+        $oid = spl_object_hash($document);
+        $this->documentState[$oid] = self::STATE_MANAGED;
+        $this->documentIdentifiers[$oid] = $identifier;
+        $this->documentRevisions[$oid] = $revision;
     }
 
     /**
@@ -162,10 +253,36 @@ class UnitOfWork
      */
     public function tryGetById($id, $rootClassName)
     {
-        $idHash = implode(' ', (array) $id);
-        if (isset($this->identityMap[$rootClassName][$idHash])) {
-            return $this->identityMap[$rootClassName][$idHash];
+        if (isset($this->identityMap[$id])) {
+            return $this->identityMap[$id];
         }
         return false;
+    }
+
+    /**
+     * Get the CouchDB revision of the document that was current upon retrieval.
+     *
+     * @throws CouchDBException
+     * @param  object $object
+     * @return string
+     */
+    public function getDocumentRevision($object)
+    {
+        $oid = \spl_object_hash($object);
+        if (array_key_exists($oid, $this->documentRevisions)) {
+            return $this->documentRevisions[$oid];
+        } else {
+            throw new CouchDBException("Document is not managed and has no revision.");
+        }
+    }
+
+    public function getDocumentIdentifier($object)
+    {
+        $oid = \spl_object_hash($object);
+        if (isset($this->documentIdentifiers[$oid])) {
+            return $this->documentIdentifiers[$oid];
+        } else {
+            throw new CouchDBException("Document is not managed and has no identifier.");
+        }
     }
 }

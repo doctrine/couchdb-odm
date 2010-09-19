@@ -26,7 +26,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
         $this->assertTrue(isset($cm->properties['id']));
         $this->assertEquals(array('name' => 'id', 'id' => true, 'type' => 'string', 'resultkey' => 'id'), $cm->properties['id']);
 
-        $this->assertEquals(array('id'), $cm->identifier);
+        $this->assertEquals('id', $cm->identifier);
 
         return $cm;
     }

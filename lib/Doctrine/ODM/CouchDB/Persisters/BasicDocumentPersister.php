@@ -126,20 +126,7 @@ class BasicDocumentPersister
 
         list($class, $data) = $this->processResponseBody($response->body);
 
-        if ($document !== null) {
-            $hints[Query::HINT_REFRESH] = true;
-            $id = array();
-            if ($class->isIdentifierComposite) {
-                foreach ($class->identifier as $fieldName) {
-                    $id[$fieldName] = $data[$fieldName];
-                }
-            } else {
-                $id = array($class->identifier[0] => $data[$class->identifier[0]]);
-            }
-            $this->dm->getUnitOfWork()->registerManaged($document, $id, $data);
-        }
-
-        return $this->dm->getUnitOfWork()->createDocument($class->name, $data, $hints);
+        return $this->dm->getUnitOfWork()->createDocument($class->name, $data, $response->body["_id"], $response->body["_rev"]);
     }
 
     /**

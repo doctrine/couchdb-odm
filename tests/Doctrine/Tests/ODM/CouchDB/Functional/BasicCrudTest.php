@@ -62,6 +62,29 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $this->assertEquals($user->id, $userNew->id);
         $this->assertEquals($user->username, $userNew->username);
     }
+
+    public function testUpdate()
+    {
+        $user = $this->dm->find(1);
+        $user->username = "new-name";
+
+        $this->dm->flush();
+        $this->dm->clear();
+
+        $newUser = $this->dm->find(1);
+        $this->assertEquals('new-name', $newUser->username);
+    }
+
+    public function testRemove()
+    {
+        $user = $this->dm->find(1);
+
+        $this->dm->remove($user);
+        $this->dm->flush();
+
+        $this->setExpectedException('Doctrine\ODM\CouchDB\DocumentNotFoundException');
+        $newUser = $this->dm->find(1);
+    }
 }
 
 class User
