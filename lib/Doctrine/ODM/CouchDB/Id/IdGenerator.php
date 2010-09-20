@@ -35,6 +35,13 @@ abstract class IdGenerator
         return self::$generators[$generatorType];
     }
 
+    static public function reset($generatorType)
+    {
+        if (isset(self::$generators[$generatorType])) {
+            unset(self::$generators[$generatorType]);
+        }
+    }
+
     /**
      * @param object $document
      * @param ClassMetadata $cm

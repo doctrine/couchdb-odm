@@ -4,6 +4,7 @@ namespace Doctrine\Tests\ODM\CouchDB;
 
 use Doctrine\ODM\CouchDB\UnitOfWork;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
+use Doctrine\ODM\CouchDB\Id\idGenerator;
 
 class UnitOfWorkTest extends CouchDBTestCase
 {
@@ -77,7 +78,13 @@ class UnitOfWorkTest extends CouchDBTestCase
 
     public function testScheduleInsert_ForUuidGenerator_QueriesUuidGenerator()
     {
-        $uuidResponse = new \Doctrine\ODM\CouchDB\HTTP\Response(200, array(), '{"uuids":["4db492fb9e96682601d3f62b0797a8c0","c3cee9c45f2fc2a3803ed26fdbceb3b4","691f868266b6b45a867bfcb4b41a694e","e2c4783e9ff922eefe869998a01828b2"]}');
+        $uuids = array(
+            "4db492fb9e96682601d3f62b0797a8c0",
+            "c3cee9c45f2fc2a3803ed26fdbceb3b4",
+            "691f868266b6b45a867bfcb4b41a694e",
+            "e2c4783e9ff922eefe869998a01828b2"
+        );
+        $uuidResponse = new \Doctrine\ODM\CouchDB\HTTP\Response(200, array(), json_encode(array('uuids' => $uuids)));
         
         $client = $this->getMock('Doctrine\ODM\CouchDB\Http\Client', array('request'));
         $client->expects($this->once())
@@ -90,11 +97,12 @@ class UnitOfWorkTest extends CouchDBTestCase
         $object->username = "bar";
 
         $this->dm->getClassMetadata(get_class($object))->idGenerator = ClassMetadata::IDGENERATOR_UUID;
-
+        // TODO: should this really be necessary?
+        idGenerator::reset(ClassMetadata::IDGENERATOR_UUID);
         $this->uow->scheduleInsert($object);
 
         $this->assertNotNull($object->id);
-        $this->assertEquals('e2c4783e9ff922eefe869998a01828b2', $object->id);
+        $this->assertEquals(end($uuids), $object->id);
     }
 
     public function testScheduleInsert_IdentityMapObject_ThrowsException()
