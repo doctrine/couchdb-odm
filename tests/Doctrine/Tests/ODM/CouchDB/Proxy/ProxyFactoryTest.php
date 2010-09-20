@@ -44,16 +44,15 @@ class ProxyFactoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCase
 
     public function testProxyGeneration()
     {
-        /** @todo id string only */
-        $identifier = array('id' => 'SomeUUID');
-
         $proxyClass = 'Proxies\DoctrineTestsModelsECommerceECommerceFeatureProxy';
         $modelClass = 'Doctrine\Tests\Models\ECommerce\ECommerceFeature';
+
+        $query = array('documentName' => '\\'.$modelClass, 'id' => 'SomeUUID');
 
         $persisterMock = $this->getMock('Doctrine\ODM\CouchDB\Persisters\BasicDocumentPersister', array('load'), array(), '', false);
         $persisterMock->expects($this->atLeastOnce())
                       ->method('load')
-                      ->with($this->equalTo($identifier), $this->isInstanceOf($proxyClass))
+                      ->with($this->equalTo($query), $this->isInstanceOf($proxyClass))
                       ->will($this->returnValue(new \stdClass())); // fake return of entity instance
 
         $uowMock = new UnitOfWorkMock($persisterMock);
@@ -61,7 +60,7 @@ class ProxyFactoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCase
 
         $this->proxyFactory = new ProxyFactory($dmMock, __DIR__ . '/generated', 'Proxies', true);
 
-        $proxy = $this->proxyFactory->getProxy($modelClass, $identifier);
+        $proxy = $this->proxyFactory->getProxy($modelClass, $query['id'], $query['documentName']);
 
         $this->assertType('Doctrine\ODM\CouchDB\Proxy\Proxy', $proxy);
 
