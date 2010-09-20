@@ -118,8 +118,7 @@ class BasicDocumentPersister
         $uow = $this->dm->getUnitOfWork();
 
         $errors = array();
-        foreach ($this->queuedInserts as $document) {
-            $oid = spl_object_hash($document);
+        foreach ($this->queuedInserts as $oid => $document) {
             $data = array();
             $class = $this->dm->getClassMetadata(get_class($document));
             foreach ($uow->getDocumentChangeSet($document) AS $k => $v) {
