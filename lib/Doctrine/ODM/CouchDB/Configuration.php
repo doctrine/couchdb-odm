@@ -24,6 +24,9 @@ class Configuration
 
     public function getDatabaseName()
     {
+        if (!isset($this->options['databaseName'])) {
+            return null;
+        }
         return $this->options['databaseName'];
     }
 

@@ -198,7 +198,7 @@ class UnitOfWork
 
         // TODO move all interactions with CouchDB to the persister, see issue #1
         /* @var $client CouchDBClient */
-        $couchClient = $this->dm->getCouchDBClient();
+        $couchClient = $this->getDocumentPersister();
         $errors = array();
 
         foreach ($this->scheduledRemovals AS $document) {

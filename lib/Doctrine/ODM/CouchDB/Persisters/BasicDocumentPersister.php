@@ -15,11 +15,18 @@ class BasicDocumentPersister
     private $class;
 
     /**
+     * Name of the CouchDB database
+     *
+     * @string
+     */
+    private $databaseName;
+
+    /**
      * The underlying HTTP Connection of the used DocumentManager.
      *
-     * @var Doctrine\ODM\CouchDB\CouchDBClient
+     * @var Doctrine\ODM\CouchDB\HTTP\Client
      */
-    private $couchClient;
+    private $httpClient;
 
     /**
      * The documentManager instance.
@@ -31,7 +38,59 @@ class BasicDocumentPersister
     public function __construct(DocumentManager $dm)
     {
         $this->dm = $dm;
-        $this->couchClient = $dm->getCouchDBClient();
+        // TODO how to handle the case when the database name changes?
+        $this->databaseName = $dm->getConfiguration()->getDatabaseName();
+        $this->httpClient = $dm->getConfiguration()->getHttpClient();
+    }
+
+    public function getUuids($count = 1)
+    {
+        $count = (int)$count;
+        $response = $this->httpClient->request('GET', '/_uuids?count=' . $count);
+
+        if ($response->status != 200) {
+            throw new \Doctrine\ODM\CouchDB\CouchDBException("Could not retrieve UUIDs from CouchDB.");
+        }
+
+        return $response->body['uuids'];
+    }
+
+    /**
+     * @param  string $id
+     * @return Response
+     */
+    public function findDocument($id)
+    {
+        $documentPath = '/' . $this->databaseName . '/' . urlencode($id);
+        $response =  $this->httpClient->request( 'GET', $documentPath );
+
+        if ($response->status == 404) {
+            throw new \Doctrine\ODM\CouchDB\DocumentNotFoundException($id);
+        }
+        return $response;
+    }
+
+    /**
+     * @param array $data
+     * @return Response
+     */
+    public function postDocument(array $data)
+    {
+        return $this->httpClient->request('POST', '/' . $this->databaseName , json_encode($data));
+    }
+
+    public function putDocument(array $data, $id, $rev = null)
+    {
+        $data['_id'] = $id;
+        if ($rev) {
+            $data['_rev'] = $rev;
+        }
+        return $this->httpClient->request('PUT', '/' . $this->databaseName . '/' . $id , json_encode($data));
+    }
+
+    public function deleteDocument($id, $rev)
+    {
+        return $this->httpClient->request('DELETE', '/' . $this->databaseName . '/' . $id . '?rev=' . $rev);
     }
 
     /**
@@ -109,7 +168,7 @@ class BasicDocumentPersister
         try {
             // TODO add ability to handle other criteria as an array structure
             // like view support with view parameters and couchdb parameters (include_docs, limit, sort direction)
-            $response = $this->couchClient->findDocument($criteria);
+            $response = $this->findDocument($criteria);
             return $this->createDocument($response, $document, $hints);
         } catch(\Doctrine\ODM\CouchDB\DocumentNotFoundException $e) {
             return null;

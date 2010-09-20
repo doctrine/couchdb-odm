@@ -21,11 +21,6 @@ class DocumentManager
      */
     private $unitOfWork = null;
 
-    /**
-     * @var CouchDBClient
-     */
-    private $couchClient = null;
-
     private $proxyFactory = null;
 
     public function __construct(Configuration $config)
@@ -43,17 +38,6 @@ class DocumentManager
     public function getMetadataFactory()
     {
         return $this->metadataFactory;
-    }
-
-    /**
-     * @return CouchDBClient
-     */
-    public function getCouchDBClient()
-    {
-        if ($this->couchClient === null) {
-            $this->couchClient = new CouchDBClient($this->config);
-        }
-        return $this->couchClient;
     }
 
     /**

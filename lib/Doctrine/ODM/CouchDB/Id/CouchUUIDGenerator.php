@@ -13,7 +13,7 @@ class CouchUUIDGenerator extends IdGenerator
     {
         if (count($this->uuids) == 0) {
             // TODO: Allow to configure UUID Generation number
-            $this->uuids = $dm->getCouchDBClient()->getUuids(20);
+            $this->uuids = $dm->getUnitOfWork()->getDocumentPersister()->getUuids(20);
         }
 
         $id =  array_pop($this->uuids);

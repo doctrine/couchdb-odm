@@ -32,17 +32,6 @@ class DocumentManagerTest extends CouchDBTestCase
         $this->assertType('Doctrine\ODM\CouchDB\Mapping\ClassMetadata', $dm->getClassMetadata('stdClass'));
     }
 
-    public function testGetCouchDBClient()
-    {
-        $config = new \Doctrine\ODM\CouchDB\Configuration();
-        $config->setHttpClient(new \Doctrine\ODM\CouchDB\HTTP\SocketClient());
-        $dm = $config->newDocumentManager();
-
-        $client = $dm->getCouchDBClient();
-
-        $this->assertType('Doctrine\ODM\CouchDB\CouchDBClient', $client);
-    }
-
     public function testCreateNewDocumentManagerWithoutHttpClientUsingSocketDefault()
     {
         $config = new \Doctrine\ODM\CouchDB\Configuration();
