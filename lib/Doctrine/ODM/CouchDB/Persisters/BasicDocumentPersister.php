@@ -115,6 +115,10 @@ class BasicDocumentPersister
      */
     public function executeInserts()
     {
+        if ( ! $this->queuedInserts) {
+            return;
+        }
+
         $uow = $this->dm->getUnitOfWork();
 
         $errors = array();
@@ -125,6 +129,7 @@ class BasicDocumentPersister
             foreach ($uow->getDocumentChangeSet($document) AS $k => $v) {
                 $data[$class->properties[$k]['resultkey']] = $v;
             }
+            // TODO add metadata writing disabled support
             $data['doctrine_metadata'] = array('type' => get_class($document));
 
             $rev = $uow->getDocumentRevision($document);
@@ -140,6 +145,9 @@ class BasicDocumentPersister
                 $errors[] = $document;
             }
         }
+
+        $this->queuedInserts = array();
+
         return $errors;
     }
 
@@ -162,7 +170,7 @@ class BasicDocumentPersister
     /**
      * Loads an document by a list of field criteria.
      *
-     * @param id $criteria The criteria by which to load the document.
+     * @param array $query The criteria by which to load the document.
      * @param object $document The document to load the data into. If not specified,
      *        a new document is created.
      * @param $assoc The association that connects the document to load to another document, if any.
@@ -170,13 +178,13 @@ class BasicDocumentPersister
      * @return object The loaded and managed document instance or NULL if the document can not be found.
      * @todo Check iddocument map? loadById method? Try to guess whether $criteria is the id?
      */
-    public function load($criteria, $document = null, $assoc = null, array $hints = array())
+    public function load(array $query, $document = null, $assoc = null, array $hints = array())
     {
         try {
-            // TODO add ability to handle other criteria as an array structure
-            // like view support with view parameters and couchdb parameters (include_docs, limit, sort direction)
-            $response = $this->findDocument($criteria);
-            return $this->createDocument($response, $document, $hints);
+            // TODO define a proper query array structure
+            // view support with view parameters and couchdb parameters (include_docs, limit, sort direction)
+            $response = $this->findDocument($query['id']);
+            return $this->createDocument($query['documentName'], $response, $document, $hints);
         } catch(\Doctrine\ODM\CouchDB\DocumentNotFoundException $e) {
             return null;
         }
@@ -190,13 +198,13 @@ class BasicDocumentPersister
      * @param array $hints Hints for document creation.
      * @return object The filled and managed document object or NULL, if the result is empty.
      */
-    private function createDocument($response, $document = null, array $hints = array())
+    private function createDocument($documentName, $response, $document = null, array $hints = array())
     {
         if ($response->status > 400) {
             return null;
         }
 
-        list($class, $data) = $this->processResponseBody($response->body);
+        list($class, $data) = $this->processResponseBody($documentName, $response->body);
         $hints = array('refresh' => true);
 
         return $this->dm->getUnitOfWork()->createDocument($class->name, $data, $response->body["_id"], $response->body["_rev"], $hints);
@@ -216,12 +224,20 @@ class BasicDocumentPersister
      *              second value the prepared data of the document
      *              (a map from field names to values).
      */
-    protected function processResponseBody(array $responseBody)
+    protected function processResponseBody($documentName, array $responseBody)
     {
-        if (!isset($responseBody['doctrine_metadata'])) {
+        if (isset($responseBody['doctrine_metadata'])) {
+            $type = $responseBody['doctrine_metadata']['type'];
+            if(isset($documentName)) {
+                // TODO add (optional?) type validation
+            }
+        } elseif(isset($documentName)) {
+            $type = $documentName;
+            // TODO automatically add metadata if metadata writing is not disabled
+        } else {
             throw new \InvalidArgumentException("Missing Doctrine metadata in the Document, cannot hydrate (yet)!");
         }
-        $type = $responseBody['doctrine_metadata']['type'];
+
         $class = $this->dm->getClassMetadata($type);
 
         $data = array();

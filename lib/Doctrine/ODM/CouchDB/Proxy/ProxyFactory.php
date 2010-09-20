@@ -269,7 +269,7 @@ class <proxyClassName> extends \<className> implements \Doctrine\ODM\CouchDB\Pro
     {
         if (!$this->__isInitialized__ && $this->__doctrineDocumentPersister__) {
             $this->__isInitialized__ = true;
-            if ($this->__doctrineDocumentPersister__->load($this->__doctrineIdentifier__, $this) === null) {
+            if ($this->__doctrineDocumentPersister__->load(array('documentName' => '\<className>', 'id' => $this->__doctrineIdentifier__), $this) === null) {
                 throw new \Doctrine\ODM\CouchDB\DocumentNotFoundException();
             }
             unset($this->__doctrineDocumentPersister__, $this->__doctrineIdentifier__);

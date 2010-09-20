@@ -7,6 +7,7 @@ class ManyToOneAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFuncti
     public function setUp()
     {
         $this->useModelSet('cms');
+        $this->type = 'Doctrine\Tests\Models\CMS\CmsUser';
     }
 
     public function testSaveWithAssociation()
@@ -28,8 +29,8 @@ class ManyToOneAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFuncti
 
         $dm->clear();
 
-        $article = $dm->findById($article->id);
-        $this->assertType('Doctrine\Tests\Models\CMS\CmsUser', $article->user);
+        $article = $dm->find($this->type, $article->id);
+        $this->assertType($this->type, $article->user);
         $this->assertEquals('beberlei', $article->user->username);
     }
 }
