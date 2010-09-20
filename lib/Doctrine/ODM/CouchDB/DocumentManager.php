@@ -81,9 +81,14 @@ class DocumentManager
         return $this->metadataFactory->getMetadataFor($class);
     }
 
-    public function find($id)
+    public function findById($id)
     {
         return $this->unitOfWork->getDocumentPersister()->load($id);
+    }
+
+    public function find()
+    {
+        // TODO implement
     }
 
     public function persist($object)

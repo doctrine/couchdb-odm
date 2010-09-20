@@ -96,7 +96,7 @@ class BasicDocumentPersister
     /**
      * Loads an document by a list of field criteria.
      *
-     * @param string $id The criteria by which to load the document.
+     * @param id $criteria The criteria by which to load the document.
      * @param object $document The document to load the data into. If not specified,
      *        a new document is created.
      * @param $assoc The association that connects the document to load to another document, if any.
@@ -104,10 +104,12 @@ class BasicDocumentPersister
      * @return object The loaded and managed document instance or NULL if the document can not be found.
      * @todo Check iddocument map? loadById method? Try to guess whether $criteria is the id?
      */
-    public function load($id, $document = null, $assoc = null, array $hints = array())
+    public function load($criteria, $document = null, $assoc = null, array $hints = array())
     {
         try {
-            $response = $this->couchClient->findDocument($id);
+            // TODO add ability to handle other criteria as an array structure
+            // like view support with view parameters and couchdb parameters (include_docs, limit, sort direction)
+            $response = $this->couchClient->findDocument($criteria);
             return $this->createDocument($response, $document, $hints);
         } catch(\Doctrine\ODM\CouchDB\DocumentNotFoundException $e) {
             return null;

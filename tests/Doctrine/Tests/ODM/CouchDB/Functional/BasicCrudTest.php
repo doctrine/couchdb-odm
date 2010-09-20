@@ -44,7 +44,7 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
 
     public function testFindById()
     {
-        $user = $this->dm->find(1);
+        $user = $this->dm->findById(1);
 
         $this->assertType('Doctrine\Tests\ODM\CouchDB\Functional\User', $user);
         $this->assertEquals('1', $user->id);
@@ -61,7 +61,7 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $this->dm->flush();
         $this->dm->clear();
 
-        $userNew = $this->dm->find($user->id);
+        $userNew = $this->dm->findById($user->id);
 
         $this->assertNotNull($userNew, "Have to hydrate user object!");
         $this->assertEquals($user->id, $userNew->id);
@@ -70,13 +70,13 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
 
     public function testDelete()
     {
-        $user = $this->dm->find(1);
+        $user = $this->dm->findById(1);
 
         $this->dm->remove($user);
         $this->dm->flush();
         $this->dm->clear();
 
-        $userRemoved = $this->dm->find(1);
+        $userRemoved = $this->dm->findById(1);
 
         $this->assertNull($userRemoved, "Have to delete user object!");
     }
@@ -91,43 +91,43 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $this->dm->flush();
         $this->dm->clear();
 
-        $user = $this->dm->find($user->id);
+        $user = $this->dm->findById($user->id);
         $user->username = "test2";
 
         $this->dm->flush();
         $this->dm->clear();
 
-        $userNew = $this->dm->find($user->id);
+        $userNew = $this->dm->findById($user->id);
 
         $this->assertEquals($user->username, $userNew->username);
     }
     
     public function testUpdate2()
     {
-        $user = $this->dm->find(1);
+        $user = $this->dm->findById(1);
         $user->username = "new-name";
 
         $this->dm->flush();
         $this->dm->clear();
 
-        $newUser = $this->dm->find(1);
+        $newUser = $this->dm->findById(1);
         $this->assertEquals('new-name', $newUser->username);
     }
 
     public function testRemove()
     {
-        $user = $this->dm->find(1);
+        $user = $this->dm->findById(1);
 
         $this->dm->remove($user);
         $this->dm->flush();
 
-        $newUser = $this->dm->find(1);
+        $newUser = $this->dm->findById(1);
         $this->assertNull($newUser);
     }
 
     public function testInsertUpdateMultiple()
     {
-        $user1 = $this->dm->find(1);
+        $user1 = $this->dm->findById(1);
         $user1->username = "new-name";
 
         $user2 = new User();
@@ -143,9 +143,9 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $this->dm->flush();
         $this->dm->clear();
 
-        $pUser1 = $this->dm->find(1);
-        $pUser2 = $this->dm->find('myuser-1111');
-        $pUser3 = $this->dm->find('myuser-2222');
+        $pUser1 = $this->dm->findById(1);
+        $pUser2 = $this->dm->findById('myuser-1111');
+        $pUser3 = $this->dm->findById('myuser-2222');
 
         $this->assertEquals('new-name', $pUser1->username);
         $this->assertEquals('myuser-1111', $pUser2->id);

@@ -28,7 +28,7 @@ class ManyToOneAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFuncti
 
         $dm->clear();
 
-        $article = $dm->find($article->id);
+        $article = $dm->findById($article->id);
         $this->assertType('Doctrine\Tests\Models\CMS\CmsUser', $article->user);
         $this->assertEquals('beberlei', $article->user->username);
     }
