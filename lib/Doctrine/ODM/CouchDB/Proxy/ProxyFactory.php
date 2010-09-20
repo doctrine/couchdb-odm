@@ -247,8 +247,8 @@ class ProxyFactory
     }
 
     /** Proxy class code template */
-    private static $proxyClassTemplate =
-'<?php
+    private static $proxyClassTemplate = <<<'PHP'
+<?php
 
 namespace <namespace>;
 
@@ -282,6 +282,7 @@ class <proxyClassName> extends \<className> implements \Doctrine\ODM\CouchDB\Pro
     {
         <sleepImpl>
     }
-}';
+}
+PHP;
 }
 
