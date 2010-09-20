@@ -15,7 +15,10 @@ class Configuration
 
     public function getHttpClient()
     {
-        // TODO: automatically set a client if non is set
+        if (!isset($this->options['httpclient'])) {
+            $this->options['httpclient'] = new HTTP\SocketClient();
+        }
+
         return $this->options['httpclient'];
     }
 
@@ -45,10 +48,6 @@ class Configuration
 
     public function newDocumentManager()
     {
-        if (!isset($this->options['httpclient'])) {
-            $this->options['httpclient'] = new HTTP\SocketClient();
-        }
-
         return new DocumentManager($this);
     }
 }
