@@ -108,9 +108,9 @@ class UnitOfWork
         return $doc;
     }
 
-    public function getOriginalData($object)
+    public function getOriginalData($document)
     {
-        return $this->originalData[\spl_object_hash($object)];
+        return $this->originalData[\spl_object_hash($document)];
     }
 
     /**
@@ -127,28 +127,28 @@ class UnitOfWork
         return $this->persister;
     }
 
-    public function scheduleInsert($object)
+    public function scheduleInsert($document)
     {
-        if ($this->getDocumentState($object) != self::STATE_NEW) {
+        if ($this->getDocumentState($document) != self::STATE_NEW) {
             throw new \Exception("Object is already managed!");
         }
 
-        $class = $this->dm->getClassMetadata(get_class($object));
+        $class = $this->dm->getClassMetadata(get_class($document));
 
-        $id = Id\IdGenerator::get($class->idGenerator)->generate($object, $class, $this->dm);
+        $id = Id\IdGenerator::get($class->idGenerator)->generate($document, $class, $this->dm);
 
-        $this->registerManaged($object, $id, null);
+        $this->registerManaged($document, $id, null);
     }
 
-    public function scheduleRemove($object)
+    public function scheduleRemove($document)
     {
-        $oid = \spl_object_hash($object);
-        $this->scheduledRemovals[$oid] = $object;
+        $oid = \spl_object_hash($document);
+        $this->scheduledRemovals[$oid] = $document;
     }
 
-    public function getDocumentState($object)
+    public function getDocumentState($document)
     {
-        $oid = \spl_object_hash($object);
+        $oid = \spl_object_hash($document);
         if (isset($this->documentState[$oid])) {
             return $this->documentState[$oid];
         }
@@ -192,51 +192,68 @@ class UnitOfWork
         }
     }
 
+    /**
+     * Gets the changeset for an document.
+     *
+     * @return array
+     */
+    public function getDocumentChangeSet($document)
+    {
+        $oid = spl_object_hash($document);
+        if (isset($this->documentChangesets[$oid])) {
+            return $this->documentChangesets[$oid];
+        }
+        return array();
+    }
+
     public function flush()
     {
         $this->detectChangedDocuments();
 
-        // TODO move all interactions with CouchDB to the persister, see issue #1
-        /* @var $client CouchDBClient */
-        $couchClient = $this->getDocumentPersister();
+        $persister = $this->getDocumentPersister();
         $errors = array();
 
-        foreach ($this->scheduledRemovals AS $document) {
-            $oid = spl_object_hash($document);
-            $response = $couchClient->deleteDocument($this->documentIdentifiers[$oid], $this->documentRevisions[$oid]);
-
-            if ($response->status == 200) {
-                unset($this->identityMap[$this->documentIdentifiers[$oid]],
-                      $this->documentIdentifiers[$oid],
-                      $this->documentRevisions[$oid],
-                      $this->documentState[$oid]);
-            }
+        foreach ($this->scheduledRemovals AS $key => $document) {
+            $persister->delete($document);
+            unset($this->scheduledRemovals[$key]);
+            $this->removeFromIdentityMap($document);
         }
-        foreach ($this->scheduledUpdates AS $document) {
-            $oid = spl_object_hash($document);
-            $data = array();
-            $class = $this->dm->getClassMetadata(get_class($document));
-            foreach ($this->documentChangesets[$oid] AS $k => $v) {
-                $data[$class->properties[$k]['resultkey']] = $v;
-            }
-            $data['doctrine_metadata'] = array('type' => get_class($document));
 
-            if (isset($this->documentRevisions[$oid])) {
-                $response = $couchClient->putDocument($data, $this->documentIdentifiers[$oid], $this->documentRevisions[$oid]);
-            } else {
-                $response = $couchClient->postDocument($data);
-            }
-
-            if ( ($response->status === 200 || $response->status == 201) && $response->body['ok'] == true) {
-                $this->documentRevisions[$oid] = $response->body['rev'];
-            } else {
-                $errors[] = $document;
-            }
+        foreach ($this->scheduledUpdates AS $key => $document) {
+            $persister->addInsert($document);
+            unset($this->scheduledUpdates[$key]);
         }
+
+        $errors = $persister->executeInserts();
 
         if (count($errors)) {
             throw new \Exception("Errors happend: " . count($errors));
         }
+    }
+
+    /**
+     * INTERNAL:
+     * Removes an document from the identity map. This effectively detaches the
+     * document from the persistence management of Doctrine.
+     *
+     * @ignore
+     * @param object $document
+     * @return boolean
+     */
+    public function removeFromIdentityMap($document)
+    {
+        $oid = spl_object_hash($document);
+
+        if (isset($this->identityMap[$this->documentIdentifiers[$oid]])) {
+            unset($this->identityMap[$this->documentIdentifiers[$oid]],
+                  $this->documentIdentifiers[$oid],
+                  $this->documentRevisions[$oid],
+                  $this->documentState[$oid]);
+
+            return true;
+        }
+
+        return false;
     }
 
     public function registerManaged($document, $identifier, $revision)
@@ -269,12 +286,12 @@ class UnitOfWork
      * Get the CouchDB revision of the document that was current upon retrieval.
      *
      * @throws CouchDBException
-     * @param  object $object
+     * @param  object $document
      * @return string
      */
-    public function getDocumentRevision($object)
+    public function getDocumentRevision($document)
     {
-        $oid = \spl_object_hash($object);
+        $oid = \spl_object_hash($document);
         if (array_key_exists($oid, $this->documentRevisions)) {
             return $this->documentRevisions[$oid];
         } else {
@@ -282,9 +299,9 @@ class UnitOfWork
         }
     }
 
-    public function getDocumentIdentifier($object)
+    public function getDocumentIdentifier($document)
     {
-        $oid = \spl_object_hash($object);
+        $oid = \spl_object_hash($document);
         if (isset($this->documentIdentifiers[$oid])) {
             return $this->documentIdentifiers[$oid];
         } else {

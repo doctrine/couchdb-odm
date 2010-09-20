@@ -8,13 +8,6 @@ use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 class BasicDocumentPersister
 {
     /**
-     * Metadata object that describes the mapping of the mapped document class.
-     *
-     * @var Doctrine\ODM\CouchDB\Mapping\ClassMetadata
-     */
-    private $class;
-
-    /**
      * Name of the CouchDB database
      *
      * @string
@@ -34,6 +27,13 @@ class BasicDocumentPersister
      * @var Doctrine\ODM\CouchDB\DocumentManager
      */
     private $dm = null;
+
+    /**
+     * Queued inserts.
+     *
+     * @var array
+     */
+    protected $queuedInserts = array();
 
     public function __construct(DocumentManager $dm)
     {
@@ -101,7 +101,7 @@ class BasicDocumentPersister
      */
     public function addInsert($document)
     {
-        //TODO: implement
+        $this->queuedInserts[spl_object_hash($document)] = $document;
     }
 
     /**
@@ -115,26 +115,32 @@ class BasicDocumentPersister
      */
     public function executeInserts()
     {
-        //TODO: implement
-    }
+        $uow = $this->dm->getUnitOfWork();
 
-    /**
-     * Updates a managed document. The document is updated according to its current changeset
-     * in the running UnitOfWork. If there is no changeset, nothing is updated.
-     *
-     * The data to update is retrieved through {@link _prepareUpdateData}.
-     * Subclasses that override this method are supposed to obtain the update data
-     * in the same way, through {@link _prepareUpdateData}.
-     *
-     * Subclasses are also supposed to take care of versioning when overriding this method,
-     * if necessary. The {@link _updateTable} method can be used to apply the data retrieved
-     * from {@_prepareUpdateData} on the target tables, thereby optionally applying versioning.
-     *
-     * @param object $document The document to update.
-     */
-    public function update($document)
-    {
-        //TODO: implement
+        $errors = array();
+        foreach ($this->queuedInserts as $document) {
+            $oid = spl_object_hash($document);
+            $data = array();
+            $class = $this->dm->getClassMetadata(get_class($document));
+            foreach ($uow->getDocumentChangeSet($document) AS $k => $v) {
+                $data[$class->properties[$k]['resultkey']] = $v;
+            }
+            $data['doctrine_metadata'] = array('type' => get_class($document));
+
+            $rev = $uow->getDocumentRevision($document);
+            if (isset($rev)) {
+                $response = $this->putDocument($data, $uow->getDocumentIdentifier($document), $uow->getDocumentRevision($document));
+            } else {
+                $response = $this->postDocument($data);
+            }
+
+            if ( ($response->status === 200 || $response->status == 201) && $response->body['ok'] == true) {
+                $this->documentRevisions[$oid] = $response->body['rev'];
+            } else {
+                $errors[] = $document;
+            }
+        }
+        return $errors;
     }
 
     /**
@@ -149,7 +155,8 @@ class BasicDocumentPersister
      */
     public function delete($document)
     {
-        //TODO: implement
+        $uow = $this->dm->getUnitOfWork();
+        $this->deleteDocument($uow->getDocumentIdentifier($document), $uow->getDocumentRevision($document));
     }
 
     /**
