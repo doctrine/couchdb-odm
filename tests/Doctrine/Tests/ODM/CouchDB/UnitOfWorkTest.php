@@ -13,8 +13,7 @@ class UnitOfWorkTest extends CouchDBTestCase
 
     public function setUp()
     {
-        $config = new \Doctrine\ODM\CouchDB\Configuration();
-        $this->dm = $config->newDocumentManager();
+        $this->dm = \Doctrine\ODM\CouchDB\DocumentManager::create();
         $this->uow = new UnitOfWork($this->dm);
 
         $metadata = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata('Doctrine\Tests\ODM\CouchDB\UoWUser');

@@ -30,10 +30,9 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $this->assertEquals(201, $resp->status);
 
         $config = new \Doctrine\ODM\CouchDB\Configuration();
-        $config->setHttpClient($httpClient);
-        $config->setDatabaseName($database);
+        $config->setDefaultDB($database);
 
-        $this->dm = $config->newDocumentManager();
+        $this->dm = \Doctrine\ODM\CouchDB\DocumentManager::create($httpClient, $config);
 
         $cmf = $this->dm->getClassMetadataFactory();
         $metadata = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata($this->type);

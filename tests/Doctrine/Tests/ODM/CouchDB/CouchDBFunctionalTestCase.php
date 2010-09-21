@@ -38,11 +38,10 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
         $resp = $httpClient->request('PUT', '/' . $database);
 
         $config = new \Doctrine\ODM\CouchDB\Configuration();
-        $config->setHttpClient($httpClient);
-        $config->setDatabaseName($database);
+        $config->setDefaultDB($database);
         $config->setProxyDir(\sys_get_temp_dir());
 
-        $dm = $config->newDocumentManager();
+        $dm = \Doctrine\ODM\CouchDB\DocumentManager::create($httpClient, $config);
 
         $cmf = $dm->getClassMetadataFactory();
         if ($this->useModelSet == 'cms') {

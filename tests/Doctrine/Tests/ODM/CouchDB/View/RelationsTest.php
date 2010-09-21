@@ -13,11 +13,11 @@ class RelationsTest extends CouchDBFunctionalTestCase
 
     public function setUp()
     {
-        $config = new \Doctrine\ODM\CouchDB\Configuration();
-        $config->setHttpClient( new SocketClient() );
-        $config->setDatabaseName( $this->getTestDatabase() );
 
-        $this->dm = $config->newDocumentManager();
+        $config = new \Doctrine\ODM\CouchDB\Configuration();
+        $config->setDefaultDB( $this->getTestDatabase() );
+
+        $this->dm = \Doctrine\ODM\CouchDB\DocumentManager::create(new SocketClient(), $config);
     }
 
     protected function addTestData()
