@@ -50,7 +50,7 @@ abstract class Handler
             "GET",
             $path = sprintf(
                 "/%s/_design/%s/_view/%s?%s",
-                $this->documentManager->getConfiguration()->getDatabaseName(),
+                $this->documentManager->getConfiguration()->getDBPrefix().$this->documentManager->getConfiguration()->getDefaultDB(),
                 $this->name,
                 $name,
                 http_build_query( array_map( "json_encode", $parameters ) )
@@ -85,7 +85,7 @@ abstract class Handler
             "PUT",
             sprintf(
                 "/%s/_design/%s",
-                $this->documentManager->getConfiguration()->getDatabaseName(),
+                $this->documentManager->getConfiguration()->getDBPrefix().$this->documentManager->getConfiguration()->getDefaultDB(),
                 $this->name
             ),
             json_encode( array(
