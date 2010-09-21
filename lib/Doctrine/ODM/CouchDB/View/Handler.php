@@ -34,7 +34,7 @@ abstract class Handler
     public function __construct(DocumentManager $documentManager, $name)
     {
         $this->documentManager = $documentManager;
-        $this->name            = $name;
+        $this->name = $name;
     }
 
     /**
@@ -57,16 +57,14 @@ abstract class Handler
             )
         );
 
-        if ( $response instanceof ErrorResponse )
-        {
+        if ( $response instanceof ErrorResponse ) {
             // Create view, if it does not exist yet
             $this->createView();
             $response = $handle->request( "GET", $path );
         }
 
         return array_map(
-            function ( $value )
-            {
+            function ( $value ) {
                 return $value['value'];
             },
             $response->body['rows']

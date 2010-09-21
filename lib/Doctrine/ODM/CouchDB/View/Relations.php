@@ -62,40 +62,42 @@ class Relations extends Handler
      */
     protected function getViews()
     {
-        return array(
-            'relations' => array(
-                'map' => 'function (doc)
-{
-    if (doc.doctrine_metadata &&
-        doc.doctrine_metadata.relations)
-    {
+        $mapRelations =  <<<'JS'
+function (doc) {
+    if (doc.doctrine_metadata
+        && doc.doctrine_metadata.relations
+    ) {
         var relations = doc.doctrine_metadata.relations;
-        for ( type in relations )
-        {
-            for ( var i = 0; i < relations[type].length; ++i )
-            {
+        for ( type in relations ) {
+            for ( var i = 0; i < relations[type].length; ++i ) {
                 emit([doc._id, type, relations[type][i]], {"_id": relations[type][i]} );
             }
         }
     }
-}',
-            ),
-            'reverse_relations' => array(
-                'map' => 'function (doc)
+}
+JS;
+        $mapReverseRelations = <<<'JS'
+function (doc)
 {
-    if (doc.doctrine_metadata &&
-        doc.doctrine_metadata.relations)
-    {
+    if (doc.doctrine_metadata
+        && doc.doctrine_metadata.relations
+    ) {
         var relations = doc.doctrine_metadata.relations;
-        for ( type in relations )
-        {
-            for ( var i = 0; i < relations[type].length; ++i )
-            {
+        for ( type in relations ) {
+            for ( var i = 0; i < relations[type].length; ++i ) {
                 emit([relations[type][i], doc.doctrine_metadata.type, doc._id], {"_id": doc._id} );
             }
         }
     }
-}',
+}
+JS;
+
+        return array(
+            'relations' => array(
+                'map' => $mapRelations,
+            ),
+            'reverse_relations' => array(
+                'map' => $mapReverseRelations,
             ),
         );
     }
