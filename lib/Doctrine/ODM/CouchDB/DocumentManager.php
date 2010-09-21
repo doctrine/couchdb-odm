@@ -3,6 +3,7 @@
 namespace Doctrine\ODM\CouchDB;
 
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadataFactory;
+use Doctrine\ODM\CouchDB\HTTP\Client;
 
 class DocumentManager
 {
@@ -23,13 +24,28 @@ class DocumentManager
 
     private $proxyFactory = null;
 
-    public function __construct(Configuration $config)
+    public function __construct(Client $httpClient = null, Configuration $config = null)
     {
-        $this->config = $config;
+        $this->config = $config ? $config : new Configuration();
+        if ($httpClient) {
+            $this->config->setHttpClient($httpClient);
+        }
         $this->metadataFactory = new ClassMetadataFactory();
         $this->unitOfWork = new UnitOfWork($this);
         // TODO: Add configuration!
         $this->proxyFactory = new Proxy\ProxyFactory($this, $this->config->getProxyDir(), 'MyProxies', true);
+    }
+
+    /**
+     * Creates a new Document that operates on the given Mongo connection
+     * and uses the given Configuration.
+     *
+     * @param Doctrine\ODM\CouchDB\HTTP\Client
+     * @param Doctrine\ODM\CouchDB\Configuration $config
+     */
+    public static function create(Client $httpClient = null, Configuration $config = null)
+    {
+        return new DocumentManager($httpClient, $config);
     }
 
     /**

@@ -39,7 +39,7 @@ class BasicDocumentPersister
     {
         $this->dm = $dm;
         // TODO how to handle the case when the database name changes?
-        $this->databaseName = $dm->getConfiguration()->getDatabaseName();
+        $this->databaseName = $dm->getConfiguration()->getDBPrefix().$dm->getConfiguration()->getDefaultDB();
         $this->httpClient = $dm->getConfiguration()->getHttpClient();
     }
 
