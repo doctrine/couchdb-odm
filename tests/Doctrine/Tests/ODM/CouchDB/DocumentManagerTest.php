@@ -27,7 +27,7 @@ class DocumentManagerTest extends CouchDBTestCase
         $dm = \Doctrine\ODM\CouchDB\DocumentManager::create();
 
         $cmf = $dm->getClassMetadataFactory();
-        $cmf->setMetadataFor(new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata('stdClass'));
+        $cmf->setMetadataFor('stdClass', new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata('stdClass'));
 
         $this->assertType('Doctrine\ODM\CouchDB\Mapping\ClassMetadata', $dm->getClassMetadata('stdClass'));
     }

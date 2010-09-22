@@ -46,18 +46,18 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
         $cmf = $dm->getClassMetadataFactory();
         if ($this->useModelSet == 'cms') {
             $cm = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata('Doctrine\Tests\Models\CMS\CmsUser');
-            $cm->mapId(array('name' => 'id'));
-            $cm->mapProperty(array('name' => 'username'));
-            $cm->mapProperty(array('name' => 'name'));
-            $cm->mapProperty(array('name' => 'status'));
-            $cmf->setMetadataFor($cm);
+            $cm->mapField(array('name' => 'id', 'id' => true));
+            $cm->mapField(array('name' => 'username'));
+            $cm->mapField(array('name' => 'name'));
+            $cm->mapField(array('name' => 'status'));
+            $cmf->setMetadataFor('Doctrine\Tests\Models\CMS\CmsUser', $cm);
 
             $cm = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata('Doctrine\Tests\Models\CMS\CmsArticle');
-            $cm->mapId(array('name' => 'id'));
-            $cm->mapProperty(array('name' => 'topic'));
-            $cm->mapProperty(array('name' => 'text'));
+            $cm->mapField(array('name' => 'id', 'id' => true));
+            $cm->mapField(array('name' => 'topic'));
+            $cm->mapField(array('name' => 'text'));
             $cm->mapManyToOne(array('name' => 'user', 'targetDocument' => 'Doctrine\Tests\Models\CMS\CmsUser'));
-            $cmf->setMetadataFor($cm);
+            $cmf->setMetadataFor('Doctrine\Tests\Models\CMS\CmsArticle', $cm);
         }
 
         return $dm;

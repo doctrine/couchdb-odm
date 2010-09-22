@@ -97,10 +97,9 @@ class UnitOfWork
         }
 
         if ($overrideLocalValues) {
-            foreach ($metadata->reflProps AS $prop => $reflProp) {
-                /* @var $reflProp ReflectionProperty */
-                $value = $data[$prop];
-                $reflProp->setValue($doc, $value);
+            foreach ($metadata->reflFields AS $prop => $reflFields) {
+                $value = isset($data[$prop]) ? $data[$prop] : null;
+                $reflFields->setValue($doc, $value);
                 $this->originalData[$oid][$prop] = $value;
             }
         }
@@ -170,7 +169,7 @@ class UnitOfWork
     {
         $oid = \spl_object_hash($document);
         $actualData = array();
-        foreach ($class->reflProps AS $propName => $reflProp) {
+        foreach ($class->reflFields AS $propName => $reflProp) {
             $actualData[$propName] = $reflProp->getValue($document);
             // TODO: ORM transforms arrays and collections into persistent collections
         }

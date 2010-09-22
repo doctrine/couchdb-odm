@@ -8,7 +8,8 @@ class ClassMetadataFactoryTest extends \PHPUnit_Framework_Testcase
 {
     public function testNotMappedThrowsException()
     {
-        $cmf = new ClassMetadataFactory();
+        $dm = \Doctrine\ODM\CouchDB\DocumentManager::create();
+        $cmf = new ClassMetadataFactory($dm);
 
         $this->setExpectedException('Doctrine\ODM\CouchDB\Mapping\MappingException');
         $cmf->getMetadataFor('unknown');
@@ -16,9 +17,11 @@ class ClassMetadataFactoryTest extends \PHPUnit_Framework_Testcase
 
     public function testGetMapping()
     {
+        $dm = \Doctrine\ODM\CouchDB\DocumentManager::create();
         $cm = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata('stdClass');
-        $cmf = new ClassMetadataFactory();
-        $cmf->setMetadataFor($cm);
+
+        $cmf = new ClassMetadataFactory($dm);
+        $cmf->setMetadataFor('stdClass', $cm);
 
         $this->assertSame($cm, $cmf->getMetadataFor('stdClass'));
 

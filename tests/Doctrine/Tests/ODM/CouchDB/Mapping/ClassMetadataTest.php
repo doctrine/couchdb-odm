@@ -8,9 +8,9 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
 {
     public function testClassName()
     {
-        $cm = new ClassMetadata("Doctrine\Tests\ODM\CouchDB\Mapping\User");
+        $cm = new ClassMetadata("Doctrine\Tests\ODM\CouchDB\Mapping\Person");
 
-        $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\User", $cm->name);
+        $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $cm->name);
         $this->assertType('ReflectionClass', $cm->reflClass);
 
         return $cm;
@@ -19,12 +19,12 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
     /**
      * @depends testClassName
      */
-    public function testMapId($cm)
+    public function testMapFieldWithId($cm)
     {
-        $cm->mapId(array('name' => 'id'));
+        $cm->mapField(array('name' => 'id', 'id' => true));
 
-        $this->assertTrue(isset($cm->properties['id']));
-        $this->assertEquals(array('name' => 'id', 'resultkey' => '_id', 'type' => 'string'), $cm->properties['id']);
+        $this->assertTrue(isset($cm->fieldMappings['id']));
+        $this->assertEquals(array('name' => 'id', 'id' => true, 'type' => 'string', 'fieldName' => '_id'), $cm->fieldMappings['id']);
 
         $this->assertEquals('id', $cm->identifier);
 
@@ -32,74 +32,74 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
     }
 
     /**
-     * @depends testMapId
+     * @depends testMapFieldWithId
      */
-    public function testMapProperty($cm)
+    public function testmapField($cm)
     {
-        $cm->mapProperty(array('name' => 'username', 'type' => 'string'));
-        $cm->mapProperty(array('name' => 'created', 'type' => 'datetime'));
+        $cm->mapField(array('name' => 'username', 'type' => 'string'));
+        $cm->mapField(array('name' => 'created', 'type' => 'datetime'));
 
-        $this->assertTrue(isset($cm->properties['username']));
-        $this->assertTrue(isset($cm->properties['created']));
+        $this->assertTrue(isset($cm->fieldMappings['username']));
+        $this->assertTrue(isset($cm->fieldMappings['created']));
 
-        $this->assertEquals(array('name' => 'username', 'type' => 'string', 'resultkey' => 'username'), $cm->properties['username']);
-        $this->assertEquals(array('name' => 'created', 'type' => 'datetime', 'resultkey' => 'created'), $cm->properties['created']);
+        $this->assertEquals(array('name' => 'username', 'type' => 'string', 'fieldName' => 'username'), $cm->fieldMappings['username']);
+        $this->assertEquals(array('name' => 'created', 'type' => 'datetime', 'fieldName' => 'created'), $cm->fieldMappings['created']);
 
         return $cm;
     }
 
     /**
-     * @depends testMapProperty
+     * @depends testmapField
      */
-    public function testMapPropertyWithoutNameThrowsException($cm)
+    public function testmapFieldWithoutNameThrowsException($cm)
     {
         $this->setExpectedException('Doctrine\ODM\CouchDB\Mapping\MappingException');
 
-        $cm->mapProperty(array());
+        $cm->mapField(array());
 
         return $cm;
     }
 
     /**
-     * @depends testMapProperty
+     * @depends testmapField
      */
     public function testMapUnknownPropertyThrowsReflectionException($cm)
     {
         $this->setExpectedException('ReflectionException');
 
-        $cm->mapProperty(array('name' => 'foobar'));
+        $cm->mapField(array('name' => 'foobar'));
         
         return $cm;
     }
 
     /**
-     * @depends testMapProperty
+     * @depends testmapField
      */
     public function testReflectionProperties($cm)
     {
-        $this->assertType('ReflectionProperty', $cm->reflProps['username']);
-        $this->assertType('ReflectionProperty', $cm->reflProps['created']);
+        $this->assertType('ReflectionProperty', $cm->reflFields['username']);
+        $this->assertType('ReflectionProperty', $cm->reflFields['created']);
     }
     
     /**
-     * @depends testMapProperty
+     * @depends testmapField
      */
     public function testNewInstance($cm)
     {
         $instance1 = $cm->newInstance();
         $instance2 = $cm->newInstance();
 
-        $this->assertType('Doctrine\Tests\ODM\CouchDB\Mapping\User', $instance1);
+        $this->assertType('Doctrine\Tests\ODM\CouchDB\Mapping\Person', $instance1);
         $this->assertNotSame($instance1, $instance2);
     }
 
-    public function testMapPropertyWithoutType_DefaultsToString()
+    public function testmapFieldWithoutType_DefaultsToString()
     {
-        $cm = new ClassMetadata("Doctrine\Tests\ODM\CouchDB\Mapping\User");
+        $cm = new ClassMetadata("Doctrine\Tests\ODM\CouchDB\Mapping\Person");
 
-        $cm->mapProperty(array('name' => 'username'));
+        $cm->mapField(array('name' => 'username'));
 
-        $this->assertEquals(array('name' => 'username', 'type' => 'string', 'resultkey' => 'username'), $cm->properties['username']);
+        $this->assertEquals(array('name' => 'username', 'type' => 'string', 'fieldName' => 'username'), $cm->fieldMappings['username']);
     }
 
     /**
@@ -114,7 +114,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
         $this->assertEquals(array(
             'name' => 'address',
             'targetDocument' => 'Doctrine\Tests\ODM\CouchDB\Mapping\Address',
-            'sourceDocument' => 'Doctrine\Tests\ODM\CouchDB\Mapping\User',
+            'sourceDocument' => 'Doctrine\Tests\ODM\CouchDB\Mapping\Person',
             'isOwning' => true,
             'type' => ClassMetadata::MANY_TO_ONE,
         ), $cm->associations['address']);
@@ -123,7 +123,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
     }
 }
 
-class User
+class Person
 {
     public $id;
 

@@ -15,7 +15,7 @@ class AssignedIdGenerator extends IdGenerator
      */
     public function generate($document, ClassMetadata $cm, DocumentManager $dm)
     {
-        $id = $cm->getIdentifierValues($document);
+        $id = $cm->getIdentifierValue($document);
         if (!$id) {
             throw new \Exception("no id");
         }

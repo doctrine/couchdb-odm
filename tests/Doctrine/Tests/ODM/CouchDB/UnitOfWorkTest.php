@@ -13,23 +13,24 @@ class UnitOfWorkTest extends CouchDBTestCase
 
     public function setUp()
     {
+        $this->type = 'Doctrine\Tests\ODM\CouchDB\UoWUser';
         $this->dm = \Doctrine\ODM\CouchDB\DocumentManager::create();
         $this->uow = new UnitOfWork($this->dm);
 
-        $metadata = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata('Doctrine\Tests\ODM\CouchDB\UoWUser');
-        $metadata->mapId(array('name' => 'id'));
-        $metadata->mapProperty(array('name' => 'username', 'type' => 'string'));
+        $metadata = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata($this->type);
+        $metadata->mapField(array('name' => 'id', 'id' => true));
+        $metadata->mapField(array('name' => 'username', 'type' => 'string'));
         $metadata->idGenerator = \Doctrine\ODM\CouchDB\Mapping\ClassMetadata::IDGENERATOR_ASSIGNED;
 
         $cmf = $this->dm->getClassMetadataFactory();
-        $cmf->setMetadataFor($metadata);
+        $cmf->setMetadataFor($this->type, $metadata);
     }
 
     public function testCreateDocument()
     {
-        $user = $this->uow->createDocument('Doctrine\Tests\ODM\CouchDB\UoWUser', array('id' => '1', 'username' => 'foo'), 1, 23);
+        $user = $this->uow->createDocument($this->type, array('id' => '1', 'username' => 'foo'), 1, 23);
 
-        $this->assertType('Doctrine\Tests\ODM\CouchDB\UoWUser', $user);
+        $this->assertType($this->type, $user);
         $this->assertEquals('1', $user->id);
         $this->assertEquals('foo', $user->username);
         $this->assertEquals(UnitOfWork::STATE_MANAGED, $this->uow->getDocumentState($user));
@@ -41,17 +42,17 @@ class UnitOfWorkTest extends CouchDBTestCase
 
     public function testCreateDocument_UseIdentityMap()
     {
-        $user1 = $this->uow->createDocument('Doctrine\Tests\ODM\CouchDB\UoWUser', array('id' => '1', 'username' => 'foo'), 1, 1);
-        $user2 = $this->uow->createDocument('Doctrine\Tests\ODM\CouchDB\UoWUser', array('id' => '1', 'username' => 'foo'), 1, 1);
+        $user1 = $this->uow->createDocument($this->type, array('id' => '1', 'username' => 'foo'), 1, 1);
+        $user2 = $this->uow->createDocument($this->type, array('id' => '1', 'username' => 'foo'), 1, 1);
 
         $this->assertSame($user1, $user2);
     }
 
     public function testTryGetById()
     {
-        $user1 = $this->uow->createDocument('Doctrine\Tests\ODM\CouchDB\UoWUser', array('id' => '1', 'username' => 'foo'), 1, 1);
+        $user1 = $this->uow->createDocument($this->type, array('id' => '1', 'username' => 'foo'), 1, 1);
 
-        $user2 = $this->uow->tryGetById(1, 'Doctrine\Tests\ODM\CouchDB\UoWUser');
+        $user2 = $this->uow->tryGetById(1, $this->type);
 
         $this->assertSame($user1, $user2);
     }
@@ -106,7 +107,7 @@ class UnitOfWorkTest extends CouchDBTestCase
 
     public function testScheduleInsert_IdentityMapObject_ThrowsException()
     {
-        $user1 = $this->uow->createDocument('Doctrine\Tests\ODM\CouchDB\UoWUser', array('id' => '1', 'username' => 'foo'), 1, 1);
+        $user1 = $this->uow->createDocument($this->type, array('id' => '1', 'username' => 'foo'), 1, 1);
 
         $this->setExpectedException("Exception");
 

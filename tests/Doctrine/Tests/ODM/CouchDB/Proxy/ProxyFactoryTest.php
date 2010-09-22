@@ -104,7 +104,8 @@ class DocumentManagerMock extends \Doctrine\ODM\CouchDB\DocumentManager
 
     public function getMetadataFactory()
     {
-        return new \Doctrine\ODM\CouchDB\Mapping\ClassMetadataFactory;
+        $dm = \Doctrine\ODM\CouchDB\DocumentManager::create();
+        return new \Doctrine\ODM\CouchDB\Mapping\ClassMetadataFactory($dm);
     }
 
     public function getUnitOfWork()

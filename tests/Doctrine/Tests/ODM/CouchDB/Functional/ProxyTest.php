@@ -11,6 +11,7 @@ class ProxyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 
     public function setUp()
     {
+        $this->type = 'Doctrine\Tests\ODM\CouchDB\Functional\Article';
         $database = $this->getTestDatabase();
         $httpClient = $this->getHttpClient();
 
@@ -22,7 +23,7 @@ class ProxyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
             '_id' => "1",
             'title' => 'foo',
             'body' => 'bar',
-            'doctrine_metadata' => array('type' => 'Doctrine\Tests\ODM\CouchDB\Functional\Article'
+            'doctrine_metadata' => array('type' => $this->type
         )));
         $resp = $httpClient->request('PUT', '/' . $database . '/1', $data);
         $this->assertEquals(201, $resp->status);
@@ -34,17 +35,17 @@ class ProxyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
         $this->dm = \Doctrine\ODM\CouchDB\DocumentManager::create($httpClient, $config);
 
         $cmf = $this->dm->getClassMetadataFactory();
-        $metadata = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata('Doctrine\Tests\ODM\CouchDB\Functional\Article');
-        $metadata->mapId(array('name' => 'id'));
-        $metadata->mapProperty(array('name' => 'title', 'type' => 'string'));
-        $metadata->mapProperty(array('name' => 'body', 'type' => 'string'));
+        $metadata = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata($this->type);
+        $metadata->mapField(array('name' => 'id', 'id' => true));
+        $metadata->mapField(array('name' => 'title', 'type' => 'string'));
+        $metadata->mapField(array('name' => 'body', 'type' => 'string'));
         $metadata->idGenerator = \Doctrine\ODM\CouchDB\Mapping\ClassMetadata::IDGENERATOR_UUID;
-        $cmf->setMetadataFor($metadata);
+        $cmf->setMetadataFor($this->type, $metadata);
     }
 
     public function testGetReference()
     {
-        $proxy = $this->dm->getReference('Doctrine\Tests\ODM\CouchDB\Functional\Article', 1);
+        $proxy = $this->dm->getReference($this->type, 1);
 
         $this->assertType('Doctrine\ODM\CouchDB\Proxy\Proxy', $proxy);
         $this->assertFalse($proxy->__isInitialized__);
@@ -56,11 +57,11 @@ class ProxyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 
     public function testProxyFactorySetsProxyMetadata()
     {
-        $proxy = $this->dm->getReference('Doctrine\Tests\ODM\CouchDB\Functional\Article', 1);
+        $proxy = $this->dm->getReference($this->type, 1);
 
         $proxyClass = get_class($proxy);
         $this->assertTrue($this->dm->getClassMetadataFactory()->hasMetadataFor($proxyClass), "Proxy class '" . $proxyClass . "' should be registered as metadata.");
-        $this->assertSame($this->dm->getClassMetadata($proxyClass), $this->dm->getClassMetadata('Doctrine\Tests\ODM\CouchDB\Functional\Article'), "Metadata instances of proxy class and real instance have to be the same.");
+        $this->assertSame($this->dm->getClassMetadata($proxyClass), $this->dm->getClassMetadata($this->type), "Metadata instances of proxy class and real instance have to be the same.");
     }
 }
 

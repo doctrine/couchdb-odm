@@ -17,7 +17,7 @@ class CouchUUIDGenerator extends IdGenerator
         }
 
         $id =  array_pop($this->uuids);
-        $cm->reflProps[$cm->identifier]->setValue($document, $id);
+        $cm->reflFields[$cm->identifier]->setValue($document, $id);
         return $id;
     }
 }

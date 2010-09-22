@@ -1,14 +1,20 @@
 <?php
+
 $basePath = __DIR__ . "/../../../../../";
 $commonPath = $basePath . "lib/vendor/doctrine-common/lib/";
 
 require_once $commonPath . "Doctrine/Common/ClassLoader.php";
 
-$loader = new \Doctrine\Common\ClassLoader('Doctrine\Common', $commonPath);
-$loader->register();
+use Doctrine\Common\ClassLoader;
 
-$loader = new \Doctrine\Common\ClassLoader('Doctrine\ODM\CouchDB', $basePath . "lib/");
-$loader->register();
+$classLoader = new ClassLoader('Doctrine\Common', $commonPath);
+$classLoader->register();
 
-$loader = new \Doctrine\Common\ClassLoader('Doctrine\Tests', $basePath . "tests/");
-$loader->register();
+$classLoader = new ClassLoader('Doctrine\ODM\CouchDB', $basePath . "lib/");
+$classLoader->register();
+
+$classLoader = new ClassLoader('Doctrine\Tests', $basePath . "tests/");
+$classLoader->register();
+
+$classLoader = new ClassLoader('Documents', __DIR__);
+$classLoader->register();

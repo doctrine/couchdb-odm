@@ -28,6 +28,44 @@ class Configuration
     }
 
     /**
+     * Adds a namespace under a certain alias.
+     *
+     * @param string $alias
+     * @param string $namespace
+     */
+    public function addDocumentNamespace($alias, $namespace)
+    {
+        $this->attributes['documentNamespaces'][$alias] = $namespace;
+    }
+
+    /**
+     * Resolves a registered namespace alias to the full namespace.
+     *
+     * @param string $documentNamespaceAlias
+     * @return string
+     * @throws MongoDBException
+     */
+    public function getDocumentNamespace($documentNamespaceAlias)
+    {
+        if ( ! isset($this->attributes['documentNamespaces'][$documentNamespaceAlias])) {
+            throw MongoDBException::unknownDocumentNamespace($documentNamespaceAlias);
+        }
+
+        return trim($this->attributes['documentNamespaces'][$documentNamespaceAlias], '\\');
+    }
+
+    /**
+     * Set the document alias map
+     *
+     * @param array $documentAliasMap
+     * @return void
+     */
+    public function setDocumentNamespaces(array $documentNamespaces)
+    {
+        $this->attributes['documentNamespaces'] = $documentNamespaces;
+    }
+
+    /**
      * Sets the cache driver implementation that is used for metadata caching.
      *
      * @param Driver $driverImpl

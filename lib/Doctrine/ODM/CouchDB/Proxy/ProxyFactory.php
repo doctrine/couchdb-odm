@@ -86,7 +86,7 @@ class ProxyFactory
         }
 
         if ( ! $this->dm->getMetadataFactory()->hasMetadataFor($fqn)) {
-            $this->dm->getMetadataFactory()->setMetadataFor($this->dm->getClassMetadata($className), $fqn);
+            $this->dm->getMetadataFactory()->setMetadataFor($fqn, $this->dm->getClassMetadata($className));
         }
 
         /**
@@ -236,7 +236,7 @@ class ProxyFactory
             $sleepImpl .= "return array('__isInitialized__', ";
 
             $properties = array();
-            foreach ($class->properties as $name => $prop) {
+            foreach ($class->fieldMappings as $name => $prop) {
                 $properties[] = "'$name'";
             }
 

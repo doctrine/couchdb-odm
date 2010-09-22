@@ -126,7 +126,7 @@ class BasicDocumentPersister
             $data = array();
             $class = $this->dm->getClassMetadata(get_class($document));
             foreach ($uow->getDocumentChangeSet($document) AS $k => $v) {
-                $data[$class->properties[$k]['resultkey']] = $v;
+                $data[$class->fieldMappings[$k]['fieldName']] = $v;
             }
             // TODO add metadata writing disabled support
             $data['doctrine_metadata'] = array('type' => get_class($document));
@@ -240,10 +240,10 @@ class BasicDocumentPersister
         $class = $this->dm->getClassMetadata($type);
 
         $data = array();
-        foreach ($responseBody as $resultKey => $value) {
+        foreach ($responseBody as $fieldName => $value) {
             // TODO: Check how ORM does this? Method or public property?
-            if (isset($class->resultKeyProperties[$resultKey])) {
-                $property = $class->resultKeyProperties[$resultKey];
+            if (isset($class->fieldNameProperties[$fieldName])) {
+                $property = $class->fieldNameProperties[$fieldName];
                 $data[$property] = $value;
             }
         }

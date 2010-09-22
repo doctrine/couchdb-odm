@@ -30,7 +30,7 @@ class DocumentManager
         if ($httpClient) {
             $this->config->setHttpClient($httpClient);
         }
-        $this->metadataFactory = new ClassMetadataFactory();
+        $this->metadataFactory = new ClassMetadataFactory($this);
         $this->unitOfWork = new UnitOfWork($this);
         // TODO: Add configuration!
         $this->proxyFactory = new Proxy\ProxyFactory($this, $this->config->getProxyDir(), 'MyProxies', true);
