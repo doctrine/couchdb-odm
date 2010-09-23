@@ -97,7 +97,7 @@ class UnitOfWork
         }
 
         if ($overrideLocalValues) {
-            foreach ($metadata->reflFields AS $prop => $reflFields) {
+            foreach ($metadata->reflFields as $prop => $reflFields) {
                 $value = isset($data[$prop]) ? $data[$prop] : null;
                 $reflFields->setValue($doc, $value);
                 $this->originalData[$oid][$prop] = $value;

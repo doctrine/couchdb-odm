@@ -273,11 +273,11 @@ class ClassMetadata
         if ( ! isset($mapping['fieldName']) && isset($mapping['name'])) {
             $mapping['fieldName'] = $mapping['name'];
         }
-        if ( ! isset($mapping['name'])) {
-            $mapping['name'] = $mapping['fieldName'];
-        }
         if ( ! isset($mapping['fieldName'])) {
             throw new MappingException("Mapping a property requires to specify the name.");
+        }
+        if ( ! isset($mapping['name'])) {
+            $mapping['name'] = $mapping['fieldName'];
         }
         if (isset($this->fieldMappings[$mapping['fieldName']])) {
             throw MappingException::duplicateFieldMapping($this->name, $mapping['fieldName']);
@@ -296,6 +296,7 @@ class ClassMetadata
             $mapping['type'] = isset($mapping['type']) ? $mapping['type'] : 'id';
             $this->identifier = $mapping['fieldName'];
         }
+
         $this->fieldMappings[$mapping['fieldName']] = $mapping;
     }
 

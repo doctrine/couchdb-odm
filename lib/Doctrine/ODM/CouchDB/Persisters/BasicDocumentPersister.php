@@ -241,10 +241,13 @@ class BasicDocumentPersister
 
         $data = array();
         foreach ($responseBody as $fieldName => $value) {
+            if ($fieldName === '_id') {
+                $fieldName = $class->identifier;
+            }
             // TODO: Check how ORM does this? Method or public property?
-            if (isset($class->fieldNameProperties[$fieldName])) {
-                $property = $class->fieldNameProperties[$fieldName];
-                $data[$property] = $value;
+            if (isset($class->fieldMappings[$fieldName])) {
+                $mapping = $class->fieldMappings[$fieldName];
+                $data[$mapping['name']] = $value;
             }
         }
 

@@ -24,7 +24,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
         $cm->mapField(array('name' => 'id', 'id' => true));
 
         $this->assertTrue(isset($cm->fieldMappings['id']));
-        $this->assertEquals(array('name' => 'id', 'id' => true, 'type' => 'string', 'fieldName' => '_id'), $cm->fieldMappings['id']);
+        $this->assertEquals(array('name' => 'id', 'id' => true, 'type' => 'string', 'fieldName' => 'id'), $cm->fieldMappings['id']);
 
         $this->assertEquals('id', $cm->identifier);
 
@@ -57,18 +57,6 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
 
         $cm->mapField(array());
 
-        return $cm;
-    }
-
-    /**
-     * @depends testmapField
-     */
-    public function testMapUnknownPropertyThrowsReflectionException($cm)
-    {
-        $this->setExpectedException('ReflectionException');
-
-        $cm->mapField(array('name' => 'foobar'));
-        
         return $cm;
     }
 
