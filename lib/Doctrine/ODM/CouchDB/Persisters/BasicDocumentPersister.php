@@ -247,7 +247,7 @@ class BasicDocumentPersister
             // TODO: Check how ORM does this? Method or public property?
             if (isset($class->fieldMappings[$fieldName])) {
                 $mapping = $class->fieldMappings[$fieldName];
-                $data[$mapping['name']] = $value;
+                $data[$mapping['fieldName']] = $value;
             }
         }
 
