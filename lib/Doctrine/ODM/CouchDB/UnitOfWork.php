@@ -25,13 +25,6 @@ class UnitOfWork
     private $persister = null;
 
     /**
-     * The collection persister instances used to persist collections.
-     *
-     * @var array
-     */
-    private $collectionPersisters = array();
-
-    /**
      * @var array
      */
     private $documentIdentifiers = array();
