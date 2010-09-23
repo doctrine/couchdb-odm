@@ -15,7 +15,7 @@ class AnnotationDriverTest extends AbstractMappingDriverTest
         $reader = new \Doctrine\Common\Annotations\AnnotationReader(new \Doctrine\Common\Cache\ArrayCache());
         $annotationDriver = new \Doctrine\ODM\CouchDB\Mapping\Driver\AnnotationDriver($reader);
 
-        $this->setExpectedException('Doctrine\ODM\CouchDB\CouchDBException');
+        $this->setExpectedException('Doctrine\ODM\CouchDB\Mapping\MappingException');
         $annotationDriver->loadMetadataForClass('stdClass', $cm);
     }
 
