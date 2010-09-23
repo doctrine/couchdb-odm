@@ -74,8 +74,9 @@ class BasicDocumentPersister
      * @param array $data
      * @return Response
      */
-    public function postDocument(array $data)
+    public function postDocument(array $data, $id)
     {
+        $data['_id'] = $id;
         return $this->httpClient->request('POST', '/' . $this->databaseName , json_encode($data));
     }
 
@@ -135,7 +136,7 @@ class BasicDocumentPersister
             if (isset($rev)) {
                 $response = $this->putDocument($data, $uow->getDocumentIdentifier($document), $uow->getDocumentRevision($document));
             } else {
-                $response = $this->postDocument($data);
+                $response = $this->postDocument($data, $data[$class->identifier]);
             }
 
             if ( ($response->status === 200 || $response->status == 201) && $response->body['ok'] == true) {
