@@ -59,9 +59,6 @@ class XmlDriver extends AbstractFileDriver
         if (isset($xmlRoot['db'])) {
             $class->setDB((string) $xmlRoot['db']);
         }
-        if (isset($xmlRoot['customId']) && ((string) $xmlRoot['customId'] === true)) {
-            $class->setAllowCustomId(true);
-        }
         if (isset($xmlRoot->field)) {
             foreach ($xmlRoot->field as $field) {
                 $mapping = array();

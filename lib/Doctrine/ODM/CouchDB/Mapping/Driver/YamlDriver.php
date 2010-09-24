@@ -62,9 +62,6 @@ class YamlDriver extends AbstractFileDriver
         } elseif ($element['type'] === 'embeddedDocument') {
             $class->isEmbeddedDocument = true;
         }
-        if (isset($element['customId']) && $element['customId']) {
-            $class->setAllowCustomId(true);
-        }
         if (isset($element['fields'])) {
             foreach ($element['fields'] as $fieldName => $mapping) {
                 if (is_string($mapping)) {

@@ -50,13 +50,6 @@ class ClassMetadata
     public $customRepositoryClassName;
 
     /**
-     * Whether custom id value is allowed or not
-     *
-     * @var bool
-     */
-    public $allowCustomID = false;
-
-    /**
      * The ReflectionProperty instances of the mapped class.
      *
      * @var array
@@ -243,22 +236,6 @@ class ClassMetadata
         $this->db = $db;
     }
 
-    public function mapManyToOne($mapping)
-    {
-        if (!isset($mapping['name'])) {
-            throw new MappingException("Mapping an association requires to specify the name.");
-        }
-
-        $mapping['sourceDocument'] = $this->name;
-        if (!isset($mapping['targetDocument'])) {
-            throw new MappingException("You have to specify a 'targetDocument' class for the '" . $this->name . "#". $mapping['name']."' association.");
-        }
-        $mapping['isOwning'] = true;
-        $mapping['type'] = self::MANY_TO_ONE;
-
-        $this->associations[$mapping['name']] = $mapping;
-    }
-
     /**
      * Map a field.
      *
@@ -324,6 +301,23 @@ class ClassMetadata
         $this->mapField($mapping);
     }
 
+
+    public function mapManyToOne($mapping)
+    {
+        if (!isset($mapping['name'])) {
+            throw new MappingException("Mapping an association requires to specify the name.");
+        }
+
+        $mapping['sourceDocument'] = $this->name;
+        if (!isset($mapping['targetDocument'])) {
+            throw new MappingException("You have to specify a 'targetDocument' class for the '" . $this->name . "#". $mapping['name']."' association.");
+        }
+        $mapping['isOwning'] = true;
+        $mapping['type'] = self::MANY_TO_ONE;
+
+        $this->associations[$mapping['name']] = $mapping;
+    }
+
     /**
      * Map a single document reference.
      *
@@ -346,18 +340,6 @@ class ClassMetadata
         $mapping['reference'] = true;
         $mapping['type'] = 'many';
         $this->mapField($mapping);
-    }
-
-    /**
-     * INTERNAL:
-     * Adds a field mapping without completing/validating it.
-     * This is mainly used to add inherited field mappings to derived classes.
-     *
-     * @param array $mapping
-     */
-    public function addInheritedFieldMapping(array $fieldMapping)
-    {
-        $this->fieldMappings[$fieldMapping['fieldName']] = $fieldMapping;
     }
 
     /**
@@ -480,26 +462,6 @@ class ClassMetadata
             throw MappingException::mappingNotFound($this->name, $fieldName);
         }
         return $this->fieldMappings[$fieldName];
-    }
-
-    /**
-     * Set whether or not a custom id is allowed.
-     *
-     * @param bool $bool
-     */
-    public function setAllowCustomId($bool)
-    {
-        $this->allowCustomID = (bool) $bool;
-    }
-
-    /**
-     * Get whether or not a custom id is allowed.
-     *
-     * @param bool $bool
-     */
-    public function getAllowCustomID()
-    {
-        return $this->allowCustomID;
     }
 
     /**
