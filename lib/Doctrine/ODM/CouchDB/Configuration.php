@@ -43,12 +43,12 @@ class Configuration
      *
      * @param string $documentNamespaceAlias
      * @return string
-     * @throws MongoDBException
+     * @throws CouchDBException
      */
     public function getDocumentNamespace($documentNamespaceAlias)
     {
         if ( ! isset($this->attributes['documentNamespaces'][$documentNamespaceAlias])) {
-            throw MongoDBException::unknownDocumentNamespace($documentNamespaceAlias);
+            throw CouchDBException::unknownDocumentNamespace($documentNamespaceAlias);
         }
 
         return trim($this->attributes['documentNamespaces'][$documentNamespaceAlias], '\\');
@@ -148,50 +148,6 @@ class Configuration
     }
 
     /**
-     * Gets a boolean flag that indicates whether proxy classes should always be regenerated
-     * during each script execution.
-     *
-     * @return boolean
-     */
-    public function getAutoGenerateProxyClasses()
-    {
-        return isset($this->attributes['autoGenerateProxyClasses']) ?
-                $this->attributes['autoGenerateProxyClasses'] : true;
-    }
-
-    /**
-     * Sets a boolean flag that indicates whether proxy classes should always be regenerated
-     * during each script execution.
-     *
-     * @param boolean $bool
-     */
-    public function setAutoGenerateProxyClasses($bool)
-    {
-        $this->attributes['autoGenerateProxyClasses'] = $bool;
-    }
-
-    /**
-     * Gets the namespace where proxy classes reside.
-     *
-     * @return string
-     */
-    public function getProxyNamespace()
-    {
-        return isset($this->attributes['proxyNamespace']) ?
-                $this->attributes['proxyNamespace'] : null;
-    }
-
-    /**
-     * Sets the namespace where proxy classes reside.
-     *
-     * @param string $ns
-     */
-    public function setProxyNamespace($ns)
-    {
-        $this->attributes['proxyNamespace'] = $ns;
-    }
-
-    /**
      * Sets the default DB to use for all Documents that do not specify
      * a database.
      *
@@ -211,27 +167,6 @@ class Configuration
     {
         return isset($this->attributes['defaultDB']) ?
             $this->attributes['defaultDB'] : null;
-    }
-
-    /**
-     * Set the logger callable.
-     *
-     * @param mixed $loggerCallable The logger callable.
-     */
-    public function setLoggerCallable($loggerCallable)
-    {
-        $this->attributes['loggerCallable'] = $loggerCallable;
-    }
-
-    /**
-     * Gets the logger callable.
-     *
-     * @return mixed $loggerCallable The logger callable.
-     */
-    public function getLoggerCallable()
-    {
-        return isset($this->attributes['loggerCallable']) ?
-                $this->attributes['loggerCallable'] : null;
     }
 
     /**
