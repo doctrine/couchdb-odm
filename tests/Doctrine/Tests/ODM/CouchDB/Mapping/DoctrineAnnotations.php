@@ -135,29 +135,9 @@ final class ReferenceMany extends Field
     public $type = 'many';
     public $reference = true;
     public $targetDocument;
-    public $discriminatorField;
-    public $discriminatorMap;
-    public $cascade;
-    public $strategy = 'pushPull'; // pushPull, set
 }
 class NotSaved extends Field {}
-final class Distance extends Field
-{
-    public $distance = true;
-}
 final class AlsoLoad extends Annotation
 {
     public $name;
 }
-final class ChangeTrackingPolicy extends Annotation {}
-
-/* Annotations for lifecycle callbacks */
-final class HasLifecycleCallbacks extends Annotation {}
-final class PrePersist extends Annotation {}
-final class PostPersist extends Annotation {}
-final class PreUpdate extends Annotation {}
-final class PostUpdate extends Annotation {}
-final class PreRemove extends Annotation {}
-final class PostRemove extends Annotation {}
-final class PreLoad extends Annotation {}
-final class PostLoad extends Annotation {}

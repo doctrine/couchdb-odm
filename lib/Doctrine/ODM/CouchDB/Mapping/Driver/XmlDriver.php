@@ -59,9 +59,6 @@ class XmlDriver extends AbstractFileDriver
         if (isset($xmlRoot['db'])) {
             $class->setDB((string) $xmlRoot['db']);
         }
-        if (isset($xmlRoot['collection'])) {
-            $class->setCollection((string) $xmlRoot['collection']);
-        }
         if (isset($xmlRoot['customId']) && ((string) $xmlRoot['customId'] === true)) {
             $class->setAllowCustomId(true);
         }
@@ -103,56 +100,17 @@ class XmlDriver extends AbstractFileDriver
 
     private function addFieldMapping(ClassMetadata $class, $mapping)
     {
-        $keys = null;
-        $name = isset($mapping['name']) ? $mapping['name'] : $mapping['fieldName'];
-        if (isset($mapping['type']) && $mapping['type'] === 'collection') {
-            $mapping['strategy'] = isset($mapping['strategy']) ? $mapping['strategy'] : 'pushPull';
-        }
-        if (isset($mapping['index'])) {
-            $keys = array(
-                $name => isset($mapping['order']) ? $mapping['order'] : 'asc'
-            );
-        }
-        if (isset($mapping['unique'])) {
-            $keys = array(
-                $name => isset($mapping['order']) ? $mapping['order'] : 'asc'
-            );
-        }
-        if ($keys !== null) {
-            $options = array();
-            if (isset($mapping['index-name'])) {
-                $options['name'] = (string) $mapping['index-name'];
-            }
-            if (isset($mapping['drop-dups'])) {
-                $options['dropDups'] = (boolean) $mapping['drop-dups'];
-            }
-            if (isset($mapping['background'])) {
-                $options['background'] = (boolean) $mapping['background'];
-            }
-            if (isset($mapping['safe'])) {
-                $options['safe'] = (boolean) $mapping['safe'];
-            }
-            if (isset($mapping['unique'])) {
-                $options['unique'] = (boolean) $mapping['unique'];
-            }
-            $class->addIndex($keys, $options);
-        }
         $class->mapField($mapping);
     }
 
     private function addEmbedMapping(ClassMetadata $class, $embed, $type)
     {
-        $cascade = array_keys((array) $embed->cascade);
-        if (1 === count($cascade)) {
-            $cascade = current($cascade) ?: next($cascade);
-        }
         $attributes = $embed->attributes();
         $mapping = array(
             'type'           => $type,
             'embedded'       => true,
             'targetDocument' => isset($attributes['target-document']) ? (string) $attributes['target-document'] : null,
             'name'           => (string) $attributes['field'],
-            'strategy'       => isset($attributes['strategy']) ? (string) $attributes['strategy'] : 'pushPull',
         );
         $this->addFieldMapping($class, $mapping);
     }
@@ -170,46 +128,8 @@ class XmlDriver extends AbstractFileDriver
             'reference'      => true,
             'targetDocument' => isset($attributes['target-document']) ? (string) $attributes['target-document'] : null,
             'name'           => (string) $attributes['field'],
-            'strategy'       => isset($attributes['strategy']) ? (string) $attributes['strategy'] : 'pushPull',
         );
         $this->addFieldMapping($class, $mapping);
-    }
-
-    private function addIndex(ClassMetadata $class, SimpleXmlElement $xmlIndex)
-    {
-        $attributes = $xmlIndex->attributes();
-        $options = array();
-        if (isset($attributes['name'])) {
-            $options['name'] = (string) $attributes['name'];
-        }
-        if (isset($attributes['drop-dups'])) {
-            $options['dropDups'] = (boolean) $attributes['drop-dups'];
-        }
-        if (isset($attributes['background'])) {
-            $options['background'] = (boolean) $attributes['background'];
-        }
-        if (isset($attributes['safe'])) {
-            $options['safe'] = (boolean) $attributes['safe'];
-        }
-        if (isset($attributes['unique'])) {
-            $options['unique'] = (boolean) $attributes['unique'];
-        }
-        $index = array(
-            'keys' => array(),
-            'options' => $options
-        );
-        foreach ($xmlIndex->{'key'} as $key) {
-            $index['keys'][(string) $key['name']] = isset($key['order']) ? (string) $key['order'] : 'asc';
-        }
-        if (isset($xmlIndex->{'option'})) {
-            foreach ($xmlIndex->{'option'} as $option) {
-                $value = (string) $option['value'];
-                $value = $value === 'true' ? true : $value;
-                $value = $value === 'false' ? false : $value;
-                $index['options'][(string) $option['name']] = $value;
-            }
-        }
-        $class->addIndex($index['keys'], $index['options']);
     }
 
     protected function loadMappingFile($file)

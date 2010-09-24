@@ -53,9 +53,6 @@ class YamlDriver extends AbstractFileDriver
         if (isset($element['db'])) {
             $class->setDB($element['db']);
         }
-        if (isset($element['collection'])) {
-            $class->setCollection($element['collection']);
-        }
         if ($element['type'] == 'document') {
             if (isset($element['repositoryClass'])) {
                 $class->setCustomRepositoryClass($element['repositoryClass']);
@@ -65,30 +62,8 @@ class YamlDriver extends AbstractFileDriver
         } elseif ($element['type'] === 'embeddedDocument') {
             $class->isEmbeddedDocument = true;
         }
-        if (isset($element['indexes'])) {
-            foreach($element['indexes'] as $index) {
-                $class->addIndex($index['keys'], isset($index['options']) ? $index['options'] : array());
-            }
-        }
-        if (isset($element['inheritanceType'])) {
-            $class->setInheritanceType(constant('Doctrine\ODM\CouchDB\Mapping\ClassMetadata::INHERITANCE_TYPE_' . strtoupper($element['inheritanceType'])));
-        }
         if (isset($element['customId']) && $element['customId']) {
             $class->setAllowCustomId(true);
-        }
-        if (isset($element['discriminatorField'])) {
-            $discrField = $element['discriminatorField'];
-            $class->setDiscriminatorField(array(
-                'name' => $discrField['name'],
-                'fieldName' => $discrField['fieldName']
-            ));
-        }
-        if (isset($element['discriminatorMap'])) {
-            $class->setDiscriminatorMap($element['discriminatorMap']);
-        }
-        if (isset($element['changeTrackingPolicy'])) {
-            $class->setChangeTrackingPolicy(constant('Doctrine\ODM\CouchDB\Mapping\ClassMetadata::CHANGETRACKING_'
-                    . strtoupper($element['changeTrackingPolicy'])));
         }
         if (isset($element['fields'])) {
             foreach ($element['fields'] as $fieldName => $mapping) {
@@ -99,9 +74,6 @@ class YamlDriver extends AbstractFileDriver
                 }
                 if ( ! isset($mapping['fieldName'])) {
                     $mapping['fieldName'] = $fieldName;
-                }
-                if (isset($mapping['type']) && $mapping['type'] === 'collection') {
-                    $mapping['strategy'] = isset($mapping['strategy']) ? $mapping['strategy'] : 'pushPull';
                 }
                 $this->addFieldMapping($class, $mapping);
             }
@@ -126,39 +98,10 @@ class YamlDriver extends AbstractFileDriver
                 $this->addMappingFromReference($class, $fieldName, $reference, 'many');
             }
         }
-        if (isset($element['lifecycleCallbacks'])) {
-            foreach ($element['lifecycleCallbacks'] as $type => $methods) {
-                foreach ($methods as $method) {
-                    $class->addLifecycleCallback($method, constant('Doctrine\ODM\CouchDB\ODMEvents::' . $type));
-                }
-            }
-        }
     }
 
     private function addFieldMapping(ClassMetadata $class, $mapping)
     {
-        $keys = null;
-        $name = isset($mapping['name']) ? $mapping['name'] : $mapping['fieldName'];
-        if (isset($mapping['index'])) {
-            $keys = array(
-                $name => isset($mapping['index']['order']) ? $mapping['index']['order'] : 'asc'
-            );
-        }
-        if (isset($mapping['unique'])) {
-            $keys = array(
-                $name => isset($mapping['unique']['order']) ? $mapping['unique']['order'] : 'asc'
-            );
-        }
-        if ($keys !== null) {
-            $options = array();
-            if (isset($mapping['index'])) {
-                $options = $mapping['index'];
-            } elseif (isset($mapping['unique'])) {
-                $options = $mapping['unique'];
-                $options['unique'] = true;
-            }
-            $class->addIndex($keys, $options);
-        }
         $class->mapField($mapping);
     }
 
