@@ -3,24 +3,15 @@
 # Current Status:
 
 * find() by id implemented
-* metadata mapping needs to be registered manually (no annotation, xml, yml support yet)
+* inserting, updating and delete implemented
+* support for inheritance and lifecycle missing
+* metadata mapping is implemented, needs more tests
 * proxy classes implemented
 * relation view defined
 * still missing logic for lazy loading
 * check out the tests for how to use everything
 * consider moving the HTTP classes out of the CouchDB namespace
 * plenty of TODO's noted through out the source code
-
-# Critical use cases
-
-* load document (done)
-* insert document (done)
-* update document (done)
-* delete document (done)
-* lazy load related document
-    * many2one
-    * many2many
-* annotation/xml/yml metadata definition support
 
 # Hackaton Discussions: CouchDB + Doctrine
 
