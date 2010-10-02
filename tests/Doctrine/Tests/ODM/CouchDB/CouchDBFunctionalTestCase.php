@@ -36,7 +36,7 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
         $metaDriver = new \Doctrine\ODM\CouchDB\Mapping\Driver\AnnotationDriver($reader, $paths);
 
         $config = new \Doctrine\ODM\CouchDB\Configuration();
-        $config->setDefaultDB($database);
+        $config->setDatabase($database);
         $config->setProxyDir(\sys_get_temp_dir());
         $config->setMetadataDriverImpl($metaDriver);
 

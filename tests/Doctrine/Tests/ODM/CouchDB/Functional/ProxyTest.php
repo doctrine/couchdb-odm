@@ -29,7 +29,7 @@ class ProxyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
         $this->assertEquals(201, $resp->status);
 
         $config = new \Doctrine\ODM\CouchDB\Configuration();
-        $config->setDefaultDB($database);
+        $config->setDatabase($database);
         $config->setProxyDir(\sys_get_temp_dir());
 
         $this->dm = \Doctrine\ODM\CouchDB\DocumentManager::create($httpClient, $config);

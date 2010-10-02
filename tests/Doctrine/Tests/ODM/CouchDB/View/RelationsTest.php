@@ -9,13 +9,12 @@ use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 class RelationsTest extends CouchDBFunctionalTestCase
 {
     private $dm;
-    private $uow;
 
     public function setUp()
     {
 
         $config = new \Doctrine\ODM\CouchDB\Configuration();
-        $config->setDefaultDB( $this->getTestDatabase() );
+        $config->setDatabase( $this->getTestDatabase() );
 
         $this->dm = \Doctrine\ODM\CouchDB\DocumentManager::create(new SocketClient(), $config);
     }
@@ -31,7 +30,7 @@ class RelationsTest extends CouchDBFunctionalTestCase
         $db->request( 'PUT', '/' . $this->getTestDatabase() . '' );
 
         // Create some "interesting" documents
-        $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '/doc_a', json_encode( array(
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '/doc_a', json_encode( array(
             "_id" => "doc_a",
             "doctrine_metadata" => array(
                 "type" => "type_a",
@@ -41,7 +40,7 @@ class RelationsTest extends CouchDBFunctionalTestCase
                 ),
             ),
         ) ) );
-        $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '/doc_b', json_encode( array(
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '/doc_b', json_encode( array(
             "_id" => "doc_b",
             "doctrine_metadata" => array(
                 "type" => "type_b",
@@ -50,14 +49,14 @@ class RelationsTest extends CouchDBFunctionalTestCase
                 ),
             ),
         ) ) );
-        $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '/doc_c', json_encode( array(
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '/doc_c', json_encode( array(
             "_id" => "doc_c",
             "doctrine_metadata" => array(
                 "type" => "type_c",
                 "relations" => array(),
             ),
         ) ) );
-        $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '/doc_d', json_encode( array(
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '/doc_d', json_encode( array(
             "_id" => "doc_d",
             "doctrine_metadata" => array(
                 "type" => "type_c",
