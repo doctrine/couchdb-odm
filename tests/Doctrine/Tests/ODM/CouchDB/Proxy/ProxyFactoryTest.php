@@ -49,14 +49,13 @@ class ProxyFactoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCase
 
         $query = array('documentName' => '\\'.$modelClass, 'id' => 'SomeUUID');
 
-        $persisterMock = $this->getMock('Doctrine\ODM\CouchDB\Persisters\BasicDocumentPersister', array('load'), array(), '', false);
-        $persisterMock->expects($this->atLeastOnce())
-                      ->method('load')
-                      ->with($this->equalTo($query), $this->isInstanceOf($proxyClass))
-                      ->will($this->returnValue(new \stdClass())); // fake return of entity instance
+        $repositoryMock = $this->getMock('Doctrine\ODM\CouchDB\DocumentRepository', array('refresh'), array(), '', false);
+        $repositoryMock->expects($this->atLeastOnce())
+                      ->method('refresh')
+                      ->with($this->isInstanceOf($proxyClass));
 
-        $uowMock = new UnitOfWorkMock($persisterMock);
-        $dmMock = new DocumentManagerMock($uowMock);
+        $dmMock = new DocumentManagerMock();
+        $dmMock->setRepositoryMock($repositoryMock);
 
         $this->proxyFactory = new ProxyFactory($dmMock, __DIR__ . '/generated', 'Proxies', true);
 
@@ -73,28 +72,18 @@ class ProxyFactoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCase
     }
 }
 
-class UnitOfWorkMock extends \Doctrine\ODM\CouchDB\UnitOfWork
-{
-    private $persisterMock;
-
-    public function __construct($persisterMock)
-    {
-        $this->persisterMock = $persisterMock;
-    }
-
-    public function getDocumentPersister()
-    {
-        return $this->persisterMock;
-    }
-}
-
 class DocumentManagerMock extends \Doctrine\ODM\CouchDB\DocumentManager
 {
-    private $uowMock;
+    private $repository;
 
-    public function __construct($uowMock)
+    public function setRepositoryMock($mock)
     {
-        $this->uowMock = $uowMock;
+        $this->repository = $mock;
+    }
+
+    public function getDocumentRepository($documentName)
+    {
+        return $this->repository;
     }
 
     public function getClassMetadata($class)
