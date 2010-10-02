@@ -12,8 +12,8 @@ class CouchUUIDGenerator extends IdGenerator
     public function generate($document, ClassMetadata $cm, DocumentManager $dm)
     {
         if (count($this->uuids) == 0) {
-            // TODO: Allow to configure UUID Generation number
-            $this->uuids = $dm->getUnitOfWork()->getDocumentPersister()->getUuids(20);
+            $UUIDGenerationBufferSize = $dm->getConfiguration()->getUUIDGenerationBufferSize();
+            $this->uuids = $dm->getUnitOfWork()->getDocumentPersister()->getUuids($UUIDGenerationBufferSize);
         }
 
         $id =  array_pop($this->uuids);

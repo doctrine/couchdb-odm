@@ -15,11 +15,84 @@ class Configuration
      */
     private $attributes = array();
 
+    /**
+     * Sets the default UUID Generator buffer size
+     *
+     * @param integer $UUIDGenerationBufferSize
+     */
+    public function setUUIDGenerationBufferSize($UUIDGenerationBufferSize)
+    {
+        $this->attributes['UUIDGenerationBufferSize'] = $UUIDGenerationBufferSize;
+    }
+
+    /**
+     * Gets the default UUID Generator buffer size
+     *
+     * @return integer
+     */
+    public function getUUIDGenerationBufferSize()
+    {
+        if (!isset($this->attributes['UUIDGenerationBufferSize'])) {
+            $this->attributes['UUIDGenerationBufferSize'] = 20;
+        }
+
+        return $this->attributes['UUIDGenerationBufferSize'];
+    }
+    /**
+     * Sets if all CouchDB document metadata should be validated on read
+     *
+     * @param boolean $validateDoctrineMetadata
+     */
+    public function setValidateDoctrineMetadata($validateDoctrineMetadata)
+    {
+        $this->attributes['validateDoctrineMetadata'] = $validateDoctrineMetadata;
+    }
+
+    /**
+     * Gets if all CouchDB document metadata should be validated on read
+     *
+     * @return boolean
+     */
+    public function getValidateDoctrineMetadata()
+    {
+        return !empty($this->attributes['validateDoctrineMetadata']);
+    }
+
+    /**
+     * Sets if all CouchDB documents should automatically get doctrine metadata added on write
+     *
+     * @param boolean $writeDoctrineMetadata
+     */
+    public function setWriteDoctrineMetadata($writeDoctrineMetadata)
+    {
+        $this->attributes['writeDoctrineMetadata'] = $writeDoctrineMetadata;
+    }
+
+    /**
+     * Gets if all CouchDB documents should automatically get doctrine metadata added on write
+     *
+     * @return boolean
+     */
+    public function getWriteDoctrineMetadata()
+    {
+        return !empty($this->attributes['writeDoctrineMetadata']);
+    }
+
+    /**
+     * Sets the HTTP client instance to use for the CouchDB communication
+     *
+     * @param Client $client
+     */
     public function setHttpClient(Client $client)
     {
         $this->attributes['httpclient'] = $client;
     }
 
+    /**
+     * Gets the HTTP client instance to use for the CouchDB communication
+     *
+     * @return Client
+     */
     public function getHttpClient()
     {
         if (!isset($this->attributes['httpclient'])) {
@@ -150,57 +223,48 @@ class Configuration
     }
 
     /**
-     * Sets the default DB to use for all Documents that do not specify
-     * a database.
+     * Sets the namespace for Doctrine proxy class files.
      *
-     * @param string $defaultDB
+     * @param string $namespace
      */
-    public function setDefaultDB($defaultDB)
+    public function setProxyNamespace($namespace)
     {
-        $this->attributes['defaultDB'] = $defaultDB;
+        $this->attributes['proxyNamespace'] = $namespace;
     }
 
     /**
-     * Gets the default DB to use for all Documents that do not specify a database.
-     *
-     * @return string $defaultDB
-     */
-    public function getDefaultDB()
-    {
-        return isset($this->attributes['defaultDB']) ?
-            $this->attributes['defaultDB'] : null;
-    }
-
-    /**
-     * Set prefix for db name
-     *
-     * @param string $prefix The prefix for names of databases
-     */
-    public function setDBPrefix($prefix = null)
-    {
-        $this->attributes['dbPrefix'] = $prefix;
-    }
-
-    /**
-     * Get prefix for db name
+     * Gets the namespace for Doctrine proxy class files.
      *
      * @return string
      */
-    public function getDBPrefix()
+    public function getProxyNamespace()
     {
-        return isset($this->attributes['dbPrefix']) ?
-            $this->attributes['dbPrefix'] : '';
+        if (!isset($this->attributes['proxyNamespace'])) {
+            $this->attributes['proxyNamespace'] = 'MyCouchDBProxyNS';
+        }
+
+        return $this->attributes['proxyNamespace'];
     }
 
     /**
-     * Abstract away DB Prefix and DefaultDB.
+     * Set the database name
      *
-     * What are they used for anyways? They feel overengineered and make the code harder to read and get right.
+     * @param string $prefix The prefix for names of databases
+     */
+    public function setDatabase($databaseName)
+    {
+        $this->attributes['databaseName'] = $databaseName;
+    }
+
+    /**
+     * Get the database name
+     *
      *
      * @return string
      */
     public function getDatabase()
     {
-        return $this->getDBPrefix() . $this->getDefaultDB();
+        return isset($this->attributes['databaseName']) ?
+            $this->attributes['databaseName'] : null;
     }
 }

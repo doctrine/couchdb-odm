@@ -128,12 +128,14 @@ class BasicDocumentPersister
     {
         if (isset($responseData['doctrine_metadata'])) {
             $type = $responseData['doctrine_metadata']['type'];
-            if(isset($documentName)) {
-                // TODO add (optional?) type validation
+            if (isset($documentName) && $this->dm->getConfiguration()->getValidateDoctrineMetadata()) {
+                // TODO implement type validation
             }
         } elseif(isset($documentName)) {
             $type = $documentName;
-            // TODO automatically add metadata if metadata writing is not disabled
+            if ($this->dm->getConfiguration()->getWriteDoctrineMetadata()) {
+                // TODO automatically add metadata
+            }
         } else {
             throw new \InvalidArgumentException("Missing Doctrine metadata in the Document, cannot hydrate (yet)!");
         }
@@ -165,6 +167,7 @@ class BasicDocumentPersister
                             );
                         } else {
                             // 2. if inverse side we need to nest the lazy loading relations view
+                            // TODO implement inverse side lazy loading
                         }
                     }
                 }
