@@ -44,20 +44,6 @@ class CmsUser
         return $this->name;
     }
 
-    /**
-     * Adds a phonenumber to the user.
-     *
-     * @param CmsPhonenumber $phone
-     */
-    public function addPhonenumber(CmsPhonenumber $phone) {
-        $this->phonenumbers[] = $phone;
-        $phone->setUser($this);
-    }
-
-    public function getPhonenumbers() {
-        return $this->phonenumbers;
-    }
-
     public function addArticle(CmsArticle $article) {
         $this->articles[] = $article;
         $article->setAuthor($this);
@@ -70,16 +56,6 @@ class CmsUser
 
     public function getGroups() {
         return $this->groups;
-    }
-
-    public function removePhonenumber($index) {
-        if (isset($this->phonenumbers[$index])) {
-            $ph = $this->phonenumbers[$index];
-            unset($this->phonenumbers[$index]);
-            $ph->user = null;
-            return true;
-        }
-        return false;
     }
     
     public function getAddress() { return $this->address; }

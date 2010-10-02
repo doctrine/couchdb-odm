@@ -125,9 +125,19 @@ class BasicDocumentPersister
             $data = array();
             $class = $this->dm->getClassMetadata(get_class($document));
 
-            // Convert field to json field names.
+            // Convert field values to json values.
             foreach ($uow->getDocumentChangeSet($document) AS $fieldName => $fieldValue) {
-                $data[$class->fieldMappings[$fieldName]['jsonName']] = $fieldValue;
+                if (isset($class->fieldMappings[$fieldName])) {
+                    $data[$class->fieldMappings[$fieldName]['jsonName']] = $fieldValue;
+                } else if (isset($class->associationsMappings[$fieldName])) {
+                    if ($class->associationsMappings[$fieldName]['type'] == ClassMetadata::MANY_TO_ONE) {
+                        if (\is_object($fieldValue)) {
+                            $data[$fieldName] = $uow->getDocumentIdentifier($fieldValue);
+                        } else {
+                            $data[$fieldName] = null;
+                        }
+                    }
+                }
             }
             // TODO add metadata writing disabled support
             $data['doctrine_metadata'] = array('type' => get_class($document));
@@ -245,8 +255,12 @@ class BasicDocumentPersister
             // TODO: For migrations and stuff, maybe there should really be a "rest" field?
             if (isset($class->jsonNames[$jsonName])) {
                 $fieldName = $class->jsonNames[$jsonName];
-                $mapping = $class->fieldMappings[$fieldName];
-                $data[$mapping['fieldName']] = $value;
+                if (isset($class->fieldMappings[$fieldName])) {
+                    $data[$class->fieldMappings[$fieldName]['fieldName']] = $value;
+                } else if (isset($class->associationsMappings[$fieldName])) {
+                    $value = $this->dm->getReference($class->associationsMappings[$fieldName]['targetDocument'], $value);
+                    $data[$class->associationsMappings[$fieldName]['fieldName']] = $value;
+                }
             }
         }
 

@@ -160,6 +160,10 @@ class UnitOfWork
 
     public function computeChangeSet(ClassMetadata $class, $document)
     {
+        if ($document instanceof Proxy\Proxy && !$document->__isInitialized__) {
+            return;
+        }
+
         $oid = \spl_object_hash($document);
         $actualData = array();
         foreach ($class->reflFields AS $propName => $reflProp) {
@@ -177,7 +181,15 @@ class UnitOfWork
             // Entity is "fully" MANAGED: it was already fully persisted before
             // and we have a copy of the original data
 
-            if (array_diff($actualData, $this->originalData[$oid])) {
+            $changed = false;
+            foreach ($actualData AS $k => $v) {
+                if ($this->originalData[$oid][$k] !== $v) {
+                    $changed = true;
+                    break;
+                }
+            }
+
+            if ($changed) {
                 $this->documentChangesets[$oid] = $actualData;
                 $this->scheduledUpdates[] = $document;
             }

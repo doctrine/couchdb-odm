@@ -48,7 +48,7 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
             $cm = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata('Doctrine\Tests\Models\CMS\CmsUser');
             $cm->mapField(array('fieldName' => 'id', 'id' => true));
             $cm->mapField(array('fieldName' => 'username'));
-            $cm->mapField(array('fieldName' => 'jsonName'));
+            $cm->mapField(array('fieldName' => 'name'));
             $cm->mapField(array('fieldName' => 'status'));
             $cmf->setMetadataFor('Doctrine\Tests\Models\CMS\CmsUser', $cm);
 

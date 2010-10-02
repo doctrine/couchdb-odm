@@ -16,8 +16,6 @@ class ClassMetadata
 
     public $idGenerator = self::IDGENERATOR_UUID;
 
-    public $associations = array();
-
     /**
      * READ-ONLY: The field name of the document identifier.
      */
@@ -109,6 +107,8 @@ class ClassMetadata
      * @var boolean
      */
     public $isEmbeddedDocument = false;
+    
+    public $associationsMappings = array();
 
     /**
      * Initializes a new ClassMetadata instance that will hold the object-document mapping
@@ -230,26 +230,10 @@ class ClassMetadata
      */
     public function mapField(array $mapping)
     {
+        $mapping = $this->validateAndCompleteFieldMapping($mapping);
+
         if (!isset($mapping['type'])) {
             $mapping['type'] = "string";
-        }
-
-        if ( ! isset($mapping['fieldName']) && isset($mapping['jsonName'])) {
-            $mapping['fieldName'] = $mapping['jsonName'];
-        }
-        if ( ! isset($mapping['fieldName'])) {
-            throw new MappingException("Mapping a property requires to specify the name.");
-        }
-        if ( ! isset($mapping['jsonName'])) {
-            $mapping['jsonName'] = $mapping['fieldName'];
-        }
-        if (isset($this->fieldMappings[$mapping['fieldName']])) {
-            throw MappingException::duplicateFieldMapping($this->name, $mapping['fieldName']);
-        }
-        if ($this->reflClass->hasProperty($mapping['fieldName'])) {
-            $reflProp = $this->reflClass->getProperty($mapping['fieldName']);
-            $reflProp->setAccessible(true);
-            $this->reflFields[$mapping['fieldName']] = $reflProp;
         }
 
         if (isset($mapping['id']) && $mapping['id'] === true) {
@@ -262,127 +246,47 @@ class ClassMetadata
         $this->jsonNames[$mapping['jsonName']] = $mapping['fieldName'];
     }
 
+    protected function validateAndCompleteFieldMapping($mapping)
+    {
+        if ( ! isset($mapping['fieldName'])) {
+            throw new MappingException("Mapping a property requires to specify the name.");
+        }
+        if ( ! isset($mapping['jsonName'])) {
+            $mapping['jsonName'] = $mapping['fieldName'];
+        }
+        if (isset($this->fieldMappings[$mapping['fieldName']]) || isset($this->associationsMappings[$mapping['fieldName']])) {
+            throw MappingException::duplicateFieldMapping($this->name, $mapping['fieldName']);
+        }
+        $reflProp = $this->reflClass->getProperty($mapping['fieldName']);
+        $reflProp->setAccessible(true);
+        $this->reflFields[$mapping['fieldName']] = $reflProp;
+
+        return $mapping;
+    }
+
     protected function validateAndCompleteAssociationMapping($mapping)
     {
+        $mapping = $this->validateAndCompleteFieldMapping($mapping);
+
+        $mapping['sourceDocument'] = $this->name;
+        if (!isset($mapping['targetDocument'])) {
+            throw new MappingException("You have to specify a 'targetDocument' class for the '" . $this->name . "#". $mapping['jsonName']."' association.");
+        }
         if (isset($mapping['targetDocument']) && strpos($mapping['targetDocument'], '\\') === false && strlen($this->namespace)) {
             $mapping['targetDocument'] = $this->namespace . '\\' . $mapping['targetDocument'];
         }
         return $mapping;
     }
 
-    /**
-     * Map a single embedded document.
-     *
-     * @param array $mapping The mapping information.
-     */
-    public function mapOneEmbedded(array $mapping)
-    {
-        $mapping = $this->validateAndCompleteAssociationMapping($mapping);
-
-        $this->mapField($mapping);
-    }
-
-    /**
-     * Map a collection of embedded documents.
-     *
-     * @param array $mapping The mapping information.
-     */
-    public function mapManyEmbedded(array $mapping)
-    {
-        $mapping = $this->validateAndCompleteAssociationMapping($mapping);
-
-        $this->mapField($mapping);
-    }
-
-
     public function mapManyToOne($mapping)
     {
-        if (!isset($mapping['jsonName'])) {
-            throw new MappingException("Mapping an association requires to specify the name.");
-        }
+        $mapping = $this->validateAndCompleteAssociationMapping($mapping);
 
-        $mapping['sourceDocument'] = $this->name;
-        if (!isset($mapping['targetDocument'])) {
-            throw new MappingException("You have to specify a 'targetDocument' class for the '" . $this->name . "#". $mapping['jsonName']."' association.");
-        }
         $mapping['isOwning'] = true;
         $mapping['type'] = self::MANY_TO_ONE;
 
-        $this->associations[$mapping['jsonName']] = $mapping;
-    }
-
-    /**
-     * Map a single document reference.
-     *
-     * @param array $mapping The mapping information.
-     */
-    public function mapOneReference(array $mapping)
-    {
-        $mapping['reference'] = true;
-        $mapping['type'] = 'one';
-        $this->mapField($mapping);
-    }
-
-    /**
-     * Map a collection of document references.
-     *
-     * @param array $mapping The mapping information.
-     */
-    public function mapManyReference(array $mapping)
-    {
-        $mapping['reference'] = true;
-        $mapping['type'] = 'many';
-        $this->mapField($mapping);
-    }
-
-    /**
-     * Checks whether the class has a mapped association with the given field name.
-     *
-     * @param string $fieldName
-     * @return boolean
-     */
-    public function hasReference($fieldName)
-    {
-        return isset($this->fieldMappings[$fieldName]['reference']);
-    }
-
-    /**
-     * Checks whether the class has a mapped association for the specified field
-     * and if yes, checks whether it is a single-valued association (to-one).
-     *
-     * @param string $fieldName
-     * @return boolean TRUE if the association exists and is single-valued, FALSE otherwise.
-     */
-    public function isSingleValuedReference($fieldName)
-    {
-        return isset($this->fieldMappings[$fieldName]['reference']) &&
-                $this->fieldMappings[$fieldName]['type'] === 'one';
-    }
-
-    /**
-     * Checks whether the class has a mapped embedded document for the specified field
-     * and if yes, checks whether it is a single-valued association (to-one).
-     *
-     * @param string $fieldName
-     * @return boolean TRUE if the association exists and is single-valued, FALSE otherwise.
-     */
-    public function isSingleValuedEmbed($fieldName)
-    {
-        return isset($this->fieldMappings[$fieldName]['embedded']) &&
-                $this->fieldMappings[$fieldName]['type'] === 'one';
-    }
-
-    /**
-     * Checks whether the class has a mapped embedded document for the specified field
-     * and if yes, checks whether it is a collection-valued association (to-many).
-     *
-     * @param string $fieldName
-     * @return boolean TRUE if the association exists and is collection-valued, FALSE otherwise.
-     */
-    public function isCollectionValuedEmbed($fieldName)
-    {
-        return isset($this->fieldMappings[$fieldName]['embedded']) &&
-                $this->fieldMappings[$fieldName]['type'] === 'many';
+        $this->associationsMappings[$mapping['fieldName']] = $mapping;
+        $this->jsonNames[$mapping['jsonName']] = $mapping['fieldName'];
     }
 
     /**

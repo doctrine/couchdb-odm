@@ -119,6 +119,7 @@ class AnnotationDriver implements Driver
             $mapping['fieldName'] = $property->getName();
 
             foreach ($this->reader->getPropertyAnnotations($property) as $fieldAnnot) {
+                
                 if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Field) {
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
                     $class->mapField($mapping);

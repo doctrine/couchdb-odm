@@ -63,8 +63,9 @@ final class Date extends Field
 {
     public $type = 'date';
 }
-class Reference extends Field
+class Reference extends Annotation
 {
+    public $name;
     public $targetDocument;
 }
 final class EmbedOne extends Reference

@@ -21,7 +21,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
      */
     public function testMapFieldWithId($cm)
     {
-        $cm->mapField(array('jsonName' => 'id', 'id' => true));
+        $cm->mapField(array('fieldName' => 'id', 'id' => true));
 
         $this->assertTrue(isset($cm->fieldMappings['id']));
         $this->assertEquals(array('jsonName' => '_id', 'id' => true, 'type' => 'string', 'fieldName' => 'id'), $cm->fieldMappings['id']);
@@ -88,7 +88,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
     {
         $cm = new ClassMetadata("Doctrine\Tests\ODM\CouchDB\Mapping\Person");
 
-        $cm->mapField(array('jsonName' => 'username'));
+        $cm->mapField(array('fieldName' => 'username'));
 
         $this->assertEquals(array('jsonName' => 'username', 'type' => 'string', 'fieldName' => 'username'), $cm->fieldMappings['username']);
     }
@@ -99,16 +99,20 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
      */
     public function testMapAssociationManyToOne($cm)
     {
-        $cm->mapManyToOne(array('jsonName' => 'address', 'targetDocument' => 'Doctrine\Tests\ODM\CouchDB\Mapping\Address'));
+        $cm->mapManyToOne(array('fieldName' => 'address', 'targetDocument' => 'Doctrine\Tests\ODM\CouchDB\Mapping\Address'));
 
-        $this->assertTrue(isset($cm->associations['address']), "No 'address' in associations map.");
+        $this->assertTrue(isset($cm->associationsMappings['address']), "No 'address' in associations map.");
         $this->assertEquals(array(
-            'jsonName' => 'address',
+            'fieldName' => 'address',
             'targetDocument' => 'Doctrine\Tests\ODM\CouchDB\Mapping\Address',
+            'jsonName' => 'address',
             'sourceDocument' => 'Doctrine\Tests\ODM\CouchDB\Mapping\Person',
             'isOwning' => true,
             'type' => ClassMetadata::MANY_TO_ONE,
-        ), $cm->associations['address']);
+        ), $cm->associationsMappings['address']);
+
+        $this->assertArrayHasKey('address', $cm->jsonNames);
+        $this->assertEquals('address', $cm->jsonNames['address']);
 
         return $cm;
     }
