@@ -136,12 +136,36 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $this->assertEquals('myuser-1111', $pUser2->id);
         $this->assertEquals('myuser-2222', $pUser3->id);
     }
+
+    public function testFindTypeValidation()
+    {
+        $user = $this->dm->find($this->type.'2', 1);
+        $this->assertType($this->type, $user);
+
+        $this->dm->getConfiguration()->setValidateDoctrineMetadata(true);
+        $user = $this->dm->find($this->type, 1);
+        $this->assertType($this->type, $user);
+
+        $this->setExpectedException('InvalidArgumentException');
+        $user = $this->dm->find($this->type.'2', 1);
+    }
 }
 
 /**
  * @Document
  */
 class User
+{
+    /** @Id(strategy="ASSIGNED") */
+    public $id;
+    /** @String */
+    public $username;
+}
+
+/**
+ * @Document
+ */
+class User2
 {
     /** @Id(strategy="ASSIGNED") */
     public $id;

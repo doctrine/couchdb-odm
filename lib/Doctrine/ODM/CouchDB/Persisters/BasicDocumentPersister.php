@@ -67,14 +67,12 @@ class BasicDocumentPersister
      * Loads an document by a list of field criteria.
      *
      * @param array $query The criteria by which to load the document.
-     * @param object $document The document to load the data into. If not specified,
-     *        a new document is created.
      * @param $assoc The association that connects the document to load to another document, if any.
      * @param array $hints Hints for document creation.
      * @return object The loaded and managed document instance or NULL if the document can not be found.
      * @todo Check iddocument map? loadById method? Try to guess whether $criteria is the id?
      */
-    public function load(array $query, $document = null, $assoc = null, array $hints = array())
+    public function load(array $query, $assoc = null, array $hints = array())
     {
         try {
             // TODO define a proper query array structure
@@ -84,7 +82,7 @@ class BasicDocumentPersister
                 return null;
             }
 
-            return $this->createDocument($query['documentName'], $response->body, $document, $hints);
+            return $this->createDocument($query['documentName'], $response->body, $hints);
         } catch(\Doctrine\ODM\CouchDB\DocumentNotFoundException $e) {
             return null;
         }
@@ -115,26 +113,30 @@ class BasicDocumentPersister
         return $docs;
     }
 
+    private function getDoctrineMetadata($documentName)
+    {
+        return array('type' => $documentName);
+    }
+
     /**
      * Creates or fills a single document object from a result.
      *
      * @param string $documentName
      * @param array $responseData The http response.
-     * @param object $document The document object to fill, if any.
      * @param array $hints Hints for document creation.
      * @return object The filled and managed document object or NULL, if the result is empty.
      */
-    private function createDocument($documentName, $responseData, $document = null, array $hints = array())
+    private function createDocument($documentName, $responseData, array $hints = array())
     {
-        if (isset($responseData['doctrine_metadata'])) {
+        if (isset($responseData['doctrine_metadata']['type'])) {
             $type = $responseData['doctrine_metadata']['type'];
             if (isset($documentName) && $this->dm->getConfiguration()->getValidateDoctrineMetadata()) {
-                // TODO implement type validation
+                $validate = true;
             }
-        } elseif(isset($documentName)) {
+        } else if (isset($documentName)) {
             $type = $documentName;
             if ($this->dm->getConfiguration()->getWriteDoctrineMetadata()) {
-                // TODO automatically add metadata
+                $responseData['doctrine_metadata'] = $this->getDoctrineMetadata($documentName);
             }
         } else {
             throw new \InvalidArgumentException("Missing Doctrine metadata in the Document, cannot hydrate (yet)!");
@@ -176,6 +178,11 @@ class BasicDocumentPersister
         
         $hints = array('refresh' => true);
 
-        return $this->dm->getUnitOfWork()->createDocument($class->name, $data, $responseData["_id"], $responseData["_rev"], $hints);
+        $document = $this->dm->getUnitOfWork()->createDocument($class->name, $data, $responseData["_id"], $responseData["_rev"], $hints);
+        if (isset($validate) && !($document instanceof $documentName)) {
+            throw new \InvalidArgumentException("Doctrine metadata mismatch! Requested type '$documentName' type does not match type '$type' stored in the metdata");
+        }
+
+        return $document;
     }
 }

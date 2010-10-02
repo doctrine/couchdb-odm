@@ -127,7 +127,6 @@ class UnitOfWork
      */
     public function getDocumentPersister()
     {
-        // TODO do we need to support multiple persister?
         if ($this->persister === null) {
             $this->persister = new Persisters\BasicDocumentPersister($this->dm);
         }
@@ -290,8 +289,10 @@ class UnitOfWork
                     }
                 }
             }
-            // TODO add metadata writing disabled support
-            $data['doctrine_metadata'] = array('type' => get_class($document));
+
+            if ($this->dm->getConfiguration()->getWriteDoctrineMetadata()) {
+                $data['doctrine_metadata'] = $this->dm->getDoctrineMetadata(get_class($document));
+            }
 
             $rev = $this->getDocumentRevision($document);
             if ($rev) {
