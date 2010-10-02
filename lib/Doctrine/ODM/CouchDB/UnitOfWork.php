@@ -64,30 +64,76 @@ class UnitOfWork
 
     /**
      * Create a document given class, data and the doc-id and revision
-     * @param string $class
-     * @param array $data
-     * @param string $id
-     * @param string $rev
+     * @param string $documentName
+     * @param array $documentState
      * @param array $hints
      * @return object
      */
-    public function createDocument($class, $data, $id, $rev = null, array &$hints = array())
+    public function createDocument($documentName, $data, array &$hints = array())
     {
-        $metadata = $this->dm->getClassMetadata($class);
-
-        if (isset($this->identityMap[$id])) {
-            $doc = $this->identityMap[$id];
-            $overrideLocalValues = false;
-
-            if ( ($doc instanceof Proxy && !$doc->__isInitialized__) || isset($hints['refresh'])) {
-                $overrideLocalValues = true;
-                $oid = spl_object_hash($doc);
+        if (isset($data['doctrine_metadata'])) {
+            $type = $data['doctrine_metadata']['type'];
+            if (isset($documentName) && $this->dm->getConfiguration()->getValidateDoctrineMetadata()) {
+                // TODO implement type validation
+            }
+        } elseif(isset($documentName)) {
+            $type = $documentName;
+            if ($this->dm->getConfiguration()->getWriteDoctrineMetadata()) {
+                // TODO automatically add metadata
             }
         } else {
-            $doc = $metadata->newInstance();
-            $this->identityMap[$id] = $doc;
+            throw new \InvalidArgumentException("Missing Doctrine metadata in the Document, cannot hydrate (yet)!");
+        }
 
-            $oid = spl_object_hash($doc);
+        $class = $this->dm->getClassMetadata($type);
+
+        $documentState = array();
+        $id = $data['_id'];
+        $rev = $data['_rev'];
+        foreach ($data as $jsonName => $value) {
+            // TODO: For migrations and stuff, maybe there should really be a "rest" field?
+            if (isset($class->jsonNames[$jsonName])) {
+                $fieldName = $class->jsonNames[$jsonName];
+                if (isset($class->fieldMappings[$fieldName])) {
+                    $documentState[$class->fieldMappings[$fieldName]['fieldName']] = $value;
+                } else if (isset($class->associationsMappings[$fieldName])) {
+
+                    if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE) {
+                        if ($value) {
+                            $value = $this->dm->getReference($class->associationsMappings[$fieldName]['targetDocument'], $value);
+                        }
+                        $documentState[$class->associationsMappings[$fieldName]['fieldName']] = $value;
+                    } else if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::MANY_TO_MANY) {
+                        if ($class->associationsMappings[$fieldName]['isOwning']) {
+                            // 1. if owning side we know all the ids
+                            $documentState[$class->associationsMappings[$fieldName]['fieldName']] = new \Doctrine\ODM\CouchDB\PersistentIdsCollection(
+                                new \Doctrine\Common\Collections\ArrayCollection(),
+                                $class->associationsMappings[$fieldName]['targetDocument'],
+                                $this->dm,
+                                $value
+                            );
+                        } else {
+                            // 2. if inverse side we need to nest the lazy loading relations view
+                            // TODO implement inverse side lazy loading
+                        }
+                    }
+                }
+            }
+        }
+
+        if (isset($this->identityMap[$id])) {
+            $document = $this->identityMap[$id];
+            $overrideLocalValues = false;
+
+            if ( ($document instanceof Proxy && !$document->__isInitialized__) || isset($hints['refresh'])) {
+                $overrideLocalValues = true;
+                $oid = spl_object_hash($document);
+            }
+        } else {
+            $document = $class->newInstance();
+            $this->identityMap[$id] = $document;
+
+            $oid = spl_object_hash($document);
             $this->documentState[$oid] = self::STATE_MANAGED;
             $this->documentIdentifiers[$oid] = $id;
             $this->documentRevisions[$oid] = $rev;
@@ -95,14 +141,14 @@ class UnitOfWork
         }
 
         if ($overrideLocalValues) {
-            foreach ($metadata->reflFields as $prop => $reflFields) {
-                $value = isset($data[$prop]) ? $data[$prop] : null;
-                $reflFields->setValue($doc, $value);
+            foreach ($class->reflFields as $prop => $reflFields) {
+                $value = isset($documentState[$prop]) ? $documentState[$prop] : null;
+                $reflFields->setValue($document, $value);
                 $this->originalData[$oid][$prop] = $value;
             }
         }
 
-        return $doc;
+        return $document;
     }
 
     /**

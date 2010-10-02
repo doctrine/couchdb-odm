@@ -84,7 +84,11 @@ class BasicDocumentPersister
                 return null;
             }
 
-            return $this->createDocument($query['documentName'], $response->body, $document, $hints);
+            if ($document) {
+                $hints['refresh'] = true;
+            }
+
+            return $this->dm->getUnitOfWork()->createDocument($query['documentName'], $response->body, $hints);
         } catch(\Doctrine\ODM\CouchDB\DocumentNotFoundException $e) {
             return null;
         }
@@ -106,76 +110,14 @@ class BasicDocumentPersister
             throw new \Exception("loadMany error code " . $response->status);
         }
 
+        $uow = $this->dm->getUnitOfWork();
+
         $docs = array();
         if ($response->body['total_rows'] > 0) {
             foreach ($response->body['rows'] AS $responseData) {
-                $docs[] = $this->createDocument($documentName, $responseData['doc']);
+                $docs[] = $uow->createDocument($documentName, $responseData['doc']);
             }
         }
         return $docs;
-    }
-
-    /**
-     * Creates or fills a single document object from a result.
-     *
-     * @param string $documentName
-     * @param array $responseData The http response.
-     * @param object $document The document object to fill, if any.
-     * @param array $hints Hints for document creation.
-     * @return object The filled and managed document object or NULL, if the result is empty.
-     */
-    private function createDocument($documentName, $responseData, $document = null, array $hints = array())
-    {
-        if (isset($responseData['doctrine_metadata'])) {
-            $type = $responseData['doctrine_metadata']['type'];
-            if (isset($documentName) && $this->dm->getConfiguration()->getValidateDoctrineMetadata()) {
-                // TODO implement type validation
-            }
-        } elseif(isset($documentName)) {
-            $type = $documentName;
-            if ($this->dm->getConfiguration()->getWriteDoctrineMetadata()) {
-                // TODO automatically add metadata
-            }
-        } else {
-            throw new \InvalidArgumentException("Missing Doctrine metadata in the Document, cannot hydrate (yet)!");
-        }
-
-        $class = $this->dm->getClassMetadata($type);
-
-        $data = array();
-        foreach ($responseData as $jsonName => $value) {
-            // TODO: For migrations and stuff, maybe there should really be a "rest" field?
-            if (isset($class->jsonNames[$jsonName])) {
-                $fieldName = $class->jsonNames[$jsonName];
-                if (isset($class->fieldMappings[$fieldName])) {
-                    $data[$class->fieldMappings[$fieldName]['fieldName']] = $value;
-                } else if (isset($class->associationsMappings[$fieldName])) {
-
-                    if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE) {
-                        if ($value) {
-                            $value = $this->dm->getReference($class->associationsMappings[$fieldName]['targetDocument'], $value);
-                        }
-                        $data[$class->associationsMappings[$fieldName]['fieldName']] = $value;
-                    } else if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::MANY_TO_MANY) {
-                        if ($class->associationsMappings[$fieldName]['isOwning']) {
-                            // 1. if owning side we know all the ids
-                            $data[$class->associationsMappings[$fieldName]['fieldName']] = new \Doctrine\ODM\CouchDB\PersistentIdsCollection(
-                                new \Doctrine\Common\Collections\ArrayCollection(),
-                                $class->associationsMappings[$fieldName]['targetDocument'],
-                                $this->dm,
-                                $value
-                            );
-                        } else {
-                            // 2. if inverse side we need to nest the lazy loading relations view
-                            // TODO implement inverse side lazy loading
-                        }
-                    }
-                }
-            }
-        }
-        
-        $hints = array('refresh' => true);
-
-        return $this->dm->getUnitOfWork()->createDocument($class->name, $data, $responseData["_id"], $responseData["_rev"], $hints);
     }
 }

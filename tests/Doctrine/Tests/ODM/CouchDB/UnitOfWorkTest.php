@@ -28,7 +28,7 @@ class UnitOfWorkTest extends CouchDBTestCase
 
     public function testCreateDocument()
     {
-        $user = $this->uow->createDocument($this->type, array('id' => '1', 'username' => 'foo'), 1, 23);
+        $user = $this->uow->createDocument($this->type, array('_id' => '1', '_rev' => 23, 'username' => 'foo'));
 
         $this->assertType($this->type, $user);
         $this->assertEquals('1', $user->id);
@@ -42,15 +42,15 @@ class UnitOfWorkTest extends CouchDBTestCase
 
     public function testCreateDocument_UseIdentityMap()
     {
-        $user1 = $this->uow->createDocument($this->type, array('id' => '1', 'username' => 'foo'), 1, 1);
-        $user2 = $this->uow->createDocument($this->type, array('id' => '1', 'username' => 'foo'), 1, 1);
+        $user1 = $this->uow->createDocument($this->type, array('_id' => '1', '_rev' => 1, 'username' => 'foo'));
+        $user2 = $this->uow->createDocument($this->type, array('_id' => '1', '_rev' => 1, 'username' => 'foo'));
 
         $this->assertSame($user1, $user2);
     }
 
     public function testTryGetById()
     {
-        $user1 = $this->uow->createDocument($this->type, array('id' => '1', 'username' => 'foo'), 1, 1);
+        $user1 = $this->uow->createDocument($this->type, array('_id' => '1', '_rev' => 1, 'username' => 'foo'));
 
         $user2 = $this->uow->tryGetById(1, $this->type);
 
@@ -105,7 +105,7 @@ class UnitOfWorkTest extends CouchDBTestCase
 
     public function testScheduleInsert_IdentityMapObject_ThrowsException()
     {
-        $user1 = $this->uow->createDocument($this->type, array('id' => '1', 'username' => 'foo'), 1, 1);
+        $user1 = $this->uow->createDocument($this->type, array('_id' => '1', '_rev' => 1, 'username' => 'foo'));
 
         $this->setExpectedException("Exception");
 
