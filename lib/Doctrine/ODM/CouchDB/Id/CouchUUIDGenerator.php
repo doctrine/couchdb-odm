@@ -11,12 +11,12 @@ class CouchUUIDGenerator extends IdGenerator
 
     public function generate($document, ClassMetadata $cm, DocumentManager $dm)
     {
-        if (count($this->uuids) == 0) {
+        if (empty($this->uuids)) {
             $UUIDGenerationBufferSize = $dm->getConfiguration()->getUUIDGenerationBufferSize();
             $this->uuids = $dm->getUnitOfWork()->getDocumentPersister()->getUuids($UUIDGenerationBufferSize);
         }
 
-        $id =  array_pop($this->uuids);
+        $id = array_pop($this->uuids);
         $cm->reflFields[$cm->identifier]->setValue($document, $id);
         return $id;
     }
