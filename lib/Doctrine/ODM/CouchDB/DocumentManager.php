@@ -37,8 +37,7 @@ class DocumentManager
         }
         $this->metadataFactory = new ClassMetadataFactory($this);
         $this->unitOfWork = new UnitOfWork($this);
-        // TODO: Add configuration!
-        $this->proxyFactory = new Proxy\ProxyFactory($this, $this->config->getProxyDir(), 'MyProxies', true);
+        $this->proxyFactory = new Proxy\ProxyFactory($this, $this->config->getProxyDir(), $this->config->getProxyNamespace(), true);
     }
 
     /**
