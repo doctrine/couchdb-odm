@@ -89,12 +89,7 @@ class ProxyFactory
             $this->dm->getMetadataFactory()->setMetadataFor($fqn, $this->dm->getClassMetadata($className));
         }
 
-        /**
-        * @todo Lukas
-        */
-        $documentPersister = $this->dm->getUnitOfWork()->getDocumentPersister($className);
-
-        return new $fqn($documentPersister, $identifier);
+        return new $fqn($this->dm, $identifier);
     }
 
     /**
@@ -257,22 +252,20 @@ namespace <namespace>;
  */
 class <proxyClassName> extends \<className> implements \Doctrine\ODM\CouchDB\Proxy\Proxy
 {
-    private $__doctrineDocumentPersister__;
+    private $__doctrineDocumentManager__;
     private $__doctrineIdentifier__;
     public $__isInitialized__ = false;
-    public function __construct($documentPersister, $identifier)
+    public function __construct($documentManager, $identifier)
     {
-        $this->__doctrineDocumentPersister__ = $documentPersister;
+        $this->__doctrineDocumentManager__ = $documentManager;
         $this->__doctrineIdentifier__ = $identifier;
     }
     private function __doctrineLoad__()
     {
-        if (!$this->__isInitialized__ && $this->__doctrineDocumentPersister__) {
+        if (!$this->__isInitialized__ && $this->__doctrineDocumentManager__) {
             $this->__isInitialized__ = true;
-            if ($this->__doctrineDocumentPersister__->load(array('documentName' => '\<className>', 'id' => $this->__doctrineIdentifier__), $this) === null) {
-                throw new \Doctrine\ODM\CouchDB\DocumentNotFoundException();
-            }
-            unset($this->__doctrineDocumentPersister__, $this->__doctrineIdentifier__);
+            $this->__doctrineDocumentManager__->refresh($this);
+            unset($this->__doctrineDocumentManager__, $this->__doctrineIdentifier__);
         }
     }
 

@@ -72,12 +72,58 @@ class DocumentRepository
      */
     public function find($id)
     {
-        return $this->dm->getUnitOfWork()->getDocumentPersister()->load(array('documentName' => $this->documentName, 'id' => $id));
+        $uow = $this->dm->getUnitOfWork();
+        $persister = $uow->getDocumentPersister();
+        $response = $persister->findDocument($id);
+
+        if ($response->status == 404) {
+            return null;
+        }
+
+        $hints = array();
+        return $uow->createDocument($this->documentName, $response->body, $hints);
     }
 
+    /**
+     * @param  object $document
+     * @return void
+     */
+    public function refresh($document)
+    {
+        $uow = $this->dm->getUnitOfWork();
+        $persister = $uow->getDocumentPersister();
+        $response = $persister->findDocument($uow->getDocumentIdentifier($document));
+
+        if ($response->status == 404) {
+            throw new \Doctrine\ODM\CouchDB\DocumentNotFoundException();
+        }
+
+        $hints = array('refresh' => true);
+        $uow->createDocument($this->documentName, $response->body, $hints);
+    }
+
+    /**
+     * Find Many documents of the given repositories type by id.
+     *
+     * @param array $ids
+     * @return array
+     */
     public function findMany(array $ids)
     {
-        return $this->dm->getUnitOfWork()->getDocumentPersister()->loadMany($this->documentName, $ids);
+        $uow = $this->dm->getUnitOfWork();
+        $response =  $uow->getDocumentPersister()->findDocuments($ids);
+
+        if ($response->status != 200) {
+            throw new \Exception("loadMany error code " . $response->status);
+        }
+
+        $docs = array();
+        if ($response->body['total_rows'] > 0) {
+            foreach ($response->body['rows'] AS $responseData) {
+                $docs[] = $uow->createDocument($this->documentName, $responseData['doc']);
+            }
+        }
+        return $docs;
     }
 
     /**

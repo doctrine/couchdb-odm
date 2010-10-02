@@ -121,6 +121,14 @@ class DocumentManager
     }
 
     /**
+     * @param object $document
+     */
+    public function refresh($document)
+    {
+        $this->getDocumentRepository(get_class($document))->refresh($document);
+    }
+
+    /**
      * Gets a reference to the entity identified by the given type and identifier
      * without actually loading it, if the entity is not yet loaded.
      *

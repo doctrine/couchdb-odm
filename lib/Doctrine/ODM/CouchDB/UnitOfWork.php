@@ -57,6 +57,9 @@ class UnitOfWork
      */
     private $idGenerators = array();
 
+    /**
+     * @param DocumentManager $dm
+     */
     public function __construct(DocumentManager $dm)
     {
         $this->dm = $dm;
@@ -64,6 +67,7 @@ class UnitOfWork
 
     /**
      * Create a document given class, data and the doc-id and revision
+     * 
      * @param string $documentName
      * @param array $documentState
      * @param array $hints
@@ -152,15 +156,9 @@ class UnitOfWork
     }
 
     /**
-     * @Internal 
-     * @param <type> $oid
-     * @param <type> $rev
+     * @param  object $document
+     * @return array
      */
-    public function setDocumentRevision($oid, $rev)
-    {
-        $this->documentRevisions[$oid] = $rev;
-    }
-
     public function getOriginalData($document)
     {
         return $this->originalData[\spl_object_hash($document)];
@@ -255,16 +253,16 @@ class UnitOfWork
             // and we have a copy of the original data
 
             $changed = false;
-            foreach ($actualData AS $k => $v) {
-                if (isset($class->fieldMappings[$k]) && $this->originalData[$oid][$k] !== $v) {
+            foreach ($actualData AS $fieldName => $fieldValue) {
+                if (isset($class->fieldMappings[$fieldName]) && $this->originalData[$oid][$fieldName] !== $fieldValue) {
                     $changed = true;
                     break;
-                } else if(isset($class->associationsMappings[$k])) {
-                    if ( ($class->associationsMappings[$k]['type'] & ClassMetadata::TO_ONE) && $this->originalData[$oid][$k] !== $v) {
+                } else if(isset($class->associationsMappings[$fieldName])) {
+                    if ( ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE) && $this->originalData[$oid][$fieldName] !== $fieldValue) {
                         $changed = true;
                         break;
-                    } else if ( ($class->associationsMappings[$k]['type'] & ClassMetadata::TO_ONE)) {
-                        if ( !($v instanceof PersistentCollection) || $v->changed()) {
+                    } else if ( ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE)) {
+                        if ( !($fieldValue instanceof PersistentCollection) || $fieldValue->changed()) {
                             $changed = true;
                             break;
                         }
@@ -297,14 +295,11 @@ class UnitOfWork
     {
         $this->detectChangedDocuments();
 
-        $persister = $this->getDocumentPersister();
-        $errors = array();
-
         $bulkUpdater = new Persisters\BulkUpdater($this->dm->getConfiguration()->getHttpClient(), $this->dm->getConfiguration()->getDatabase());
         $bulkUpdater->setAllOrNothing(true); // TODO: Docs discourage this, but in the UoW context it makes sense? Evaluate!
 
         foreach ($this->scheduledRemovals AS $oid => $document) {
-            $bulkUpdater->deleteDocument($this->getDocumentIdentifier($document), $this->getDocumentRevision($document));
+            $bulkUpdater->deleteDocument($this->documentIdentifiers[$oid], $this->documentRevisions[$oid]);
             $this->removeFromIdentityMap($document);
         }
 
@@ -325,7 +320,7 @@ class UnitOfWork
                         }
                     } else if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_MANY) {
                         if ($class->associationsMappings[$fieldName]['isOwning']) {
-                            // TODO: Optimize when not initialized yet!
+                            // TODO: Optimize when not initialized yet! In ManyToMany case we can keep track of ALL ids
                             $ids = array();
                             foreach ($fieldValue AS $relatedObject) {
                                 $ids[] = $this->getDocumentIdentifier($relatedObject);
