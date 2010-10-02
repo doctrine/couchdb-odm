@@ -255,7 +255,6 @@ class UnitOfWork
         $errors = $persister->executeInserts();
 
         if (count($errors)) {
-            var_dump($errors);
             throw new \Exception("Errors happend: " . count($errors));
         }
     }

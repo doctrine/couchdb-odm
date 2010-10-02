@@ -111,7 +111,7 @@ class ClassMetadata
     public $associationsMappings = array();
 
     /**
-     * CouchDB documents are always versioned, this flag determines if this version is expored to the userland.
+     * CouchDB documents are always versioned, this flag determines if this version is exposed to the userland.
      *
      * @var bool
      */
