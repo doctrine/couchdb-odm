@@ -17,13 +17,17 @@ class CmsUser
     public $username;
     /** @String */
     public $name;
-    public $phonenumbers;
-    public $articles;
+
+    /** @EmbedOne */
     public $address;
+
+    /** @ReferenceOne(targetDocument="CmsUserRights") */
+    public $rights;
+
+    public $articles;
     public $groups;
     
     public function __construct() {
-        $this->phonenumbers = new ArrayCollection;
         $this->articles = new ArrayCollection;
         $this->groups = new ArrayCollection;
     }

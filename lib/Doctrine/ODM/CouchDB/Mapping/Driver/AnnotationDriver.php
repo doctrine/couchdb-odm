@@ -121,8 +121,15 @@ class AnnotationDriver implements Driver
             foreach ($this->reader->getPropertyAnnotations($property) as $fieldAnnot) {
                 
                 if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Field) {
+                    if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Version) {
+                        $mapping['isVersionField'] = true;
+                    }
+
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
                     $class->mapField($mapping);
+                } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\ReferenceOne) {
+                    $mapping = array_merge($mapping, (array) $fieldAnnot);
+                    $class->mapManyToOne($mapping);
                 }
             }
         }

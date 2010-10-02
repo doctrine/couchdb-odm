@@ -111,6 +111,20 @@ class ClassMetadata
     public $associationsMappings = array();
 
     /**
+     * CouchDB documents are always versioned, this flag determines if this version is expored to the userland.
+     *
+     * @var bool
+     */
+    public $isVersioned = false;
+
+    /**
+     * Version Field stores the CouchDB Revision
+     *
+     * @var string
+     */
+    public $versionField = null;
+
+    /**
      * Initializes a new ClassMetadata instance that will hold the object-document mapping
      * metadata of the class with the given name.
      *
@@ -240,6 +254,12 @@ class ClassMetadata
             $mapping['type'] = 'string';
             $mapping['jsonName'] = '_id';
             $this->identifier = $mapping['fieldName'];
+            if (isset($mapping['strategy'])) {
+                $this->idGenerator = constant('Doctrine\ODM\CouchDB\Mapping\ClassMetadata::IDGENERATOR_' . strtoupper($mapping['strategy']));
+            }
+        } else if (isset($mapping['isVersionField'])) {
+            $this->isVersioned = true;
+            $this->versionField = $mapping['fieldName'];
         }
 
         $this->fieldMappings[$mapping['fieldName']] = $mapping;

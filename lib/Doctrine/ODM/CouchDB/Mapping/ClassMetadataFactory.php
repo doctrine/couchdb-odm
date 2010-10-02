@@ -179,8 +179,7 @@ class ClassMetadataFactory
      * Loads the metadata of the class in question and all it's ancestors whose metadata
      * is still not loaded.
      *
-     * @param string $name The name of the class for which the metadata should get loaded.
-     * @param array  $tables The metadata collection to which the loaded metadata is added.
+     * @param string $className The name of the class for which the metadata should get loaded.
      */
     private function loadMetadata($className)
     {
@@ -188,11 +187,8 @@ class ClassMetadataFactory
             throw MappingException::classNotFound($className);
         }
 
-        $loaded = array();
-
-        // TODO: Currently we inject the Metadata
-
-        return $loaded;
+        $this->loadedMetadata[$className] = new ClassMetadata($className);
+        $this->driver->loadMetadataForClass($className, $this->loadedMetadata[$className]);
     }
 
     /**

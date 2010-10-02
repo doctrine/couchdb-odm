@@ -10,8 +10,6 @@ class ManyToOneAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFuncti
 
     public function setUp()
     {
-        $this->useModelSet('cms');
-
         $user1 = new \Doctrine\Tests\Models\CMS\CmsUser();
         $user1->username = "beberlei";
         $user1->status = "active";
@@ -68,5 +66,10 @@ class ManyToOneAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFuncti
 
         $this->assertNotType('Doctrine\ODM\CouchDB\Proxy\Proxy', $article->user);
         $this->assertSame($author, $article->user);
+    }
+
+    public function testNullReference()
+    {
+        $this->markTestIncomplete('Test that persisting and hydrating null works smoothly.');
     }
 }

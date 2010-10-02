@@ -150,9 +150,12 @@ class BasicDocumentPersister
             }
 
             if ( ($response->status === 200 || $response->status == 201) && $response->body['ok'] == true) {
-                $this->documentRevisions[$oid] = $response->body['rev'];
+                $uow->setDocumentRevision($oid, $response->body['rev']);
+                if ($class->isVersioned) {
+                    $class->reflFields[$class->versionField]->setValue($document, $response->body['rev']);
+                }
             } else {
-                $errors[] = $document;
+                $errors[] = $response->body;
             }
         }
 
@@ -265,56 +268,5 @@ class BasicDocumentPersister
         }
 
         return array($class, $data);
-    }
-
-    /**
-     * Loads an document of this persister's mapped class as part of a single-valued
-     * association from another document.
-     *
-     * @param array $assoc The association to load.
-     * @param object $sourcedocument The document that owns the association (not necessarily the "owning side").
-     * @param object $targetdocument The existing ghost document (proxy) to load, if any.
-     * @param array $identifier The identifier of the document to load. Must be provided if
-     *                          the association to load represents the owning side, otherwise
-     *                          the identifier is derived from the $sourcedocument.
-     * @return object The loaded and managed document instance or NULL if the document can not be found.
-     */
-    public function loadOneToOneDocument(array $assoc, $sourcedocument, $targetdocument, array $identifier = array())
-    {
-        //TODO: implement
-    }
-
-    /**
-     * Refreshes a managed document.
-     *
-     * @param array $id The identifier of the document as an associative array from
-     *                  column or field names to values.
-     * @param object $document The document to refresh.
-     */
-    public function refresh(array $id, $document)
-    {
-        //TODO: implement
-    }
-
-    /**
-     * Loads a list of entities by a list of field criteria.
-     *
-     * @param array $criteria
-     * @return array
-     */
-    public function loadAll(array $criteria = array())
-    {
-        //TODO: implement
-    }
-
-    /**
-     * Checks whether the given managed document exists in the database.
-     *
-     * @param object $document
-     * @return boolean TRUE if the document exists in the database, FALSE otherwise.
-     */
-    public function exists($document)
-    {
-        //TODO: implement
     }
 }

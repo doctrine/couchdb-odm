@@ -13,6 +13,7 @@ class CmsArticle
     public $topic;
     /** @String */
     public $text;
+    /** @ReferenceOne(targetDocument="CmsUser") */
     public $user;
     public $comments;
     /** @Version */

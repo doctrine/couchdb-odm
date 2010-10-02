@@ -2,21 +2,24 @@
 
 namespace Doctrine\Tests\Models\CMS;
 
+/**
+ * @EmbeddedDocument
+ */
 class CmsAddress
 {
+    /** @Id */
     public $id;
+    /** @String */
     public $country;
+    /** @String */
     public $zip;
+    /** @String */
     public $city;
+    /** @String */
     public $street;
-    public $user;
 
     public function getId() {
         return $this->id;
-    }
-    
-    public function getUser() {
-        return $this->user;
     }
 
     public function getCountry() {
@@ -29,12 +32,5 @@ class CmsAddress
 
     public function getCity() {
         return $this->city;
-    }
-    
-    public function setUser(CmsUser $user) {
-        if ($this->user !== $user) {
-            $this->user = $user;
-            $user->setAddress($this);
-        }
     }
 }

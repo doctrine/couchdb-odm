@@ -63,125 +63,16 @@ class DocumentRepository
     }
 
     /**
-     * Create a new Query instance that is prepopulated for this document name
-     *
-     * @return Query $qb
-     */
-    public function createQuery()
-    {
-        return $this->dm->createQuery()
-            ->find($this->documentName);
-    }
-
-    /**
-     * Clears the repository, causing all managed documents to become detached.
-     */
-    public function clear()
-    {
-        $this->dm->clear($this->class->rootDocumentName);
-    }
-
-    /**
-     * Find a single document by its identifier or multiple by a given criteria.
+     * Find a single document by its identifier
      *
      * @param mixed $query A single identifier or an array of criteria.
      * @param array $select The fields to select.
      * @return Doctrine\ODM\CouchDB\MongoCursor $cursor
      * @return object $document
      */
-    public function find($query = array(), array $select = array())
+    public function find($id)
     {
-        if (is_scalar($query)) {
-            if ($document = $this->dm->getUnitOfWork()->tryGetById($query, $this->documentName)) {
-                return $document; // Hit!
-            }
-
-            return $this->dm->getUnitOfWork()->getDocumentPersister($this->documentName)->loadById($query);
-        } else {
-            return $this->dm->getUnitOfWork()->getDocumentPersister($this->documentName)->loadAll($query, $select);
-        }
-    }
-
-    /**
-     * Find a single document with the given query and select fields.
-     *
-     * @param string $documentName The document to find.
-     * @param array $query The query criteria.
-     * @param array $select The fields to select
-     * @return object $document
-     */
-    public function findOne(array $query = array(), array $select = array())
-    {
-        return $this->dm->getUnitOfWork()->getDocumentPersister($this->documentName)->load($query, $select);
-    }
-
-    /**
-     * Finds all documents in the repository.
-     *
-     * @param int $hydrationMode
-     * @return array The documents.
-     */
-    public function findAll()
-    {
-        return $this->find();
-    }
-
-    /**
-     * Finds documents by a set of criteria.
-     *
-     * @param array $criteria
-     * @return array
-     */
-    public function findBy(array $criteria)
-    {
-        return $this->find($criteria);
-    }
-
-    /**
-     * Finds a single document by a set of criteria.
-     *
-     * @param array $criteria
-     * @return object
-     */
-    public function findOneBy(array $criteria)
-    {
-       return $this->findOne($criteria);
-    }
-
-    /**
-     * Adds support for magic finders.
-     *
-     * @return array|object The found document/documents.
-     * @throws BadMethodCallException  If the method called is an invalid find* method
-     *                                 or no find* method at all and therefore an invalid
-     *                                 method call.
-     */
-    public function __call($method, $arguments)
-    {
-        if (substr($method, 0, 6) == 'findBy') {
-            $by = substr($method, 6, strlen($method));
-            $method = 'findBy';
-        } elseif (substr($method, 0, 9) == 'findOneBy') {
-            $by = substr($method, 9, strlen($method));
-            $method = 'findOneBy';
-        } else {
-            throw new \BadMethodCallException(
-                "Undefined method '$method'. The method name must start with ".
-                "either findBy or findOneBy!"
-            );
-        }
-
-        if ( ! isset($arguments[0])) {
-            throw CouchDBException::findByRequiresParameter($method.$by);
-        }
-
-        $fieldName = lcfirst(\Doctrine\Common\Util\Inflector::classify($by));
-
-        if ($this->class->hasField($fieldName)) {
-            return $this->$method(array($fieldName => $arguments[0]));
-        } else {
-            throw CouchDBException::invalidFindByCall($this->documentName, $fieldName, $method.$by);
-        }
+        return $this->unitOfWork->getDocumentPersister()->load(array('documentName' => $this->documentName, 'id' => $id));
     }
 
     /**

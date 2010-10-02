@@ -3,6 +3,8 @@
 namespace Doctrine\ODM\CouchDB;
 
 use Doctrine\ODM\CouchDB\HTTP\Client;
+use Doctrine\ODM\CouchDB\Mapping\Driver\Driver;
+use Doctrine\Common\Cache\Cache;
 
 class Configuration
 {

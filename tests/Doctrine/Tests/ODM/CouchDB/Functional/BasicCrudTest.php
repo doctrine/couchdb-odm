@@ -12,12 +12,9 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
     public function setUp()
     {
         $this->type = 'Doctrine\Tests\ODM\CouchDB\Functional\User';
-        $database = $this->getTestDatabase();
-        $httpClient = $this->getHttpClient();
-        
-        $httpClient->request('DELETE', '/' . $database);
-        $resp = $httpClient->request('PUT', '/' . $database);
-        $this->assertEquals(201, $resp->status);
+        $this->dm = $this->createDocumentManager();
+
+        $httpClient = $this->dm->getConfiguration()->getHttpClient();
 
         $data = json_encode(
             array(
@@ -26,20 +23,8 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
                 'doctrine_metadata' => array('type' => $this->type)
             )
         );
-        $resp = $httpClient->request('PUT', '/' . $database . '/1', $data);
+        $resp = $httpClient->request('PUT', '/' . $this->dm->getConfiguration()->getDatabase() . '/1', $data);
         $this->assertEquals(201, $resp->status);
-
-        $config = new \Doctrine\ODM\CouchDB\Configuration();
-        $config->setDefaultDB($database);
-
-        $this->dm = \Doctrine\ODM\CouchDB\DocumentManager::create($httpClient, $config);
-
-        $cmf = $this->dm->getClassMetadataFactory();
-        $metadata = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata($this->type);
-        $metadata->mapField(array('fieldName' => 'id', 'id' => true));
-        $metadata->mapField(array('fieldName' => 'username', 'type' => 'string'));
-        $metadata->idGenerator = \Doctrine\ODM\CouchDB\Mapping\ClassMetadata::IDGENERATOR_ASSIGNED;
-        $cmf->setMetadataFor($this->type, $metadata);
     }
 
     public function testFind()
@@ -153,8 +138,13 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
     }
 }
 
+/**
+ * @Document
+ */
 class User
 {
+    /** @Id(strategy="ASSIGNED") */
     public $id;
+    /** @String */
     public $username;
 }

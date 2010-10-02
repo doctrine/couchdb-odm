@@ -6,13 +6,6 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
 {
     private $httpClient = null;
 
-    private $useModelSet = null;
-
-    public function useModelSet($name)
-    {
-        $this->useModelSet = $name;
-    }
-
     /**
      * @return \Doctrine\ODM\CouchDB\HTTP\Client
      */
@@ -37,29 +30,16 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
         $httpClient->request('DELETE', '/' . $database);
         $resp = $httpClient->request('PUT', '/' . $database);
 
+        $reader = new \Doctrine\Common\Annotations\AnnotationReader();
+        $reader->setDefaultAnnotationNamespace('Doctrine\ODM\CouchDB\Mapping\\');
+        $paths = __DIR__ . "/../../Models";
+        $metaDriver = new \Doctrine\ODM\CouchDB\Mapping\Driver\AnnotationDriver($reader, $paths);
+
         $config = new \Doctrine\ODM\CouchDB\Configuration();
         $config->setDefaultDB($database);
         $config->setProxyDir(\sys_get_temp_dir());
+        $config->setMetadataDriverImpl($metaDriver);
 
-        $dm = \Doctrine\ODM\CouchDB\DocumentManager::create($httpClient, $config);
-
-        $cmf = $dm->getClassMetadataFactory();
-        if ($this->useModelSet == 'cms') {
-            $cm = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata('Doctrine\Tests\Models\CMS\CmsUser');
-            $cm->mapField(array('fieldName' => 'id', 'id' => true));
-            $cm->mapField(array('fieldName' => 'username'));
-            $cm->mapField(array('fieldName' => 'name'));
-            $cm->mapField(array('fieldName' => 'status'));
-            $cmf->setMetadataFor('Doctrine\Tests\Models\CMS\CmsUser', $cm);
-
-            $cm = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata('Doctrine\Tests\Models\CMS\CmsArticle');
-            $cm->mapField(array('fieldName' => 'id', 'id' => true));
-            $cm->mapField(array('fieldName' => 'topic'));
-            $cm->mapField(array('fieldName' => 'text'));
-            $cm->mapManyToOne(array('fieldName' => 'user', 'targetDocument' => 'Doctrine\Tests\Models\CMS\CmsUser'));
-            $cmf->setMetadataFor('Doctrine\Tests\Models\CMS\CmsArticle', $cm);
-        }
-
-        return $dm;
+        return \Doctrine\ODM\CouchDB\DocumentManager::create($httpClient, $config);
     }
 }

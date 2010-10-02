@@ -4,12 +4,6 @@ namespace Doctrine\Tests\ODM\CouchDB\Functional;
 
 class ReferenceTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 {
-    public function setUp()
-    {
-        $this->useModelSet('cms');
-        parent::setUp();
-    }
-
     public function testReferenceUsesIdentityMap()
     {
         $dm = $this->createDocumentManager();

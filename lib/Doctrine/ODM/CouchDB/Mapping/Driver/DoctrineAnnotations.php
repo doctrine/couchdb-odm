@@ -31,17 +31,19 @@ final class MappedSuperclass extends Annotation {}
 
 class Field extends Annotation
 {
-    public $name;
+    public $jsonName;
     public $type = 'string';
 }
 final class Id extends Field
 {
     public $id = true;
     public $type = 'id';
+    public $strategy = 'UUID';
 }
 final class Version extends Field
 {
     public $type = 'string';
+    public $jsonName = '_rev';
 }
 final class Boolean extends Field
 {
@@ -65,7 +67,7 @@ final class Date extends Field
 }
 class Reference extends Annotation
 {
-    public $name;
+    public $jsonName;
     public $targetDocument;
 }
 final class EmbedOne extends Reference

@@ -100,6 +100,16 @@ class UnitOfWork
         return $doc;
     }
 
+    /**
+     * @Internal 
+     * @param <type> $oid
+     * @param <type> $rev
+     */
+    public function setDocumentRevision($oid, $rev)
+    {
+        $this->documentRevisions[$oid] = $rev;
+    }
+
     public function getOriginalData($document)
     {
         return $this->originalData[\spl_object_hash($document)];
@@ -170,6 +180,10 @@ class UnitOfWork
             $actualData[$propName] = $reflProp->getValue($document);
             // TODO: ORM transforms arrays and collections into persistent collections
         }
+        // unset the revision field if necessary, it is not to be managed by the user in write scenarios.
+        if ($class->isVersioned) {
+            unset($actualData[$class->versionField]);
+        }
 
         if (!isset($this->originalData[$oid])) {
             // Entity is New and should be inserted
@@ -231,6 +245,7 @@ class UnitOfWork
         $errors = $persister->executeInserts();
 
         if (count($errors)) {
+            var_dump($errors);
             throw new \Exception("Errors happend: " . count($errors));
         }
     }
@@ -296,11 +311,10 @@ class UnitOfWork
     public function getDocumentRevision($document)
     {
         $oid = \spl_object_hash($document);
-        if (array_key_exists($oid, $this->documentRevisions)) {
+        if (isset($this->documentRevisions[$oid])) {
             return $this->documentRevisions[$oid];
-        } else {
-            throw new CouchDBException("Document is not managed and has no revision.");
         }
+        return null;
     }
 
     public function getDocumentIdentifier($document)

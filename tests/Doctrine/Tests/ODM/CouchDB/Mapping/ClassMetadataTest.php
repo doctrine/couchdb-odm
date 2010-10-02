@@ -59,8 +59,6 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
         $this->setExpectedException('Doctrine\ODM\CouchDB\Mapping\MappingException');
 
         $cm->mapField(array());
-
-        return $cm;
     }
 
     /**
@@ -82,6 +80,18 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
 
         $this->assertType('Doctrine\Tests\ODM\CouchDB\Mapping\Person', $instance1);
         $this->assertNotSame($instance1, $instance2);
+    }
+
+    /**
+     * @depends testmapField
+     */
+    public function testMapVersionField($cm)
+    {
+        $this->assertFalse($cm->isVersioned);
+        $cm->mapField(array('fieldName' => 'version', 'jsonName' => '_rev', 'isVersionField' => true));
+
+        $this->assertTrue($cm->isVersioned);
+        $this->assertEquals('version', $cm->versionField);
     }
 
     public function testmapFieldWithoutType_DefaultsToString()
@@ -127,6 +137,8 @@ class Person
     public $created;
 
     public $address;
+
+    public $version;
 }
 
 class Address

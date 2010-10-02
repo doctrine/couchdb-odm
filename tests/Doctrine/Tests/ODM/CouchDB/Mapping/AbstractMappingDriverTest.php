@@ -57,4 +57,26 @@ abstract class AbstractMappingDriverTest extends \PHPUnit_Framework_Testcase
 
         return $class;
     }
+
+    /**
+     * @depends testFieldMappings
+     * @param ClassMetadata $class
+     */
+    public function testAssociationMappings($class)
+    {
+        $this->assertArrayHasKey('rights', $class->associationsMappings);
+
+        $this->assertEquals(array(
+            'fieldName' => 'rights',
+            'cascade' => null,
+            'jsonName' => 'rights',
+            'targetDocument' => 'Doctrine\Tests\Models\CMS\CmsUserRights',
+            'value' => null,
+            'sourceDocument' => 'Doctrine\Tests\Models\CMS\CmsUser',
+            'isOwning' => true,
+            'type' => ClassMetadata::MANY_TO_ONE,
+        ), $class->associationsMappings['rights']);
+
+        return $class;
+    }
 }
