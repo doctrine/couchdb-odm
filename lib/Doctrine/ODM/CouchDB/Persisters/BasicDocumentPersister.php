@@ -130,11 +130,21 @@ class BasicDocumentPersister
                 if (isset($class->fieldMappings[$fieldName])) {
                     $data[$class->fieldMappings[$fieldName]['jsonName']] = $fieldValue;
                 } else if (isset($class->associationsMappings[$fieldName])) {
-                    if ($class->associationsMappings[$fieldName]['type'] == ClassMetadata::MANY_TO_ONE) {
+                    if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE) {
                         if (\is_object($fieldValue)) {
                             $data[$fieldName] = $uow->getDocumentIdentifier($fieldValue);
                         } else {
                             $data[$fieldName] = null;
+                        }
+                    } else if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_MANY) {
+                        if ($class->associationsMappings[$fieldName]['isOwning']) {
+                            // TODO: Optimize when not initialized yet!
+                            $ids = array();
+                            foreach ($fieldValue AS $relatedObject) {
+                                $ids[] = $uow->getDocumentIdentifier($relatedObject);
+                            }
+
+                            $data[$fieldName] = $ids;
                         }
                     }
                 }
@@ -265,8 +275,25 @@ class BasicDocumentPersister
                 if (isset($class->fieldMappings[$fieldName])) {
                     $data[$class->fieldMappings[$fieldName]['fieldName']] = $value;
                 } else if (isset($class->associationsMappings[$fieldName])) {
-                    $value = $this->dm->getReference($class->associationsMappings[$fieldName]['targetDocument'], $value);
-                    $data[$class->associationsMappings[$fieldName]['fieldName']] = $value;
+
+                    if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE) {
+                        if ($value) {
+                            $value = $this->dm->getReference($class->associationsMappings[$fieldName]['targetDocument'], $value);
+                        }
+                        $data[$class->associationsMappings[$fieldName]['fieldName']] = $value;
+                    } else if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::MANY_TO_MANY) {
+                        if ($class->associationsMappings[$fieldName]['isOwning']) {
+                            // 1. if owning side we know all the ids
+                            $data[$class->associationsMappings[$fieldName]['fieldName']] = new \Doctrine\ODM\CouchDB\PersistentIdsCollection(
+                                new \Doctrine\Common\Collections\ArrayCollection(),
+                                $class->associationsMappings[$fieldName]['targetDocument'],
+                                $this->dm,
+                                $value
+                            );
+                        } else {
+                            // 2. if inverse side we need to nest the lazy loading relations view
+                        }
+                    }
                 }
             }
         }

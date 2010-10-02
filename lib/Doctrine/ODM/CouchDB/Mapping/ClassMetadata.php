@@ -7,8 +7,8 @@ class ClassMetadata
     const IDGENERATOR_UUID = 1;
     const IDGENERATOR_ASSIGNED = 2;
 
-    const TO_ONE = 3;
-    const TO_MANY = 12;
+    const TO_ONE = 5;
+    const TO_MANY = 10;
     const ONE_TO_ONE = 1;
     const ONE_TO_MANY = 2;
     const MANY_TO_ONE = 4;
@@ -304,6 +304,17 @@ class ClassMetadata
 
         $mapping['isOwning'] = true;
         $mapping['type'] = self::MANY_TO_ONE;
+
+        $this->associationsMappings[$mapping['fieldName']] = $mapping;
+        $this->jsonNames[$mapping['jsonName']] = $mapping['fieldName'];
+    }
+
+    public function mapManyToMany($mapping)
+    {
+        $mapping = $this->validateAndCompleteAssociationMapping($mapping);
+
+        $mapping['isOwning'] = true;
+        $mapping['type'] = self::MANY_TO_MANY;
 
         $this->associationsMappings[$mapping['fieldName']] = $mapping;
         $this->jsonNames[$mapping['jsonName']] = $mapping['fieldName'];

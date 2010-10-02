@@ -197,9 +197,19 @@ class UnitOfWork
 
             $changed = false;
             foreach ($actualData AS $k => $v) {
-                if ($this->originalData[$oid][$k] !== $v) {
+                if (isset($class->fieldMappings[$k]) && $this->originalData[$oid][$k] !== $v) {
                     $changed = true;
                     break;
+                } else if(isset($class->associationsMappings[$k])) {
+                    if ( ($class->associationsMappings[$k]['type'] & ClassMetadata::TO_ONE) && $this->originalData[$oid][$k] !== $v) {
+                        $changed = true;
+                        break;
+                    } else if ( ($class->associationsMappings[$k]['type'] & ClassMetadata::TO_ONE)) {
+                        if ( !($v instanceof PersistentCollection) || $v->changed()) {
+                            $changed = true;
+                            break;
+                        }
+                    }
                 }
             }
 

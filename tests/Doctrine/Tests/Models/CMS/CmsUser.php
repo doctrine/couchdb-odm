@@ -25,6 +25,8 @@ class CmsUser
     public $rights;
 
     public $articles;
+
+    /** @ReferenceMany(targetDocument="CmsGroup") */
     public $groups;
     
     public function __construct() {
