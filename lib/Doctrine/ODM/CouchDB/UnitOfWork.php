@@ -66,6 +66,17 @@ class UnitOfWork
     }
 
     /**
+     * Create the array data structure to be stored as the doctrine metadata inside CouchDB documents
+     *
+     * @param string $documentName
+     * @return array
+     */
+    protected function getDoctrineMetadata($documentName)
+    {
+        return array('type' => $documentName);
+    }
+
+    /**
      * Create a document given class, data and the doc-id and revision
      * 
      * @param string $documentName
@@ -75,18 +86,19 @@ class UnitOfWork
      */
     public function createDocument($documentName, $data, array &$hints = array())
     {
-        if (isset($data['doctrine_metadata'])) {
-            $type = $data['doctrine_metadata']['type'];
-            if (isset($documentName) && $this->dm->getConfiguration()->getValidateDoctrineMetadata()) {
-                // TODO implement type validation
-            }
-        } elseif(isset($documentName)) {
-            $type = $documentName;
-            if ($this->dm->getConfiguration()->getWriteDoctrineMetadata()) {
-                // TODO automatically add metadata
-            }
+
+        if (isset($data['doctrine_metadata']['type'])) {
+             $type = $data['doctrine_metadata']['type'];
+             if (isset($documentName) && $this->dm->getConfiguration()->getValidateDoctrineMetadata()) {
+                $validate = true;
+             }
+        } else if (isset($documentName)) {
+             $type = $documentName;
+             if ($this->dm->getConfiguration()->getWriteDoctrineMetadata()) {
+                $data['doctrine_metadata'] = $this->getDoctrineMetadata($documentName);
+             }
         } else {
-            throw new \InvalidArgumentException("Missing Doctrine metadata in the Document, cannot hydrate (yet)!");
+             throw new \InvalidArgumentException("Missing Doctrine metadata in the Document, cannot hydrate (yet)!");
         }
 
         $class = $this->dm->getClassMetadata($type);
@@ -101,7 +113,6 @@ class UnitOfWork
                 if (isset($class->fieldMappings[$fieldName])) {
                     $documentState[$class->fieldMappings[$fieldName]['fieldName']] = $value;
                 } else if (isset($class->associationsMappings[$fieldName])) {
-
                     if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE) {
                         if ($value) {
                             $value = $this->dm->getReference($class->associationsMappings[$fieldName]['targetDocument'], $value);
@@ -142,6 +153,10 @@ class UnitOfWork
             $this->documentIdentifiers[$oid] = $id;
             $this->documentRevisions[$oid] = $rev;
             $overrideLocalValues = true;
+        }
+
+        if (isset($validate) && !($document instanceof $documentName)) {
+            throw new \InvalidArgumentException("Doctrine metadata mismatch! Requested type '$documentName' type does not match type '$type' stored in the metdata");
         }
 
         if ($overrideLocalValues) {
@@ -319,7 +334,7 @@ class UnitOfWork
             }
 
             if ($this->dm->getConfiguration()->getWriteDoctrineMetadata()) {
-                $data['doctrine_metadata'] = $this->dm->getDoctrineMetadata(get_class($document));
+                $data['doctrine_metadata'] = $this->getDoctrineMetadata(get_class($document));
             }
 
             $rev = $this->getDocumentRevision($document);
