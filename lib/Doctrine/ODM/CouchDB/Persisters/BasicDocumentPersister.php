@@ -131,6 +131,8 @@ class BasicDocumentPersister
      */
     private function createDocument($documentName, $responseData, $document = null, array $hints = array())
     {
+        // TODO implement handling for $document
+
         if (isset($responseData['doctrine_metadata']['type'])) {
             $type = $responseData['doctrine_metadata']['type'];
             if (isset($documentName) && $this->dm->getConfiguration()->getValidateDoctrineMetadata()) {
@@ -178,8 +180,8 @@ class BasicDocumentPersister
                 }
             }
         }
-        
-        $hints = array('refresh' => true);
+
+        $hints['refresh'] = true;
 
         $newdocument = $this->dm->getUnitOfWork()->createDocument($class->name, $data, $responseData["_id"], $responseData["_rev"], $hints);
         if (isset($validate) && !($newdocument instanceof $documentName)) {
