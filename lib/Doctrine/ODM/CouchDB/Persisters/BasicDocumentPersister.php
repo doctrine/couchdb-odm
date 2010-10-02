@@ -197,50 +197,54 @@ class BasicDocumentPersister
             // TODO define a proper query array structure
             // view support with view parameters and couchdb parameters (include_docs, limit, sort direction)
             $response = $this->findDocument($query['id']);
-            return $this->createDocument($query['documentName'], $response, $document, $hints);
+            if ($response->status > 400) {
+                return null;
+            }
+
+            return $this->createDocument($query['documentName'], $response->body, $document, $hints);
         } catch(\Doctrine\ODM\CouchDB\DocumentNotFoundException $e) {
             return null;
         }
     }
 
     /**
+     * Load many documents of a type by mass fetching them from the _all_docs document.
+     *
+     * @param  string $documentName
+     * @param  array $ids
+     * @return array
+     */
+    public function loadMany($documentName, $ids)
+    {
+        $allDocsPath = '/' . $this->databaseName . '/_all_docs?include_docs=true';
+        $response = $this->httpClient->request('POST', $allDocsPath, json_encode(array('keys' => $ids)));
+
+        if ($response->status != 200) {
+            throw new \Exception("loadMany error code " . $response->status);
+        }
+
+        $docs = array();
+        if ($response->body['total_rows'] > 0) {
+            foreach ($response->body['rows'] AS $responseData) {
+                $docs[] = $this->createDocument($documentName, $responseData['doc']);
+            }
+        }
+        return $docs;
+    }
+
+    /**
      * Creates or fills a single document object from a result.
      *
-     * @param $response The http response.
+     * @param string $documentName
+     * @param array $responseData The http response.
      * @param object $document The document object to fill, if any.
      * @param array $hints Hints for document creation.
      * @return object The filled and managed document object or NULL, if the result is empty.
      */
-    private function createDocument($documentName, $response, $document = null, array $hints = array())
+    private function createDocument($documentName, $responseData, $document = null, array $hints = array())
     {
-        if ($response->status > 400) {
-            return null;
-        }
-
-        list($class, $data) = $this->processResponseBody($documentName, $response->body);
-        $hints = array('refresh' => true);
-
-        return $this->dm->getUnitOfWork()->createDocument($class->name, $data, $response->body["_id"], $response->body["_rev"], $hints);
-    }
-
-    /**
-     * Processes a response body that contains data for an document of the type
-     * this persister is responsible for.
-     *
-     * Subclasses are supposed to override this method if they need to change the
-     * hydration procedure for entities loaded through basic find operations or
-     * lazy-loading (not DQL).
-     *
-     * @param array $responseBody The response body to process.
-     * @return array A tuple where the first value is an instance of
-     *               Doctrine\ODM\CouchDB\Mapping\ClassMetadata and the
-     *              second value the prepared data of the document
-     *              (a map from field names to values).
-     */
-    protected function processResponseBody($documentName, array $responseBody)
-    {
-        if (isset($responseBody['doctrine_metadata'])) {
-            $type = $responseBody['doctrine_metadata']['type'];
+        if (isset($responseData['doctrine_metadata'])) {
+            $type = $responseData['doctrine_metadata']['type'];
             if(isset($documentName)) {
                 // TODO add (optional?) type validation
             }
@@ -254,7 +258,7 @@ class BasicDocumentPersister
         $class = $this->dm->getClassMetadata($type);
 
         $data = array();
-        foreach ($responseBody as $jsonName => $value) {
+        foreach ($responseData as $jsonName => $value) {
             // TODO: For migrations and stuff, maybe there should really be a "rest" field?
             if (isset($class->jsonNames[$jsonName])) {
                 $fieldName = $class->jsonNames[$jsonName];
@@ -266,7 +270,9 @@ class BasicDocumentPersister
                 }
             }
         }
+        
+        $hints = array('refresh' => true);
 
-        return array($class, $data);
+        return $this->dm->getUnitOfWork()->createDocument($class->name, $data, $responseData["_id"], $responseData["_rev"], $hints);
     }
 }

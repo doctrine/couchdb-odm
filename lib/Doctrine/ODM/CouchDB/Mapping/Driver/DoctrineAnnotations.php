@@ -37,7 +37,7 @@ class Field extends Annotation
 final class Id extends Field
 {
     public $id = true;
-    public $type = 'id';
+    public $type = 'string';
     public $strategy = 'UUID';
 }
 final class Version extends Field
@@ -64,6 +64,10 @@ final class String extends Field
 final class Date extends Field
 {
     public $type = 'date';
+}
+final class ArrayField extends Field
+{
+    public $type = 'array';
 }
 class Reference extends Annotation
 {

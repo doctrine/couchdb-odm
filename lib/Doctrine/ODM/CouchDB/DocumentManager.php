@@ -24,6 +24,11 @@ class DocumentManager
 
     private $proxyFactory = null;
 
+    /**
+     * @var array
+     */
+    private $repositories = array();
+
     public function __construct(Client $httpClient = null, Configuration $config = null)
     {
         $this->config = $config ? $config : new Configuration();
@@ -83,8 +88,26 @@ class DocumentManager
 
     public function find($documentName, $id)
     {
+        return $this->getDocumentRepository($documentName)->find($id);
+    }
+
+    /**
+     * @param  string $documentName
+     * @return Doctrine\ODM\CouchDB\DocumentRepository
+     */
+    public function getDocumentRepository($documentName)
+    {
         $documentName  = ltrim($documentName, '\\');
-        return $this->unitOfWork->getDocumentPersister()->load(array('documentName' => $documentName, 'id' => $id));
+        if (!isset($this->repositories[$documentName])) {
+            $class = $this->getClassMetadata($documentName);
+            if ($class->customRepositoryClassName) {
+                $repositoryClass = $class->customRepositoryClassName;
+            } else {
+                $repositoryClass = 'Doctrine\ODM\CouchDB\DocumentRepository';
+            }
+            $this->repositories[$documentName] = new $repositoryClass($this, $class);
+        }
+        return $this->repositories[$documentName];
     }
 
     public function persist($object)

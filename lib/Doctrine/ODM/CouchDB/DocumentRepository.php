@@ -72,7 +72,12 @@ class DocumentRepository
      */
     public function find($id)
     {
-        return $this->unitOfWork->getDocumentPersister()->load(array('documentName' => $this->documentName, 'id' => $id));
+        return $this->dm->getUnitOfWork()->getDocumentPersister()->load(array('documentName' => $this->documentName, 'id' => $id));
+    }
+
+    public function findMany(array $ids)
+    {
+        return $this->dm->getUnitOfWork()->getDocumentPersister()->loadMany($this->documentName, $ids);
     }
 
     /**

@@ -61,7 +61,7 @@ class ManyToOneAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFuncti
 
     public function testReuseIdentityMap()
     {
-        $author = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUer', $this->userIds[0]);
+        $author = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $this->userIds[0]);
         $article = $this->dm->find('Doctrine\Tests\Models\CMS\CmsArticle', $this->articleId);
 
         $this->assertNotType('Doctrine\ODM\CouchDB\Proxy\Proxy', $article->user);
