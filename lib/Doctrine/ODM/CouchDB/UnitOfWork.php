@@ -203,7 +203,7 @@ class UnitOfWork
             $this->originalData[$oid] = $actualData;
 
             $this->documentChangesets[$oid] = $actualData;
-            $this->scheduledUpdates[] = $document;
+            $this->scheduledUpdates[$oid] = $document;
         } else {
             // Entity is "fully" MANAGED: it was already fully persisted before
             // and we have a copy of the original data
@@ -228,7 +228,7 @@ class UnitOfWork
 
             if ($changed) {
                 $this->documentChangesets[$oid] = $actualData;
-                $this->scheduledUpdates[] = $document;
+                $this->scheduledUpdates[$oid] = $document;
             }
         }
     }
@@ -254,18 +254,75 @@ class UnitOfWork
         $persister = $this->getDocumentPersister();
         $errors = array();
 
-        foreach ($this->scheduledRemovals AS $key => $document) {
-            $persister->delete($document);
-            unset($this->scheduledRemovals[$key]);
+        $bulkUpdater = new Persisters\BulkUpdater($this->dm->getConfiguration()->getHttpClient(), $this->dm->getConfiguration()->getDatabase());
+        $bulkUpdater->setAllOrNothing(true); // TODO: Docs discourage this, but in the UoW context it makes sense? Evaluate!
+
+        foreach ($this->scheduledRemovals AS $oid => $document) {
+            $bulkUpdater->deleteDocument($this->getDocumentIdentifier($document), $this->getDocumentRevision($document));
             $this->removeFromIdentityMap($document);
         }
 
-        foreach ($this->scheduledUpdates AS $key => $document) {
-            $persister->addInsert($document);
-            unset($this->scheduledUpdates[$key]);
-        }
+        foreach ($this->scheduledUpdates AS $oid => $document) {
+            $data = array();
+            $class = $this->dm->getClassMetadata(get_class($document));
 
-        $errors = $persister->executeInserts();
+            // Convert field values to json values.
+            foreach ($this->documentChangesets[$oid] AS $fieldName => $fieldValue) {
+                if (isset($class->fieldMappings[$fieldName])) {
+                    $data[$class->fieldMappings[$fieldName]['jsonName']] = $fieldValue;
+                } else if (isset($class->associationsMappings[$fieldName])) {
+                    if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE) {
+                        if (\is_object($fieldValue)) {
+                            $data[$fieldName] = $this->getDocumentIdentifier($fieldValue);
+                        } else {
+                            $data[$fieldName] = null;
+                        }
+                    } else if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_MANY) {
+                        if ($class->associationsMappings[$fieldName]['isOwning']) {
+                            // TODO: Optimize when not initialized yet!
+                            $ids = array();
+                            foreach ($fieldValue AS $relatedObject) {
+                                $ids[] = $this->getDocumentIdentifier($relatedObject);
+                            }
+
+                            $data[$fieldName] = $ids;
+                        }
+                    }
+                }
+            }
+            // TODO add metadata writing disabled support
+            $data['doctrine_metadata'] = array('type' => get_class($document));
+
+            $rev = $this->getDocumentRevision($document);
+            if ($rev) {
+                $data['_rev'] = $rev;
+            }
+            $bulkUpdater->updateDocument($data);
+        }
+        $response = $bulkUpdater->execute();
+        $errors = array();
+        if ($response->status == 201) {
+            foreach ($response->body AS $docResponse) {
+                if (!isset($this->identityMap[$docResponse['id']])) {
+                    // deletions
+                    continue;
+                }
+
+                $document = $this->identityMap[$docResponse['id']];
+                if (isset($docResponse['error'])) {
+                    $errors[] = $docResponse;
+                } else {
+                    $this->documentRevisions[spl_object_hash($document)] = $docResponse['rev'];
+                    $class = $this->dm->getClassMetadata(get_class($document));
+                    if ($class->isVersioned) {
+                        $class->reflFields[$class->versionField]->setValue($document, $docResponse['rev']);
+                    }
+                }
+            }
+        }
+        
+        $this->scheduledUpdates =
+        $this->scheduledRemovals = array();
 
         if (count($errors)) {
             throw new \Exception("Errors happend: " . count($errors));
