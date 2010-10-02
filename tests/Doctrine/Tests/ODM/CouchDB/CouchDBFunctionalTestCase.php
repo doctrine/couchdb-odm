@@ -39,7 +39,8 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
         $config->setDatabase($database);
         $config->setProxyDir(\sys_get_temp_dir());
         $config->setMetadataDriverImpl($metaDriver);
+        $config->setHttpClient($httpClient);
 
-        return \Doctrine\ODM\CouchDB\DocumentManager::create($httpClient, $config);
+        return \Doctrine\ODM\CouchDB\DocumentManager::create($config);
     }
 }

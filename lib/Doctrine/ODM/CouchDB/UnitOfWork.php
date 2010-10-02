@@ -164,19 +164,6 @@ class UnitOfWork
         return $this->originalData[\spl_object_hash($document)];
     }
 
-    /**
-     * Gets the DocumentPersister for an Entity.
-     *
-     * @return Doctrine\ODM\CouchDB\Persisters\BasicDocumentPersister
-     */
-    public function getDocumentPersister()
-    {
-        if ($this->persister === null) {
-            $this->persister = new Persisters\BasicDocumentPersister($this->dm);
-        }
-        return $this->persister;
-    }
-
     public function scheduleInsert($document)
     {
         if ($this->getDocumentState($document) != self::STATE_NEW) {

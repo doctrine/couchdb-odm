@@ -8,7 +8,9 @@ class DocumentManagerTest extends CouchDBTestCase
     {
         $config = new \Doctrine\ODM\CouchDB\Configuration();
         $httpClient = new \Doctrine\ODM\CouchDB\HTTP\SocketClient();
-        $dm = \Doctrine\ODM\CouchDB\DocumentManager::create($httpClient, $config);
+        $config->setHttpClient($httpClient);
+        
+        $dm = \Doctrine\ODM\CouchDB\DocumentManager::create($config);
 
         $this->assertType('Doctrine\ODM\CouchDB\DocumentManager', $dm);
         $this->assertSame($config, $dm->getConfiguration());

@@ -13,7 +13,7 @@ class CouchUUIDGenerator extends IdGenerator
     {
         if (empty($this->uuids)) {
             $UUIDGenerationBufferSize = $dm->getConfiguration()->getUUIDGenerationBufferSize();
-            $this->uuids = $dm->getUnitOfWork()->getDocumentPersister()->getUuids($UUIDGenerationBufferSize);
+            $this->uuids = $dm->getCouchDBClient()->getUuids($UUIDGenerationBufferSize);
         }
 
         $id = array_pop($this->uuids);

@@ -73,8 +73,7 @@ class DocumentRepository
     public function find($id)
     {
         $uow = $this->dm->getUnitOfWork();
-        $persister = $uow->getDocumentPersister();
-        $response = $persister->findDocument($id);
+        $response = $this->dm->getCouchDBClient()->findDocument($id);
 
         if ($response->status == 404) {
             return null;
@@ -91,8 +90,7 @@ class DocumentRepository
     public function refresh($document)
     {
         $uow = $this->dm->getUnitOfWork();
-        $persister = $uow->getDocumentPersister();
-        $response = $persister->findDocument($uow->getDocumentIdentifier($document));
+        $response = $this->dm->getCouchDBClient()->findDocument($uow->getDocumentIdentifier($document));
 
         if ($response->status == 404) {
             throw new \Doctrine\ODM\CouchDB\DocumentNotFoundException();
@@ -111,7 +109,7 @@ class DocumentRepository
     public function findMany(array $ids)
     {
         $uow = $this->dm->getUnitOfWork();
-        $response =  $uow->getDocumentPersister()->findDocuments($ids);
+        $response = $this->dm->getCouchDBClient()->findDocuments($ids);
 
         if ($response->status != 200) {
             throw new \Exception("loadMany error code " . $response->status);

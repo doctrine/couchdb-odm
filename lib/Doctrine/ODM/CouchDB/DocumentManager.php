@@ -29,15 +29,28 @@ class DocumentManager
      */
     private $repositories = array();
 
-    public function __construct(Client $httpClient = null, Configuration $config = null)
+    /**
+     * @var CouchDBClient
+     */
+    private $couchDBClient = null;
+
+    public function __construct(Configuration $config = null)
     {
         $this->config = $config ? $config : new Configuration();
-        if ($httpClient) {
-            $this->config->setHttpClient($httpClient);
-        }
         $this->metadataFactory = new ClassMetadataFactory($this);
         $this->unitOfWork = new UnitOfWork($this);
         $this->proxyFactory = new Proxy\ProxyFactory($this, $this->config->getProxyDir(), $this->config->getProxyNamespace(), true);
+    }
+
+    /**
+     * @return CouchDBClient
+     */
+    public function getCouchDBClient()
+    {
+        if ($this->couchDBClient === null) {
+            $this->couchDBClient = new CouchDBClient($this->getConfiguration()->getHttpClient(), $this->getConfiguration()->getDatabase());
+        }
+        return $this->couchDBClient;
     }
 
     /**
@@ -47,9 +60,9 @@ class DocumentManager
      * @param Doctrine\ODM\CouchDB\HTTP\Client
      * @param Doctrine\ODM\CouchDB\Configuration $config
      */
-    public static function create(Client $httpClient = null, Configuration $config = null)
+    public static function create(Configuration $config = null)
     {
-        return new DocumentManager($httpClient, $config);
+        return new DocumentManager($config);
     }
 
     /**
