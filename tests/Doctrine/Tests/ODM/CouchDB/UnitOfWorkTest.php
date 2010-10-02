@@ -97,8 +97,6 @@ class UnitOfWorkTest extends CouchDBTestCase
         $object->username = "bar";
 
         $this->dm->getClassMetadata(get_class($object))->idGenerator = ClassMetadata::IDGENERATOR_UUID;
-        // TODO: should this really be necessary?
-        idGenerator::reset(ClassMetadata::IDGENERATOR_UUID);
         $this->uow->scheduleInsert($object);
 
         $this->assertNotNull($object->id);

@@ -52,6 +52,11 @@ class UnitOfWork
      */
     private $scheduledRemovals = array();
 
+    /**
+     * @var array
+     */
+    private $idGenerators = array();
+
     public function __construct(DocumentManager $dm)
     {
         $this->dm = $dm;
@@ -137,9 +142,17 @@ class UnitOfWork
 
         $class = $this->dm->getClassMetadata(get_class($document));
 
-        $id = Id\IdGenerator::get($class->idGenerator)->generate($document, $class, $this->dm);
+        $id = $this->getIdGenerator($class->idGenerator)->generate($document, $class, $this->dm);
 
         $this->registerManaged($document, $id, null);
+    }
+
+    private function getIdGenerator($type)
+    {
+        if (!isset($this->idGenerators[$type])) {
+            $this->idGenerators[$type] = Id\IdGenerator::create($type);
+        }
+        return $this->idGenerators[$type];
     }
 
     public function scheduleRemove($document)
