@@ -46,17 +46,17 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
         $cmf = $dm->getClassMetadataFactory();
         if ($this->useModelSet == 'cms') {
             $cm = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata('Doctrine\Tests\Models\CMS\CmsUser');
-            $cm->mapField(array('name' => 'id', 'id' => true));
-            $cm->mapField(array('name' => 'username'));
-            $cm->mapField(array('name' => 'name'));
-            $cm->mapField(array('name' => 'status'));
+            $cm->mapField(array('fieldName' => 'id', 'id' => true));
+            $cm->mapField(array('fieldName' => 'username'));
+            $cm->mapField(array('fieldName' => 'jsonName'));
+            $cm->mapField(array('fieldName' => 'status'));
             $cmf->setMetadataFor('Doctrine\Tests\Models\CMS\CmsUser', $cm);
 
             $cm = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata('Doctrine\Tests\Models\CMS\CmsArticle');
-            $cm->mapField(array('name' => 'id', 'id' => true));
-            $cm->mapField(array('name' => 'topic'));
-            $cm->mapField(array('name' => 'text'));
-            $cm->mapManyToOne(array('name' => 'user', 'targetDocument' => 'Doctrine\Tests\Models\CMS\CmsUser'));
+            $cm->mapField(array('fieldName' => 'id', 'id' => true));
+            $cm->mapField(array('fieldName' => 'topic'));
+            $cm->mapField(array('fieldName' => 'text'));
+            $cm->mapManyToOne(array('fieldName' => 'user', 'targetDocument' => 'Doctrine\Tests\Models\CMS\CmsUser'));
             $cmf->setMetadataFor('Doctrine\Tests\Models\CMS\CmsArticle', $cm);
         }
 

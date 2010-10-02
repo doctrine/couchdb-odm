@@ -114,41 +114,14 @@ class AnnotationDriver implements Driver
             throw MappingException::classIsNotAValidDocument($className);
         }
 
-        if (isset($documentAnnot->db)) {
-            $class->setDB($documentAnnot->db);
-        }
-        if (isset($documentAnnot->repositoryClass)) {
-            $class->setCustomRepositoryClass($documentAnnot->repositoryClass);
-        }
-
-        $methods = $reflClass->getMethods();
-
         foreach ($reflClass->getProperties() as $property) {
             $mapping = array();
             $mapping['fieldName'] = $property->getName();
-
-            if ($alsoLoad = $this->reader->getPropertyAnnotation($property, 'Doctrine\ODM\CouchDB\Mapping\AlsoLoad')) {
-                $mapping['alsoLoadFields'] = (array) $alsoLoad->value;
-            }
-            if ($notSaved = $this->reader->getPropertyAnnotation($property, 'Doctrine\ODM\CouchDB\Mapping\NotSaved')) {
-                $mapping['notSaved'] = true;
-            }
 
             foreach ($this->reader->getPropertyAnnotations($property) as $fieldAnnot) {
                 if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Field) {
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
                     $class->mapField($mapping);
-                }
-            }
-        }
-
-        foreach ($methods as $method) {
-            if ($method->isPublic()) {
-                if ($alsoLoad = $this->reader->getMethodAnnotation($method, 'Doctrine\ODM\CouchDB\Mapping\AlsoLoad')) {
-                    $fields = (array) $alsoLoad->value;
-                    foreach ($fields as $value) {
-                        $class->alsoLoadMethods[$value] = $method->getName();
-                    }
                 }
             }
         }
@@ -222,21 +195,5 @@ class AnnotationDriver implements Driver
         $this->classNames = $classes;
 
         return $classes;
-    }
-
-    /**
-     * Factory method for the Annotation Driver
-     * 
-     * @param array|string $paths
-     * @param AnnotationReader $reader
-     * @return AnnotationDriver
-     */
-    static public function create($paths = array(), AnnotationReader $reader = null)
-    {
-        if ($reader == null) {
-            $reader = new AnnotationReader();
-            $reader->setDefaultAnnotationNamespace('Doctrine\ODM\CouchDB\Mapping\\');
-        }
-        return new self($reader, $paths);
     }
 }

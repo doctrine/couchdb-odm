@@ -323,7 +323,7 @@ class StreamClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
         );
 
         $this->assertTrue(
-            in_array( 'doctrine_odm_test', $response->body )
+            in_array( \Doctrine\Tests\ODM\CouchDB\TestUtil::getTestDatabase(), $response->body )
         );
     }
 

@@ -301,9 +301,7 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
             is_array( $response->body )
         );
 
-        $this->assertTrue(
-            in_array( 'doctrine_odm_test', $response->body )
-        );
+        $this->assertTrue(in_array(\Doctrine\Tests\ODM\CouchDB\TestUtil::getTestDatabase(), $response->body ));
     }
 
     /**

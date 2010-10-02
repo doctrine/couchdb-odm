@@ -36,8 +36,8 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
 
         $cmf = $this->dm->getClassMetadataFactory();
         $metadata = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata($this->type);
-        $metadata->mapField(array('name' => 'id', 'id' => true));
-        $metadata->mapField(array('name' => 'username', 'type' => 'string'));
+        $metadata->mapField(array('fieldName' => 'id', 'id' => true));
+        $metadata->mapField(array('fieldName' => 'username', 'type' => 'string'));
         $metadata->idGenerator = \Doctrine\ODM\CouchDB\Mapping\ClassMetadata::IDGENERATOR_ASSIGNED;
         $cmf->setMetadataFor($this->type, $metadata);
     }

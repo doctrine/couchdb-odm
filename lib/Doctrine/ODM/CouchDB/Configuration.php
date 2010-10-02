@@ -187,6 +187,18 @@ class Configuration
     public function getDBPrefix()
     {
         return isset($this->attributes['dbPrefix']) ?
-            $this->attributes['dbPrefix'] : null;
+            $this->attributes['dbPrefix'] : '';
+    }
+
+    /**
+     * Abstract away DB Prefix and DefaultDB.
+     *
+     * What are they used for anyways? They feel overengineered and make the code harder to read and get right.
+     *
+     * @return string
+     */
+    public function getDatabase()
+    {
+        return $this->getDBPrefix() . $this->getDefaultDB();
     }
 }

@@ -1,7 +1,5 @@
 <?php
 /*
- *  $Id$
- *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -25,8 +23,7 @@ use Doctrine\Common\Annotations\Annotation;
 
 final class Document extends Annotation
 {
-    public $db;
-    public $collection;
+    public $type;
     public $repositoryClass;
 }
 final class EmbeddedDocument extends Annotation {}
@@ -41,11 +38,10 @@ final class Id extends Field
 {
     public $id = true;
     public $type = 'id';
-    public $custom = false;
 }
-final class Hash extends Field
+final class Version extends Field
 {
-    public $type = 'hash';
+    public $type = 'string';
 }
 final class Boolean extends Field
 {
@@ -67,78 +63,29 @@ final class Date extends Field
 {
     public $type = 'date';
 }
-final class Key extends Field
+class Reference extends Field
 {
-    public $type = 'key';
-}
-final class Timestamp extends Field
-{
-    public $type = 'timestamp';
-}
-final class Bin extends Field
-{
-    public $type = 'bin';
-}
-final class BinFunc extends Field
-{
-    public $type = 'bin_func';
-}
-final class BinUUID extends Field
-{
-    public $type = 'bin_uuid';
-}
-final class BinMD5 extends Field
-{
-    public $type = 'bin_md5';
-}
-final class BinCustom extends Field
-{
-    public $type = 'bin_custom';
-}
-final class File extends Field
-{
-    public $type = 'file';
-    public $file = true;
-}
-final class Increment extends Field
-{
-    public $type = 'increment';
-}
-final class Collection extends Field
-{
-    public $type = 'collection';
-    public $strategy = 'pushPull'; // pushPull, set
-}
-final class EmbedOne extends Field
-{
-    public $type = 'one';
-    public $embedded = true;
     public $targetDocument;
 }
-final class EmbedMany extends Field
+final class EmbedOne extends Reference
 {
-    public $type = 'many';
-    public $embedded = true;
-    public $targetDocument;
-    public $strategy = 'pushPull'; // pushPull, set
 }
-final class ReferenceOne extends Field
+final class EmbedMany extends Reference
 {
-    public $type = 'one';
-    public $reference = true;
-    public $targetDocument;
+}
+final class ReferenceOne extends Reference
+{
     public $cascade;
 }
-final class ReferenceMany extends Field
+final class ReferenceMany extends Reference
 {
-    public $type = 'many';
-    public $reference = true;
-    public $targetDocument;
     public $cascade;
-    public $strategy = 'pushPull'; // pushPull, set
 }
-class NotSaved extends Field {}
-final class AlsoLoad extends Annotation
+final class Attachments extends Field
+{
+    
+}
+final class Attachment extends Field
 {
     public $name;
 }

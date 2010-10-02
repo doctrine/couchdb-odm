@@ -39,7 +39,7 @@ class BasicDocumentPersister
     {
         $this->dm = $dm;
         // TODO how to handle the case when the database name changes?
-        $this->databaseName = $dm->getConfiguration()->getDBPrefix().$dm->getConfiguration()->getDefaultDB();
+        $this->databaseName = $dm->getConfiguration()->getDatabase();
         $this->httpClient = $dm->getConfiguration()->getHttpClient();
     }
 
@@ -74,24 +74,22 @@ class BasicDocumentPersister
      * @param array $data
      * @return Response
      */
-    public function postDocument(array $data, $id)
+    public function postDocument(array $data)
     {
-        $data['_id'] = $id;
         return $this->httpClient->request('POST', '/' . $this->databaseName , json_encode($data));
     }
 
-    public function putDocument(array $data, $id, $rev = null)
+    public function putDocument(array $data, $rev = null)
     {
-        $data['_id'] = $id;
         if ($rev) {
             $data['_rev'] = $rev;
         }
-        return $this->httpClient->request('PUT', '/' . $this->databaseName . '/' . $id , json_encode($data));
+        return $this->httpClient->request('PUT', '/' . $this->databaseName . '/' . $data['_id'] , json_encode($data));
     }
 
     public function deleteDocument($id, $rev)
     {
-        return $this->httpClient->request('DELETE', '/' . $this->databaseName . '/' . $id . '?rev=' . $rev);
+        return $this->httpClient->request('DELETE', '/' . $this->databaseName . '/' . $id. '?rev=' . $rev);
     }
 
     /**
@@ -126,17 +124,19 @@ class BasicDocumentPersister
         foreach ($this->queuedInserts as $oid => $document) {
             $data = array();
             $class = $this->dm->getClassMetadata(get_class($document));
-            foreach ($uow->getDocumentChangeSet($document) AS $k => $v) {
-                $data[$class->fieldMappings[$k]['fieldName']] = $v;
+
+            // Convert field to json field names.
+            foreach ($uow->getDocumentChangeSet($document) AS $fieldName => $fieldValue) {
+                $data[$class->fieldMappings[$fieldName]['jsonName']] = $fieldValue;
             }
             // TODO add metadata writing disabled support
             $data['doctrine_metadata'] = array('type' => get_class($document));
 
             $rev = $uow->getDocumentRevision($document);
-            if (isset($rev)) {
-                $response = $this->putDocument($data, $uow->getDocumentIdentifier($document), $uow->getDocumentRevision($document));
+            if ($rev) {
+                $response = $this->putDocument($data, $rev);
             } else {
-                $response = $this->postDocument($data, $data[$class->identifier]);
+                $response = $this->postDocument($data);
             }
 
             if ( ($response->status === 200 || $response->status == 201) && $response->body['ok'] == true) {
@@ -241,12 +241,10 @@ class BasicDocumentPersister
         $class = $this->dm->getClassMetadata($type);
 
         $data = array();
-        foreach ($responseBody as $fieldName => $value) {
-            if ($fieldName === '_id') {
-                $fieldName = $class->identifier;
-            }
-            // TODO: Check how ORM does this? Method or public property?
-            if (isset($class->fieldMappings[$fieldName])) {
+        foreach ($responseBody as $jsonName => $value) {
+            // TODO: For migrations and stuff, maybe there should really be a "rest" field?
+            if (isset($class->jsonNames[$jsonName])) {
+                $fieldName = $class->jsonNames[$jsonName];
                 $mapping = $class->fieldMappings[$fieldName];
                 $data[$mapping['fieldName']] = $value;
             }

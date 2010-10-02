@@ -4,11 +4,18 @@ namespace Doctrine\Tests\Models\CMS;
 
 use Doctrine\Common\Collections\ArrayCollection;
 
+/**
+ * @Document
+ */
 class CmsUser
 {
+    /** @Id */
     public $id;
+    /** @String */
     public $status;
+    /** @String */
     public $username;
+    /** @String */
     public $name;
     public $phonenumbers;
     public $articles;

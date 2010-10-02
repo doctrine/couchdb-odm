@@ -20,20 +20,6 @@ class AnnotationDriverTest extends AbstractMappingDriverTest
     }
 
     /**
-     * @group DDC-268
-     */
-    public function testColumnWithMissingTypeDefaultsToString()
-    {
-        $cm = new ClassMetadata('Doctrine\Tests\ODM\CouchDB\Mapping\ColumnWithoutType');
-        $reader = new \Doctrine\Common\Annotations\AnnotationReader(new \Doctrine\Common\Cache\ArrayCache());
-        $reader->setDefaultAnnotationNamespace('Doctrine\ODM\CouchDB\Mapping\\');
-        $annotationDriver = new \Doctrine\ODM\CouchDB\Mapping\Driver\AnnotationDriver($reader);
-
-        $annotationDriver->loadMetadataForClass('Doctrine\ODM\CouchDB\Tests\Mapping\InvalidColumn', $cm);
-        $this->assertEquals('id', $cm->fieldMappings['id']['type']);
-    }
-
-    /**
      * @group DDC-318
      */
     public function testGetAllClassNamesIsIdempotent()
@@ -52,7 +38,7 @@ class AnnotationDriverTest extends AbstractMappingDriverTest
      */
     public function testGetAllClassNamesReturnsAlreadyLoadedClassesIfAppropriate()
     {
-        $rightClassName = 'Documents\CmsUser';
+        $rightClassName = 'Doctrine\Tests\Models\CMS\CmsUser';
         $this->ensureIsLoaded($rightClassName);
 
         $annotationDriver = $this->loadDriverForCMSDocuments();
@@ -66,7 +52,7 @@ class AnnotationDriverTest extends AbstractMappingDriverTest
      */
     public function testGetClassNamesReturnsOnlyTheAppropriateClasses()
     {
-        $extraneousClassName = __NAMESPACE__.'\ColumnWithoutType';
+        $extraneousClassName = 'Doctrine\Tests\Models\ECommerce\ECommerceCart';
         $this->ensureIsLoaded($extraneousClassName);
 
         $annotationDriver = $this->loadDriverForCMSDocuments();
@@ -78,7 +64,7 @@ class AnnotationDriverTest extends AbstractMappingDriverTest
     protected function loadDriverForCMSDocuments()
     {
         $annotationDriver = $this->loadDriver();
-        $annotationDriver->addPaths(array(__DIR__ . '/../../../../../Documents'));
+        $annotationDriver->addPaths(array(__DIR__ . '/../../../../../Doctrine/Tests/Models/CMS'));
         return $annotationDriver;
     }
 
@@ -94,13 +80,4 @@ class AnnotationDriverTest extends AbstractMappingDriverTest
     {
         new $entityClassName;
     }
-}
-
-/**
- * @Document
- */
-class ColumnWithoutType
-{
-    /** @Id */
-    public $id;
 }

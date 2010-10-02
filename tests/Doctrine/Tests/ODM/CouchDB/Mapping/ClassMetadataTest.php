@@ -21,12 +21,13 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
      */
     public function testMapFieldWithId($cm)
     {
-        $cm->mapField(array('name' => 'id', 'id' => true));
+        $cm->mapField(array('jsonName' => 'id', 'id' => true));
 
         $this->assertTrue(isset($cm->fieldMappings['id']));
-        $this->assertEquals(array('name' => 'id', 'id' => true, 'type' => 'string', 'fieldName' => 'id'), $cm->fieldMappings['id']);
+        $this->assertEquals(array('jsonName' => '_id', 'id' => true, 'type' => 'string', 'fieldName' => 'id'), $cm->fieldMappings['id']);
 
         $this->assertEquals('id', $cm->identifier);
+        $this->assertEquals(array('_id' => 'id'), $cm->jsonNames);
 
         return $cm;
     }
@@ -36,14 +37,16 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
      */
     public function testmapField($cm)
     {
-        $cm->mapField(array('name' => 'username', 'type' => 'string'));
-        $cm->mapField(array('name' => 'created', 'type' => 'datetime'));
+        $cm->mapField(array('fieldName' => 'username', 'type' => 'string'));
+        $cm->mapField(array('fieldName' => 'created', 'type' => 'datetime'));
 
         $this->assertTrue(isset($cm->fieldMappings['username']));
         $this->assertTrue(isset($cm->fieldMappings['created']));
 
-        $this->assertEquals(array('name' => 'username', 'type' => 'string', 'fieldName' => 'username'), $cm->fieldMappings['username']);
-        $this->assertEquals(array('name' => 'created', 'type' => 'datetime', 'fieldName' => 'created'), $cm->fieldMappings['created']);
+        $this->assertEquals(array('jsonName' => 'username', 'type' => 'string', 'fieldName' => 'username'), $cm->fieldMappings['username']);
+        $this->assertEquals(array('jsonName' => 'created', 'type' => 'datetime', 'fieldName' => 'created'), $cm->fieldMappings['created']);
+
+        $this->assertEquals(array('_id' => 'id', 'username' => 'username', 'created' => 'created'), $cm->jsonNames);
 
         return $cm;
     }
@@ -85,9 +88,9 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
     {
         $cm = new ClassMetadata("Doctrine\Tests\ODM\CouchDB\Mapping\Person");
 
-        $cm->mapField(array('name' => 'username'));
+        $cm->mapField(array('jsonName' => 'username'));
 
-        $this->assertEquals(array('name' => 'username', 'type' => 'string', 'fieldName' => 'username'), $cm->fieldMappings['username']);
+        $this->assertEquals(array('jsonName' => 'username', 'type' => 'string', 'fieldName' => 'username'), $cm->fieldMappings['username']);
     }
 
     /**
@@ -96,11 +99,11 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
      */
     public function testMapAssociationManyToOne($cm)
     {
-        $cm->mapManyToOne(array('name' => 'address', 'targetDocument' => 'Doctrine\Tests\ODM\CouchDB\Mapping\Address'));
+        $cm->mapManyToOne(array('jsonName' => 'address', 'targetDocument' => 'Doctrine\Tests\ODM\CouchDB\Mapping\Address'));
 
         $this->assertTrue(isset($cm->associations['address']), "No 'address' in associations map.");
         $this->assertEquals(array(
-            'name' => 'address',
+            'jsonName' => 'address',
             'targetDocument' => 'Doctrine\Tests\ODM\CouchDB\Mapping\Address',
             'sourceDocument' => 'Doctrine\Tests\ODM\CouchDB\Mapping\Person',
             'isOwning' => true,

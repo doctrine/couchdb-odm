@@ -31,29 +31,41 @@ use Doctrine\ODM\CouchDB\DocumentManager,
  *
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @link        www.doctrine-project.com
- * @since       1.0
  * @author      Jonathan H. Wage <jonwage@gmail.com>
  * @author      Roman Borschel <roman@code-factory.org>
  */
 class ClassMetadataFactory
 {
-    /** The DocumentManager instance */
+    /**
+     * @var DocumentManager
+     */
     private $dm;
 
-    /** The array of loaded ClassMetadata instances */
+    /**
+     * @var array
+     */
     private $loadedMetadata;
 
-    /** The used metadata driver. */
+    /**
+     *  The used metadata driver.
+     *
+     * @var Doctrine\ODM\CouchDB\Mapping\Driver\Driver
+     */
     private $driver;
 
-    /** The event manager instance */
+    /**
+     * The event manager instance
+     *
+     * @var \Doctrine\Common\EventManager
+     */
     private $evm;
 
-    /** The used cache driver. */
+    /**
+     * The used cache driver.
+     *
+     * @var Cache
+     */
     private $cacheDriver;
-
-    /** Whether factory has been lazily initialized yet */
-    private $initialized = false;
 
     /**
      * Creates a new factory instance that uses the given DocumentManager instance.
@@ -63,16 +75,7 @@ class ClassMetadataFactory
     public function __construct(DocumentManager $dm)
     {
         $this->dm = $dm;
-    }
-
-    /**
-     * Lazy initialization of this stuff, especially the metadata driver,
-     * since these are not needed at all when a metadata cache is active.
-     */
-    private function initialize()
-    {
         $this->driver = $this->dm->getConfiguration()->getMetadataDriverImpl();
-        $this->initialized = true;
     }
 
     /**
@@ -113,10 +116,6 @@ class ClassMetadataFactory
      */
     public function getAllMetadata()
     {
-        if ( ! $this->initialized) {
-            $this->initialize();
-        }
-
         $metadata = array();
         foreach ($this->driver->getAllClassNames() as $className) {
             $metadata[] = $this->getMetadataFor($className);
@@ -185,15 +184,13 @@ class ClassMetadataFactory
      */
     private function loadMetadata($className)
     {
-        if ( ! $this->initialized) {
-            $this->initialize();
-        }
-
         if (!class_exists($className)) {
             throw MappingException::classNotFound($className);
         }
 
         $loaded = array();
+
+        // TODO: Currently we inject the Metadata
 
         return $loaded;
     }

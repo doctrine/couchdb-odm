@@ -23,7 +23,7 @@ class ClassMetadataFactoryTest extends \PHPUnit_Framework_Testcase
         $cmf = new ClassMetadataFactory($dm);
         $cmf->setMetadataFor('stdClass', $cm);
 
+        $this->assertTrue($cmf->hasMetadataFor('stdClass'));
         $this->assertSame($cm, $cmf->getMetadataFor('stdClass'));
-
     }
 }

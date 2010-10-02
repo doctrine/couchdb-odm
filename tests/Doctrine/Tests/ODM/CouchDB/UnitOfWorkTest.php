@@ -18,8 +18,8 @@ class UnitOfWorkTest extends CouchDBTestCase
         $this->uow = new UnitOfWork($this->dm);
 
         $metadata = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata($this->type);
-        $metadata->mapField(array('name' => 'id', 'id' => true));
-        $metadata->mapField(array('name' => 'username', 'type' => 'string'));
+        $metadata->mapField(array('fieldName' => 'id', 'id' => true));
+        $metadata->mapField(array('fieldName' => 'username', 'type' => 'string'));
         $metadata->idGenerator = \Doctrine\ODM\CouchDB\Mapping\ClassMetadata::IDGENERATOR_ASSIGNED;
 
         $cmf = $this->dm->getClassMetadataFactory();
@@ -86,7 +86,7 @@ class UnitOfWorkTest extends CouchDBTestCase
         );
         $uuidResponse = new \Doctrine\ODM\CouchDB\HTTP\Response(200, array(), json_encode(array('uuids' => $uuids)));
         
-        $client = $this->getMock('Doctrine\ODM\CouchDB\Http\Client', array('request'));
+        $client = $this->getMock('Doctrine\ODM\CouchDB\HTTP\Client', array('request'));
         $client->expects($this->once())
                ->method('request')
                ->with($this->equalTo('GET'), $this->equalTo('/_uuids?count=20'))

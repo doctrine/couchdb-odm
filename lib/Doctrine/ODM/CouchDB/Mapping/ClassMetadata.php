@@ -19,11 +19,6 @@ class ClassMetadata
     public $associations = array();
 
     /**
-     * READ-ONLY: The name of the mongo database the document is mapped to.
-     */
-    public $db;
-
-    /**
      * READ-ONLY: The field name of the document identifier.
      */
     public $identifier;
@@ -79,6 +74,13 @@ class ClassMetadata
      * @var array
      */
     public $fieldMappings = array();
+
+    /**
+     * An array of json result-key-names to field-names
+     *
+     * @var array
+     */
+    public $jsonNames = array();
 
     /**
      * READ-ONLY: Array of fields to also load with a given method.
@@ -217,27 +219,12 @@ class ClassMetadata
     }
 
     /**
-     * Returns the database this Document is mapped to.
-     *
-     * @return string $db The database name.
-     */
-    public function getDB()
-    {
-        return $this->db;
-    }
-
-    /**
-     * Set the database this Document is mapped to.
-     *
-     * @param string $db The database name
-     */
-    public function setDB($db)
-    {
-        $this->db = $db;
-    }
-
-    /**
      * Map a field.
+     *
+     * - type - The Doctrine Type of this field.
+     * - fieldName - The name of the property/field on the mapped php class
+     * - name - The JSON key of this field in the CouchDB document
+     * - id - True for an ID field.
      *
      * @param array $mapping The mapping information.
      */
@@ -247,22 +234,18 @@ class ClassMetadata
             $mapping['type'] = "string";
         }
 
-        if ( ! isset($mapping['fieldName']) && isset($mapping['name'])) {
-            $mapping['fieldName'] = $mapping['name'];
+        if ( ! isset($mapping['fieldName']) && isset($mapping['jsonName'])) {
+            $mapping['fieldName'] = $mapping['jsonName'];
         }
         if ( ! isset($mapping['fieldName'])) {
             throw new MappingException("Mapping a property requires to specify the name.");
         }
-        if ( ! isset($mapping['name'])) {
-            $mapping['name'] = $mapping['fieldName'];
+        if ( ! isset($mapping['jsonName'])) {
+            $mapping['jsonName'] = $mapping['fieldName'];
         }
         if (isset($this->fieldMappings[$mapping['fieldName']])) {
             throw MappingException::duplicateFieldMapping($this->name, $mapping['fieldName']);
         }
-        if (isset($mapping['targetDocument']) && strpos($mapping['targetDocument'], '\\') === false && strlen($this->namespace)) {
-            $mapping['targetDocument'] = $this->namespace . '\\' . $mapping['targetDocument'];
-        }
-
         if ($this->reflClass->hasProperty($mapping['fieldName'])) {
             $reflProp = $this->reflClass->getProperty($mapping['fieldName']);
             $reflProp->setAccessible(true);
@@ -270,11 +253,21 @@ class ClassMetadata
         }
 
         if (isset($mapping['id']) && $mapping['id'] === true) {
-            $mapping['type'] = isset($mapping['type']) ? $mapping['type'] : 'id';
+            $mapping['type'] = 'string';
+            $mapping['jsonName'] = '_id';
             $this->identifier = $mapping['fieldName'];
         }
 
         $this->fieldMappings[$mapping['fieldName']] = $mapping;
+        $this->jsonNames[$mapping['jsonName']] = $mapping['fieldName'];
+    }
+
+    protected function validateAndCompleteAssociationMapping($mapping)
+    {
+        if (isset($mapping['targetDocument']) && strpos($mapping['targetDocument'], '\\') === false && strlen($this->namespace)) {
+            $mapping['targetDocument'] = $this->namespace . '\\' . $mapping['targetDocument'];
+        }
+        return $mapping;
     }
 
     /**
@@ -284,8 +277,8 @@ class ClassMetadata
      */
     public function mapOneEmbedded(array $mapping)
     {
-        $mapping['embedded'] = true;
-        $mapping['type'] = 'one';
+        $mapping = $this->validateAndCompleteAssociationMapping($mapping);
+
         $this->mapField($mapping);
     }
 
@@ -296,26 +289,26 @@ class ClassMetadata
      */
     public function mapManyEmbedded(array $mapping)
     {
-        $mapping['embedded'] = true;
-        $mapping['type'] = 'many';
+        $mapping = $this->validateAndCompleteAssociationMapping($mapping);
+
         $this->mapField($mapping);
     }
 
 
     public function mapManyToOne($mapping)
     {
-        if (!isset($mapping['name'])) {
+        if (!isset($mapping['jsonName'])) {
             throw new MappingException("Mapping an association requires to specify the name.");
         }
 
         $mapping['sourceDocument'] = $this->name;
         if (!isset($mapping['targetDocument'])) {
-            throw new MappingException("You have to specify a 'targetDocument' class for the '" . $this->name . "#". $mapping['name']."' association.");
+            throw new MappingException("You have to specify a 'targetDocument' class for the '" . $this->name . "#". $mapping['jsonName']."' association.");
         }
         $mapping['isOwning'] = true;
         $mapping['type'] = self::MANY_TO_ONE;
 
-        $this->associations[$mapping['name']] = $mapping;
+        $this->associations[$mapping['jsonName']] = $mapping;
     }
 
     /**
@@ -392,18 +385,6 @@ class ClassMetadata
                 $this->fieldMappings[$fieldName]['type'] === 'many';
     }
 
-    public function getPHPIdentifierValue($id)
-    {
-        $idType = $this->fieldMappings[$this->identifier]['type'];
-        return Types\Type::getType($idType)->convertToPHPValue($id);
-    }
-
-    public function getDatabaseIdentifierValue($id)
-    {
-        $idType = $this->fieldMappings[$this->identifier]['type'];
-        return Types\Type::getType($idType)->convertToDatabaseValue($id);
-    }
-
     /**
      * Sets the document identifier of a document.
      *
@@ -412,7 +393,6 @@ class ClassMetadata
      */
     public function setIdentifierValue($document, $id)
     {
-        $id = $this->getPHPIdentifierValue($id);
         $this->reflFields[$this->identifier]->setValue($document, $id);
     }
 
@@ -502,7 +482,7 @@ class ClassMetadata
         $serialized = array(
             'fieldMappings',
             'identifier',
-            'name',
+            'jsonName',
             'namespace', // TODO: REMOVE
             'db',
             'collection',

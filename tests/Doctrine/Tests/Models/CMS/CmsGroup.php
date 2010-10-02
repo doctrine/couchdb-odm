@@ -6,9 +6,14 @@
 
 namespace Doctrine\Tests\Models\CMS;
 
+/**
+ * @Document
+ */
 class CmsGroup
 {
+    /** @Id */
     public $id;
+    /** @String */
     public $name;
     public $users;
 

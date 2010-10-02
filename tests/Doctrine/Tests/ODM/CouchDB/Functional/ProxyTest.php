@@ -36,9 +36,9 @@ class ProxyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 
         $cmf = $this->dm->getClassMetadataFactory();
         $metadata = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata($this->type);
-        $metadata->mapField(array('name' => 'id', 'id' => true));
-        $metadata->mapField(array('name' => 'title', 'type' => 'string'));
-        $metadata->mapField(array('name' => 'body', 'type' => 'string'));
+        $metadata->mapField(array('fieldName' => 'id', 'id' => true));
+        $metadata->mapField(array('fieldName' => 'title', 'type' => 'string'));
+        $metadata->mapField(array('fieldName' => 'body', 'type' => 'string'));
         $metadata->idGenerator = \Doctrine\ODM\CouchDB\Mapping\ClassMetadata::IDGENERATOR_UUID;
         $cmf->setMetadataFor($this->type, $metadata);
     }
