@@ -94,34 +94,46 @@ class UnitOfWork
         $documentState = array();
         $id = $data['_id'];
         $rev = $data['_rev'];
-        foreach ($data as $jsonName => $value) {
-            // TODO: For migrations and stuff, maybe there should really be a "rest" field?
+        foreach ($data as $jsonName => $jsonValue) {
             if (isset($class->jsonNames[$jsonName])) {
                 $fieldName = $class->jsonNames[$jsonName];
                 if (isset($class->fieldMappings[$fieldName])) {
-                    $documentState[$class->fieldMappings[$fieldName]['fieldName']] = $value;
-                } else if (isset($class->associationsMappings[$fieldName])) {
-
-                    if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE) {
-                        if ($value) {
-                            $value = $this->dm->getReference($class->associationsMappings[$fieldName]['targetDocument'], $value);
-                        }
-                        $documentState[$class->associationsMappings[$fieldName]['fieldName']] = $value;
-                    } else if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::MANY_TO_MANY) {
-                        if ($class->associationsMappings[$fieldName]['isOwning']) {
-                            // 1. if owning side we know all the ids
-                            $documentState[$class->associationsMappings[$fieldName]['fieldName']] = new \Doctrine\ODM\CouchDB\PersistentIdsCollection(
-                                new \Doctrine\Common\Collections\ArrayCollection(),
-                                $class->associationsMappings[$fieldName]['targetDocument'],
-                                $this->dm,
-                                $value
-                            );
-                        } else {
-                            // 2. if inverse side we need to nest the lazy loading relations view
-                            // TODO implement inverse side lazy loading
+                    $documentState[$class->fieldMappings[$fieldName]['fieldName']] = $jsonValue;
+                } else {
+                    // TODO: For migrations and stuff, maybe there should really be a "rest" field?
+                }
+            } else if ($jsonName == 'doctrine_metadata' && isset($jsonValue['associations'])) {
+                foreach ($jsonValue['associations'] AS $assocName => $assocValue) {
+                    if (isset($class->associationsMappings[$assocName])) {
+                        if ($class->associationsMappings[$assocName]['type'] & ClassMetadata::TO_ONE) {
+                            if ($assocValue) {
+                                $assocValue = $this->dm->getReference($class->associationsMappings[$assocName]['targetDocument'], $assocValue);
+                            }
+                            $documentState[$class->associationsMappings[$assocName]['fieldName']] = $assocValue;
+                        } else if ($class->associationsMappings[$assocName]['type'] & ClassMetadata::MANY_TO_MANY) {
+                            if ($class->associationsMappings[$assocName]['isOwning']) {
+                                $documentState[$class->associationsMappings[$assocName]['fieldName']] = new PersistentIdsCollection(
+                                    new \Doctrine\Common\Collections\ArrayCollection(),
+                                    $class->associationsMappings[$assocName]['targetDocument'],
+                                    $this->dm,
+                                    $assocValue
+                                );
+                            }
                         }
                     }
                 }
+            }
+        }
+
+        // initialize inverse side collections
+        foreach ($class->associationsMappings AS $assocName => $assocOptions) {
+            if (!$assocOptions['isOwning'] && $assocOptions['type'] & ClassMetadata::TO_MANY) {
+                $documentState[$class->associationsMappings[$assocName]['fieldName']] = new PersistentViewCollection(
+                    new \Doctrine\Common\Collections\ArrayCollection(),
+                    $this->dm,
+                    $id,
+                    $class->associationsMappings[$assocName]['mappedBy']
+                );
             }
         }
 
@@ -289,20 +301,25 @@ class UnitOfWork
             $this->removeFromIdentityMap($document);
         }
 
+        $useDoctrineMetadata = $this->dm->getConfiguration()->getWriteDoctrineMetadata();
+
         foreach ($this->scheduledUpdates AS $oid => $document) {
-            $data = array();
             $class = $this->dm->getClassMetadata(get_class($document));
+            $data = array();
+            if ($useDoctrineMetadata) {
+                $data['doctrine_metadata'] = array('type' => $class->name);
+            }
 
             // Convert field values to json values.
             foreach ($this->documentChangesets[$oid] AS $fieldName => $fieldValue) {
                 if (isset($class->fieldMappings[$fieldName])) {
                     $data[$class->fieldMappings[$fieldName]['jsonName']] = $fieldValue;
-                } else if (isset($class->associationsMappings[$fieldName])) {
+                } else if (isset($class->associationsMappings[$fieldName]) && $useDoctrineMetadata) {
                     if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE) {
                         if (\is_object($fieldValue)) {
-                            $data[$fieldName] = $this->getDocumentIdentifier($fieldValue);
+                            $data['doctrine_metadata']['associations'][$fieldName] = $this->getDocumentIdentifier($fieldValue);
                         } else {
-                            $data[$fieldName] = null;
+                            $data['doctrine_metadata']['associations'][$fieldName] = null;
                         }
                     } else if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_MANY) {
                         if ($class->associationsMappings[$fieldName]['isOwning']) {
@@ -312,14 +329,10 @@ class UnitOfWork
                                 $ids[] = $this->getDocumentIdentifier($relatedObject);
                             }
 
-                            $data[$fieldName] = $ids;
+                            $data['doctrine_metadata']['associations'][$fieldName] = $ids;
                         }
                     }
                 }
-            }
-
-            if ($this->dm->getConfiguration()->getWriteDoctrineMetadata()) {
-                $data['doctrine_metadata'] = $this->dm->getDoctrineMetadata(get_class($document));
             }
 
             $rev = $this->getDocumentRevision($document);

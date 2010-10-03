@@ -13,7 +13,13 @@ class Configuration
      *
      * @var array $attributes
      */
-    private $attributes = array();
+    private $attributes = array(
+        'designDocuments' => array(
+            'doctrine_associations' => 'Doctrine\ODM\CouchDB\View\DoctrineAssociations',
+        ),
+        'writeDoctrineMetadata' => true,
+        'validateDoctrineMetadata' => true,
+    );
 
     /**
      * Sets the default UUID Generator buffer size
@@ -55,7 +61,7 @@ class Configuration
      */
     public function getValidateDoctrineMetadata()
     {
-        return !empty($this->attributes['validateDoctrineMetadata']);
+        return $this->attributes['validateDoctrineMetadata'];
     }
 
     /**
@@ -75,7 +81,7 @@ class Configuration
      */
     public function getWriteDoctrineMetadata()
     {
-        return !empty($this->attributes['writeDoctrineMetadata']);
+        return $this->attributes['writeDoctrineMetadata'];
     }
 
     /**
@@ -266,5 +272,26 @@ class Configuration
     {
         return isset($this->attributes['databaseName']) ?
             $this->attributes['databaseName'] : null;
+    }
+
+    /**
+     * @param string $name
+     * @param string $className
+     */
+    public function addDesignDocument($name, $className)
+    {
+        $this->attributes['designDocuments'][$name][$className];
+    }
+
+    /**
+     * @param  string $name
+     * @return string|null
+     */
+    public function getDesignDocumentClass($name)
+    {
+        if (isset($this->attributes['designDocuments'][$name])) {
+            return $this->attributes['designDocuments'][$name];
+        }
+        return null;
     }
 }

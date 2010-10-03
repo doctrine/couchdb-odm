@@ -98,6 +98,15 @@ class DocumentManager
         return $this->metadataFactory->getMetadataFor($class);
     }
 
+    /**
+     * Find the Document with the given id.
+     *
+     * Will return null if the document wasn't found.
+     *
+     * @param string $documentName
+     * @param string $id
+     * @return object
+     */
     public function find($documentName, $id)
     {
         return $this->getDocumentRepository($documentName)->find($id);
@@ -122,6 +131,42 @@ class DocumentManager
         return $this->repositories[$documentName];
     }
 
+    /**
+     * Create a Query for the view in the specified design document.
+     * 
+     * @param  string $designDocName
+     * @param  string $viewName
+     * @return Doctrine\ODM\CouchDB\View\Query
+     */
+    public function createQuery($designDocName, $viewName)
+    {
+        $designDoc = $this->config->getDesignDocumentClass($designDocName);
+        if ($designDoc) {
+            $designDoc = new $designDoc;
+        }
+        $query = new View\Query($this->config->getHttpClient(), $this->config->getDatabase(), $designDocName, $viewName, $designDoc);
+        $query->setDocumentManager($this);
+        return $query;
+    }
+
+    /**
+     * Create a Native query for the view of the specified design document.
+     *
+     * A native query will return an array of data from the &include_docs=true parameter.
+     *
+     * @param  string $designDocName
+     * @param  string $viewName
+     * @return View\NativeQuery
+     */
+    public function createNativeQuery($designDocName, $viewName)
+    {
+        $designDoc = $this->config->getDesignDocumentClass($designDocName);
+        if ($designDoc) {
+            $designDoc = new $designDoc;
+        }
+        return new View\NativeQuery($this->config->getHttpClient(), $this->config->getDatabase(), $designDocName, $viewName, $designDoc);
+    }
+
     public function persist($object)
     {
         $this->unitOfWork->scheduleInsert($object);
@@ -133,6 +178,8 @@ class DocumentManager
     }
 
     /**
+     * Refresh the given document by querying the CouchDB to get the current state.
+     *
      * @param object $document
      */
     public function refresh($document)

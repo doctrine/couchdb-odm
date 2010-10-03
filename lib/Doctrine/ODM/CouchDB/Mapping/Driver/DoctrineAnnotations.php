@@ -71,7 +71,6 @@ final class ArrayField extends Field
 }
 class Reference extends Annotation
 {
-    public $jsonName;
     public $targetDocument;
 }
 final class EmbedOne extends Reference
@@ -87,6 +86,7 @@ final class ReferenceOne extends Reference
 final class ReferenceMany extends Reference
 {
     public $cascade;
+    public $mappedBy;
 }
 final class Attachments extends Field
 {
