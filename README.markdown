@@ -7,6 +7,7 @@
 * many2one and many2many with lazyloading mostly implemented
 * flexible ID generation implemented
 * plenty of TODO's noted through out the source code
+* please use the Doctrine Jira to log tickets: http://www.doctrine-project.org/jira/browse/CODM
 
 # Hackaton Discussions: CouchDB + Doctrine
 
