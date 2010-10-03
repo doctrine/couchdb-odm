@@ -66,17 +66,6 @@ class UnitOfWork
     }
 
     /**
-     * Create the array data structure to be stored as the doctrine metadata inside CouchDB documents
-     *
-     * @param string $documentName
-     * @return array
-     */
-    protected function getDoctrineMetadata($documentName)
-    {
-        return array('type' => $documentName);
-    }
-
-    /**
      * Create a document given class, data and the doc-id and revision
      * 
      * @param string $documentName
@@ -95,7 +84,7 @@ class UnitOfWork
         } else if (isset($documentName)) {
              $type = $documentName;
              if ($this->dm->getConfiguration()->getWriteDoctrineMetadata()) {
-                $data['doctrine_metadata'] = $this->getDoctrineMetadata($documentName);
+                $data['doctrine_metadata'] = array('type' => $documentName);
              }
         } else {
              throw new \InvalidArgumentException("Missing Doctrine metadata in the Document, cannot hydrate (yet)!");
