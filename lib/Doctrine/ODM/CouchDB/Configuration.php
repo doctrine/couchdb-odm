@@ -19,6 +19,8 @@ class Configuration
         ),
         'writeDoctrineMetadata' => true,
         'validateDoctrineMetadata' => true,
+        'UUIDGenerationBufferSize' => 20,
+        'proxyNamespace' => 'MyCouchDBProxyNS',
     );
 
     /**
@@ -38,10 +40,6 @@ class Configuration
      */
     public function getUUIDGenerationBufferSize()
     {
-        if (!isset($this->attributes['UUIDGenerationBufferSize'])) {
-            $this->attributes['UUIDGenerationBufferSize'] = 20;
-        }
-
         return $this->attributes['UUIDGenerationBufferSize'];
     }
     /**
@@ -245,10 +243,6 @@ class Configuration
      */
     public function getProxyNamespace()
     {
-        if (!isset($this->attributes['proxyNamespace'])) {
-            $this->attributes['proxyNamespace'] = 'MyCouchDBProxyNS';
-        }
-
         return $this->attributes['proxyNamespace'];
     }
 

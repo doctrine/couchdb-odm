@@ -139,6 +139,7 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
 
     public function testFindTypeValidation()
     {
+        $this->dm->getConfiguration()->setValidateDoctrineMetadata(false);
         $user = $this->dm->find($this->type.'2', 1);
         $this->assertType($this->type, $user);
 
