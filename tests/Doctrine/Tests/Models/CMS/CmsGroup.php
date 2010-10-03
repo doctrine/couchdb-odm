@@ -15,6 +15,8 @@ class CmsGroup
     public $id;
     /** @String */
     public $name;
+
+    /** @ReferenceMany(targetDocument="CmsUser", mappedBy="groups") */
     public $users;
 
     public function setName($name) {

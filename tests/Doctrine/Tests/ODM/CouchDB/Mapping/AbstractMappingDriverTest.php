@@ -91,9 +91,10 @@ abstract class AbstractMappingDriverTest extends \PHPUnit_Framework_Testcase
         $this->assertEquals(array(
             'fieldName' => 'groups',
             'cascade' => null,
-            'jsonName' => 'groups',
+            'mappedBy' => null,
             'targetDocument' => 'Doctrine\Tests\Models\CMS\CmsGroup',
             'value' => null,
+            'jsonName' => 'groups',
             'sourceDocument' => 'Doctrine\Tests\Models\CMS\CmsUser',
             'isOwning' => true,
             'type' => ClassMetadata::MANY_TO_MANY,

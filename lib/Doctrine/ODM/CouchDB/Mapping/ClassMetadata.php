@@ -305,17 +305,25 @@ class ClassMetadata
         $mapping['isOwning'] = true;
         $mapping['type'] = self::MANY_TO_ONE;
 
-        $this->associationsMappings[$mapping['fieldName']] = $mapping;
-        $this->jsonNames[$mapping['jsonName']] = $mapping['fieldName'];
+        $this->storeAssociationMapping($mapping);
     }
 
     public function mapManyToMany($mapping)
     {
         $mapping = $this->validateAndCompleteAssociationMapping($mapping);
 
-        $mapping['isOwning'] = true;
+        if (!empty($mapping['mappedBy'])) {
+            $mapping['isOwning'] = false;
+        } else {
+            $mapping['isOwning'] = true;
+        }
         $mapping['type'] = self::MANY_TO_MANY;
 
+        $this->storeAssociationMapping($mapping);
+    }
+
+    private function storeAssociationMapping($mapping)
+    {
         $this->associationsMappings[$mapping['fieldName']] = $mapping;
         $this->jsonNames[$mapping['jsonName']] = $mapping['fieldName'];
     }

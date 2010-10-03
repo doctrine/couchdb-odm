@@ -56,6 +56,7 @@ class ManyToOneAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFuncti
         $this->dm->clear();
 
         $article = $this->dm->find('Doctrine\Tests\Models\CMS\CmsArticle', $this->articleId);
+        $this->assertType('Doctrine\Tests\Models\CMS\CmsUser', $article->user);
         $this->assertEquals('lsmith', $article->user->getUsername());
     }
 
