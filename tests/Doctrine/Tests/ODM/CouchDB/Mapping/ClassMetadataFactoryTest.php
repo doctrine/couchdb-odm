@@ -45,4 +45,9 @@ class ClassMetadataFactoryTest extends \PHPUnit_Framework_Testcase
 
         $this->assertType('array', $metadata);
     }
+
+    public function testCacheDriver()
+    {
+        $this->markTestIncomplete('Test cache driver setting and handling.');
+    }
 }
