@@ -25,8 +25,7 @@ class StreamClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
     {
         ob_start();
         phpinfo();
-        if ( strpos( ob_get_clean(), 'curlwrappers' ) === false )
-        {
+        if ( strpos( ob_get_clean(), 'curlwrappers' ) === false ) {
             $this->markTestSkipped( 'Enable --with-curlwrappers to run this test.' );
         }
     }
@@ -36,13 +35,10 @@ class StreamClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
 
         $db = new HTTP\StreamClient( '127.0.0.1', 12345 );
 
-        try
-        {
-            $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '' );
+        try {
+            $db->request( 'GET', '/' . $this->getTestDatabase() . '' );
             $this->fail( 'Expected HTTP\HTTPException.' );
-        }
-        catch ( HTTP\HTTPException $e )
-        {
+        } catch ( HTTP\HTTPException $e ) {
             $this->assertTrue(
                 // Message depends on whether the internal stream wrapper or 
                 // the curlwrappers are used
@@ -58,7 +54,7 @@ class StreamClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
 
         // Remove maybe existing database
         try {
-            $response = $db->request( 'DELETE', '/' . $this->getTestDatabase() . '' );
+            $db->request( 'DELETE', '/' . $this->getTestDatabase() . '' );
         } catch ( \Exception $e ) { /* Irrelevant exception */ }
 
         $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '' );
@@ -139,8 +135,8 @@ class StreamClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
     public function testGetAllDocsFormDatabase()
     {
         $db = new HTTP\StreamClient();
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '/123', '{"_id":"123","data":"Foo"}' );
 
-        $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '/123', '{"_id":"123","data":"Foo"}' );
         $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/_all_docs' );
 
         $this->assertTrue(
@@ -164,8 +160,8 @@ class StreamClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
     public function testGetSingleDocumentFromDatabase()
     {
         $db = new HTTP\StreamClient();
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '/123', '{"_id":"123","data":"Foo"}' );
 
-        $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '/123', '{"_id":"123","data":"Foo"}' );
         $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/123' );
 
         $this->assertTrue(
@@ -216,7 +212,7 @@ class StreamClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
         $db = new HTTP\StreamClient();
 
         try {
-            $response = $db->request( 'DELETE', '/' . $this->getTestDatabase() . '' );
+            $db->request( 'DELETE', '/' . $this->getTestDatabase() . '' );
         } catch ( \Exception $e ) { /* Ignore */ }
 
         $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/not_existant' );
@@ -384,13 +380,12 @@ class StreamClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
     {
         $db = new HTTP\StreamClient();
 
-        try
-        {
+        try {
             $db->setOption( 'unknownOption', 42 );
             $this->fail( 'Expected \InvalidArgumentException.' );
+        } catch( \InvalidArgumentException $e ) {
+            /* Expected */
         }
-        catch( \InvalidArgumentException $e )
-        { /* Expected */ }
     }
 }
 
