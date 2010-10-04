@@ -40,8 +40,7 @@ class StreamClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
             $this->fail( 'Expected HTTP\HTTPException.' );
         } catch ( HTTP\HTTPException $e ) {
             $this->assertTrue(
-                // Message depends on whether the internal stream wrapper or 
-                // the curlwrappers are used
+                // Message depends on whether the internal stream wrapper or the curlwrappers are used
                 $e->getMessage() === 'Could not connect to server at 127.0.0.1:12345: \'0: fopen(http://127.0.0.1:12345/'.$this->getTestDatabase().'): failed to open stream: operation failed\'' ||
                 $e->getMessage() === 'Could not connect to server at 127.0.0.1:12345: \'0: fopen(http://127.0.0.1:12345/'.$this->getTestDatabase().'): failed to open stream: Connection refused\''
             );

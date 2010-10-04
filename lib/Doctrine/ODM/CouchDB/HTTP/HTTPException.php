@@ -20,5 +20,16 @@ class HTTPException extends \Doctrine\ODM\CouchDB\CouchDBException
             $errstr
         ) );
     }
+
+    public static function readFailure( $ip, $port, $errstr, $errno )
+    {
+        return new static( sprintf(
+            "Could read from server at %s:%d: '%d: %s'",
+            $ip,
+            $port,
+            $errno,
+            $errstr
+        ) );
+    }
 }
 

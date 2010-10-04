@@ -21,7 +21,7 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
         $db = new HTTP\SocketClient( '127.0.0.1', 12345 );
 
         try {
-            $response = $db->request( 'GET', '/' . $this->getTestDatabase() );
+            $db->request( 'GET', '/' . $this->getTestDatabase() );
             $this->fail( 'Expected HTTPException.' );
         } catch ( HTTP\HTTPException $e ) {
             $this->assertTrue(
@@ -39,7 +39,7 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
 
         // Remove maybe existing database
         try {
-            $response = $db->request( 'DELETE', '/' . $this->getTestDatabase() );
+            $db->request( 'DELETE', '/' . $this->getTestDatabase() );
         } catch ( \Exception $e ) { /* Irrelevant exception */ }
 
         $response = $db->request( 'PUT', '/' . $this->getTestDatabase() );
@@ -120,8 +120,8 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
     public function testGetAllDocsFormDatabase()
     {
         $db = new HTTP\SocketClient();
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '/123', '{"_id":"123","data":"Foo"}' );
 
-        $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '/123', '{"_id":"123","data":"Foo"}' );
         $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/_all_docs' );
 
         $this->assertTrue(
@@ -145,8 +145,8 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
     public function testGetSingleDocumentFromDatabase()
     {
         $db = new HTTP\SocketClient();
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '/123', '{"_id":"123","data":"Foo"}' );
 
-        $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '/123', '{"_id":"123","data":"Foo"}' );
         $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/123' );
 
         $this->assertTrue(
@@ -198,7 +198,7 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
 
         try
         {
-            $response = $db->request( 'DELETE', '/' . $this->getTestDatabase() );
+            $db->request( 'DELETE', '/' . $this->getTestDatabase() );
         } catch ( \Exception $e ) { /* Ignore */ }
 
         $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/not_existant' );
@@ -245,8 +245,8 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
     public function testDeleteSingleDocumentFromDatabase()
     {
         $db = new HTTP\SocketClient();
+        $db->request( 'PUT', '/' . $this->getTestDatabase() . '/123', '{"_id":"123","data":"Foo"}' );
 
-        $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '/123', '{"_id":"123","data":"Foo"}' );
         $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/123' );
         $db->request( 'DELETE', '/' . $this->getTestDatabase() . '/123?rev=' . $response->body['_rev'] );
 
@@ -362,13 +362,12 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
     {
         $db = new HTTP\SocketClient();
 
-        try
-        {
+        try {
             $db->setOption( 'unknownOption', 42 );
             $this->fail( 'Expected \InvalidArgumentException' );
+        } catch( \InvalidArgumentException $e ) {
+            /* Expected */
         }
-        catch( \InvalidArgumentException $e )
-        { /* Expected */ }
     }
 }
 

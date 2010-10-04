@@ -45,12 +45,9 @@ abstract class Client
         $this->options['username'] = $username;
         $this->options['password'] = $password;
 
-        if ($ip === null)
-        {
+        if ($ip === null) {
             $this->options['ip'] = gethostbyname($this->options['host']);
-        }
-        else
-        {
+        } else {
             $this->options['ip'] = $ip;
         }
     }
@@ -67,20 +64,19 @@ abstract class Client
      */
     public function setOption( $option, $value )
     {
-        switch ( $option )
-        {
-            case 'keep-alive':
-                $this->options[$option] = (bool) $value;
-                break;
+        switch ( $option ) {
+        case 'keep-alive':
+            $this->options[$option] = (bool) $value;
+            break;
 
-            case 'http-log':
-            case 'password':
-            case 'username':
-                $this->options[$option] = $value;
-                break;
+        case 'http-log':
+        case 'password':
+        case 'username':
+            $this->options[$option] = $value;
+            break;
 
-            default:
-                throw new \InvalidArgumentException( "Unknown option $option." );
+        default:
+            throw new \InvalidArgumentException( "Unknown option $option." );
         }
     }
 
