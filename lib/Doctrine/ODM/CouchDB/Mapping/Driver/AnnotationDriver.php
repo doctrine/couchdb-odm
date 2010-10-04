@@ -23,6 +23,7 @@ use Doctrine\ODM\CouchDB\Mapping\ClassMetadata,
     Doctrine\Common\Annotations\AnnotationReader,
     Doctrine\ODM\CouchDB\Mapping\MappingException;
 
+// TODO: this is kinda ugly
 require __DIR__ . '/DoctrineAnnotations.php';
 
 /**
