@@ -24,11 +24,12 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
             $response = $db->request( 'GET', '/' . $this->getTestDatabase() );
             $this->fail( 'Expected HTTPException.' );
         } catch ( HTTP\HTTPException $e ) {
-            // TODO do we have an issue here with OSX, seems to return 61 here
-            $this->assertSame(
-                'Could not connect to server at 127.0.0.1:12345: \'111: Connection refused\'',
-                $e->getMessage()
+            $this->assertTrue(
+                // Message depends on the OS, OSX returns 61, Linux 111
+                $e->getMessage() === 'Could not connect to server at 127.0.0.1:12345: \'111: Connection refused\'' ||
+                $e->getMessage() === 'Could not connect to server at 127.0.0.1:12345: \'61: Connection refused\''
             );
+
         }
     }
 
