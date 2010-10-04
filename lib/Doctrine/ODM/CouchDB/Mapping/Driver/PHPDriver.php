@@ -33,13 +33,43 @@ use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
  */
 class PHPDriver implements Driver
 {
+    /**
+     * The paths where to look for mapping files.
+     *
+     * @var array
+     */
     private $paths = array();
 
-    public function __construct($paths)
+    /**
+     * The file extension of mapping documents.
+     *
+     * @var string
+     */
+    private $fileExtension = '.php';
+
+    /**
+     * @param array
+     */
+    private $classNames;
+
+    /**
+     * Initializes a new AnnotationDriver that uses the given AnnotationReader for reading
+     * docblock annotations.
+     *
+     * @param string|array $paths One or multiple paths where mapping classes can be found. 
+     */
+    public function __construct($paths = null)
     {
-        $this->addPaths((array) $paths);
+        if ($paths) {
+            $this->addPaths((array) $paths);
+        }
     }
 
+    /**
+     * Append lookup paths to metadata driver.
+     *
+     * @param array $paths
+     */
     public function addPaths(array $paths)
     {
         $this->paths = array_unique(array_merge($this->paths, $paths));
