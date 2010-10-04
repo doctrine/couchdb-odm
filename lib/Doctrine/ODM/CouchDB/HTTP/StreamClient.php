@@ -88,6 +88,15 @@ class StreamClient extends Client
             }
         }
 
+        if ( empty($headers['status']) ) {
+            throw HTTPException::readFailure(
+                $this->options['ip'],
+                $this->options['port'],
+                'Received an empty response or not status code',
+                0
+            );
+        }
+
         // Create response object from couch db response
         if ( $raw ) {
             return new RawResponse( $headers['status'], $headers, $body );
