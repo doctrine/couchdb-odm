@@ -102,4 +102,16 @@ abstract class AbstractMappingDriverTest extends \PHPUnit_Framework_Testcase
 
         return $class;
     }
+
+    /**
+     * @depends testManyToManyAssociationMapping
+     * @param ClassMetadata $class
+     */
+    public function testAttachmentMapping($class)
+    {
+        $this->assertTrue($class->hasAttachments);
+        $this->assertEquals('attachments', $class->attachmentField);
+
+        return $class;
+    }
 }
