@@ -18,6 +18,9 @@ class CmsArticle
     public $comments;
     /** @Version */
     public $version;
+
+    /** @Attachments */
+    public $attachments;
     
     public function setAuthor(CmsUser $author) {
         $this->user = $author;

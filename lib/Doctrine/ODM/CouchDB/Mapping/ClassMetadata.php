@@ -107,6 +107,16 @@ class ClassMetadata
      * @var boolean
      */
     public $isEmbeddedDocument = false;
+
+    /**
+     * READ-ONLY: Wheather the document or embedded document is read-only and will be skipped in change-tracking.
+     *
+     * This should be set to true for value objects, for example attachments. Replacing the reference with a new
+     * value object will trigger an update.
+     *
+     * @var bool
+     */
+    public $isReadOnly = false;
     
     public $associationsMappings = array();
 
@@ -123,6 +133,18 @@ class ClassMetadata
      * @var string
      */
     public $versionField = null;
+
+    /**
+     * @var bool
+     */
+    public $hasAttachments = false;
+
+    /**
+     * Field that stores the attachments as a key->value array of file-names to attachment objects.
+     * 
+     * @var string
+     */
+    public $attachmentField = null;
 
     /**
      * Initializes a new ClassMetadata instance that will hold the object-document mapping
@@ -230,6 +252,22 @@ class ClassMetadata
     public function getNamespace()
     {
         return $this->namespace;
+    }
+
+    /**
+     * Set the field that will contain attachments of this document.
+     * 
+     * @param string $fieldName
+     */
+    public function mapAttachments($fieldName)
+    {
+        if (isset($this->fieldMappings[$fieldName]) || isset($this->associationsMappings[$fieldName])) {
+            throw MappingException::duplicateFieldMapping($this->name, $fieldName);
+        }
+
+        $this->hasAttachments = true;
+        $this->attachmentField = $fieldName;
+        $this->reflFields[$fieldName] = $this->reflClass->getProperty($fieldName);
     }
 
     /**

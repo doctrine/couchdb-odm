@@ -19,6 +19,7 @@ class Configuration
         ),
         'writeDoctrineMetadata' => true,
         'validateDoctrineMetadata' => true,
+        'allOrNothingFlush' => true,
     );
 
     /**
@@ -293,5 +294,21 @@ class Configuration
             return $this->attributes['designDocuments'][$name];
         }
         return null;
+    }
+
+    /**
+     * @param bool $allOrNothing
+     */
+    public function setAllOrNothingFlush($allOrNothing)
+    {
+        $this->attributes['allOrNothingFlush'] = (bool)$allOrNothing;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getAllOrNothingFlush()
+    {
+        return $this->attributes['allOrNothingFlush'];
     }
 }
