@@ -26,7 +26,10 @@ final class Document extends Annotation
     public $type;
     public $repositoryClass;
 }
-final class EmbeddedDocument extends Annotation {}
+final class EmbeddedDocument extends Annotation
+{
+    public $readOnly = false;
+}
 final class MappedSuperclass extends Annotation {}
 
 class Field extends Annotation
@@ -75,9 +78,11 @@ class Reference extends Annotation
 }
 final class EmbedOne extends Reference
 {
+    public $jsonName;
 }
 final class EmbedMany extends Reference
 {
+    public $jsonName;
 }
 final class ReferenceOne extends Reference
 {
@@ -88,11 +93,6 @@ final class ReferenceMany extends Reference
     public $cascade;
     public $mappedBy;
 }
-final class Attachments extends Field
+final class Attachments extends Reference
 {
-    
-}
-final class Attachment extends Field
-{
-    public $name;
 }

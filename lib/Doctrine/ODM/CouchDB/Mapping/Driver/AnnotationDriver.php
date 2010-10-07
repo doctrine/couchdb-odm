@@ -134,6 +134,8 @@ class AnnotationDriver implements Driver
                 } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\ReferenceMany) {
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
                     $class->mapManyToMany($mapping);
+                } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Attachments) {
+                    $class->mapAttachments($mapping['fieldName']);
                 }
             }
         }

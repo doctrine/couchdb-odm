@@ -31,6 +31,9 @@ class CmsUser
 
     /** @ReferenceMany(targetDocument="CmsGroup") */
     public $groups;
+
+    /** @Attachments */
+    public $attachments;
     
     public function __construct() {
         $this->articles = new ArrayCollection;

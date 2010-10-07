@@ -97,14 +97,12 @@ class StreamClient extends Client
             );
         }
 
-        // Create response object from couch db response
-        if ( $raw ) {
-            return new RawResponse( $headers['status'], $headers, $body );
-        } elseif ( $headers['status'] >= 400 ) {
+        // Create repsonse object from couch db response
+        if ( $headers['status'] >= 400 )
+        {
             return new ErrorResponse( $headers['status'], $headers, $body );
         }
-
-        return new Response( $headers['status'], $headers, $body );
+        return new Response( $headers['status'], $headers, $body, $raw );
     }
 }
 

@@ -38,11 +38,11 @@ class Response
      * @param string $body 
      * @return void
      */
-    public function __construct( $status, array $headers, $body )
+    public function __construct( $status, array $headers, $body, $raw = false )
     {
         $this->status  = (int) $status;
         $this->headers = $headers;
-        $this->body    = json_decode( $body, true );
+        $this->body    = $raw ? $body : json_decode( $body, true );
     }
 }
 

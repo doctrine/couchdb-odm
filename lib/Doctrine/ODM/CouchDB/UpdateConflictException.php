@@ -17,27 +17,34 @@
  * <http://www.doctrine-project.org>.
  */
 
+
 namespace Doctrine\ODM\CouchDB;
 
 /**
- * Base exception class for package Doctrine\ODM\CouchDB
+ * Thrown by the UnitOfWork when errors happen on flush.
+ *
+ * Contains all the documents that produced errors while batch-updating them.
  */
-class CouchDBException extends \Exception
+class UpdateConflictException extends \Exception
 {
+    /**
+     * @var array
+     */
+    private $updateConflictDocuments = array();
 
-    public static function unknownDocumentNamespace($documentNamespaceAlias)
+    /**
+     * @param array $updateConflictDocuments
+     */
+    public function __construct($updateConflictDocuments)
     {
-        return new self("Unknown Document namespace alias '$documentNamespaceAlias'.");
+        $this->updateConflictDocuments = $updateConflictDocuments;
     }
 
-    public static function unregisteredDesignDocument($designDocumentName)
+    /**
+     * @return array
+     */
+    public function getUpdateConflictDocuments()
     {
-        return new self("No design document with name '" . $designDocumentName . "' was registered with the DocumentManager.");
-    }
-
-    public static function invalidAttachment($className, $id, $filename)
-    {
-        return new self("Trying to save invalid attachment with filename " . $filename . " in document " . $className . " with id " . $id);
+        return $this->updateConflictDocuments;
     }
 }
-

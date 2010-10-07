@@ -21,6 +21,7 @@ class Configuration
         'validateDoctrineMetadata' => true,
         'UUIDGenerationBufferSize' => 20,
         'proxyNamespace' => 'MyCouchDBProxyNS',
+        'allOrNothingFlush' => true,
     );
 
     /**
@@ -287,5 +288,21 @@ class Configuration
             return $this->attributes['designDocuments'][$name];
         }
         return null;
+    }
+
+    /**
+     * @param bool $allOrNothing
+     */
+    public function setAllOrNothingFlush($allOrNothing)
+    {
+        $this->attributes['allOrNothingFlush'] = (bool)$allOrNothing;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getAllOrNothingFlush()
+    {
+        return $this->attributes['allOrNothingFlush'];
     }
 }

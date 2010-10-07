@@ -1,4 +1,21 @@
 <?php
+/*
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * This software consists of voluntary contributions made by many individuals
+ * and is licensed under the LGPL. For more information, see
+ * <http://www.doctrine-project.org>.
+ */
 
 namespace Doctrine\ODM\CouchDB;
 
@@ -18,13 +35,6 @@ class UnitOfWork
     private $identityMap = array();
 
     /**
-     * The entity persister instances used to persist entity instances.
-     *
-     * @var array
-     */
-    private $persister = null;
-
-    /**
      * @var array
      */
     private $documentIdentifiers = array();
@@ -35,6 +45,16 @@ class UnitOfWork
     private $documentRevisions = array();
 
     private $documentState = array();
+
+    /**
+     * CouchDB always returns and updates the whole data of a document. If on update data is "missing"
+     * this means the data is deleted. This also applies to attachments. This is why we need to ensure
+     * that data that is not mapped is not lost. This map here saves all the "left-over" data and keeps
+     * track of it if necessary.
+     *
+     * @var array
+     */
+    private $nonMappedData = array();
 
     private $originalData = array();
 
@@ -75,7 +95,6 @@ class UnitOfWork
      */
     public function createDocument($documentName, $data, array &$hints = array())
     {
-
         if (isset($data['doctrine_metadata']['type'])) {
              $type = $data['doctrine_metadata']['type'];
              if (isset($documentName) && $this->dm->getConfiguration()->getValidateDoctrineMetadata()) {
@@ -93,6 +112,7 @@ class UnitOfWork
         $class = $this->dm->getClassMetadata($type);
 
         $documentState = array();
+        $nonMappedData = array();
         $id = $data['_id'];
         $rev = $data['_rev'];
         foreach ($data as $jsonName => $jsonValue) {
@@ -100,10 +120,12 @@ class UnitOfWork
                 $fieldName = $class->jsonNames[$jsonName];
                 if (isset($class->fieldMappings[$fieldName])) {
                     $documentState[$class->fieldMappings[$fieldName]['fieldName']] = $jsonValue;
-                } else {
-                    // TODO: For migrations and stuff, maybe there should really be a "rest" field?
                 }
-            } else if ($jsonName == 'doctrine_metadata' && isset($jsonValue['associations'])) {
+            } else if ($jsonName == 'doctrine_metadata') {
+                if (!isset($jsonValue['associations'])) {
+                    continue;
+                }
+
                 foreach ($jsonValue['associations'] AS $assocName => $assocValue) {
                     if (isset($class->associationsMappings[$assocName])) {
                         if ($class->associationsMappings[$assocName]['type'] & ClassMetadata::TO_ONE) {
@@ -123,6 +145,14 @@ class UnitOfWork
                         }
                     }
                 }
+            } else if ($jsonName == '_rev') {
+                continue;
+            } else if ($jsonName == '_conflicts') {
+                // TODO: Remember documents and call "onConflict" events
+            } else if ($class->hasAttachments && $jsonName == '_attachments') {
+                $documentState[$class->attachmentField] = $this->createDocumentAttachments($id, $jsonValue);
+            } else {
+                $nonMappedData[$jsonName] = $jsonValue;
             }
         }
 
@@ -162,6 +192,7 @@ class UnitOfWork
         }
 
         if ($overrideLocalValues) {
+            $this->nonMappedData[$oid] = $nonMappedData;
             foreach ($class->reflFields as $prop => $reflFields) {
                 $value = isset($documentState[$prop]) ? $documentState[$prop] : null;
                 $reflFields->setValue($document, $value);
@@ -170,6 +201,30 @@ class UnitOfWork
         }
 
         return $document;
+    }
+
+    /**
+     * @param  string $documentId
+     * @param  array $data
+     * @return array
+     */
+    private function createDocumentAttachments($documentId, $data)
+    {
+        $attachments = array();
+
+        $client = $this->dm->getConfiguration()->getHttpClient();
+        $basePath = '/' . $this->dm->getConfiguration()->getDatabase() . '/' . $documentId . '/';
+        foreach ($data AS $filename => $attachment) {
+            if (isset($attachment['stub']) && $attachment['stub']) {
+                $instance = Attachment::createStub($attachment['content_type'], $attachment['length'], $attachment['revpos'], $client, $basePath . $filename);
+            } else if (isset($attachment['data'])) {
+                $instance = Attachment::createFromBase64Data($attachment['data'], $attachment['content_type'], $attachment['revpos']);
+            }
+
+            $attachments[$filename] = $instance;
+        }
+
+        return $attachments;
     }
 
     /**
@@ -248,7 +303,6 @@ class UnitOfWork
         if (!isset($this->originalData[$oid])) {
             // Entity is New and should be inserted
             $this->originalData[$oid] = $actualData;
-
             $this->documentChangesets[$oid] = $actualData;
             $this->scheduledUpdates[$oid] = $document;
         } else {
@@ -269,6 +323,12 @@ class UnitOfWork
                             $changed = true;
                             break;
                         }
+                    }
+                } else if ($class->hasAttachments && $fieldName == $class->attachmentField) {
+                    // array of value objects, can compare that stricly
+                    if ($this->originalData[$oid][$fieldName] !== $fieldValue) {
+                        $changed = true;
+                        break;
                     }
                 }
             }
@@ -294,19 +354,26 @@ class UnitOfWork
         return array();
     }
 
+    /**
+     * Flush Operation - Write all dirty entries to the CouchDB.
+     *
+     * @return void
+     */
     public function flush()
     {
         $this->detectChangedDocuments();
 
-        $bulkUpdater = new Persisters\BulkUpdater($this->dm->getConfiguration()->getHttpClient(), $this->dm->getConfiguration()->getDatabase());
-        $bulkUpdater->setAllOrNothing(true); // TODO: Docs discourage this, but in the UoW context it makes sense? Evaluate!
+        $config = $this->dm->getConfiguration();
+
+        $useDoctrineMetadata = $config->getWriteDoctrineMetadata();
+
+        $bulkUpdater = new Persisters\BulkUpdater($config->getHttpClient(), $config->getDatabase());
+        $bulkUpdater->setAllOrNothing($config->getAllOrNothingFlush());
 
         foreach ($this->scheduledRemovals AS $oid => $document) {
             $bulkUpdater->deleteDocument($this->documentIdentifiers[$oid], $this->documentRevisions[$oid]);
             $this->removeFromIdentityMap($document);
         }
-
-        $useDoctrineMetadata = $this->dm->getConfiguration()->getWriteDoctrineMetadata();
 
         foreach ($this->scheduledUpdates AS $oid => $document) {
             $class = $this->dm->getClassMetadata(get_class($document));
@@ -330,14 +397,31 @@ class UnitOfWork
                         if ($class->associationsMappings[$fieldName]['isOwning']) {
                             // TODO: Optimize when not initialized yet! In ManyToMany case we can keep track of ALL ids
                             $ids = array();
-                            foreach ($fieldValue AS $relatedObject) {
-                                $ids[] = $this->getDocumentIdentifier($relatedObject);
+                            if (is_array($fieldValue) || $fieldValue instanceof \Doctrine\Common\Collections\Collection) {
+                                foreach ($fieldValue AS $relatedObject) {
+                                    $ids[] = $this->getDocumentIdentifier($relatedObject);
+                                }
                             }
 
                             $data['doctrine_metadata']['associations'][$fieldName] = $ids;
                         }
                     }
+                } else if ($class->hasAttachments && $fieldName == $class->attachmentField) {
+                    if (is_array($fieldValue) && $fieldValue) {
+                        $data['_attachments'] = array();
+                        foreach ($fieldValue AS $filename => $attachment) {
+                            if (!($attachment instanceof \Doctrine\ODM\CouchDB\Attachment)) {
+                                throw CouchDBException::invalidAttachment($class->name, $this->documentIdentifiers[$oid], $filename);
+                            }
+                            $data['_attachments'][$filename] = $attachment->toArray();
+                        }
+                    }
                 }
+            }
+
+            // respect the non mapped data, otherwise they will be deleted.
+            if (isset($this->nonMappedData[$oid]) && $this->nonMappedData[$oid]) {
+                $data = array_merge($data, $this->nonMappedData[$oid]);
             }
 
             $rev = $this->getDocumentRevision($document);
@@ -347,7 +431,7 @@ class UnitOfWork
             $bulkUpdater->updateDocument($data);
         }
         $response = $bulkUpdater->execute();
-        $errors = array();
+        $updateConflictDocuments = array();
         if ($response->status == 201) {
             foreach ($response->body AS $docResponse) {
                 if (!isset($this->identityMap[$docResponse['id']])) {
@@ -357,7 +441,7 @@ class UnitOfWork
 
                 $document = $this->identityMap[$docResponse['id']];
                 if (isset($docResponse['error'])) {
-                    $errors[] = $docResponse;
+                    $updateConflictDocuments[] = $document;
                 } else {
                     $this->documentRevisions[spl_object_hash($document)] = $docResponse['rev'];
                     $class = $this->dm->getClassMetadata(get_class($document));
@@ -371,8 +455,8 @@ class UnitOfWork
         $this->scheduledUpdates =
         $this->scheduledRemovals = array();
 
-        if (count($errors)) {
-            throw new \Exception("Errors happend: " . count($errors));
+        if (count($updateConflictDocuments)) {
+            throw new UpdateConflictException($updateConflictDocuments);
         }
     }
 

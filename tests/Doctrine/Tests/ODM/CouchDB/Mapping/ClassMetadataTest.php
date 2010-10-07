@@ -126,6 +126,19 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
 
         return $cm;
     }
+
+    /**
+     * @param ClassMetadata $cm
+     * @depends testClassName
+     */
+    public function testMapAttachments($cm)
+    {
+        $cm->mapAttachments("attachments");
+
+        $this->assertTrue($cm->hasAttachments);
+        $this->assertEquals("attachments", $cm->attachmentField);
+        $this->assertArrayHasKey("attachments", $cm->reflFields);
+    }
 }
 
 class Person
@@ -139,6 +152,8 @@ class Person
     public $address;
 
     public $version;
+
+    public $attachments;
 }
 
 class Address
