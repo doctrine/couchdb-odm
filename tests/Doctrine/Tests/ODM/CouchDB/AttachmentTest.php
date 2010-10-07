@@ -76,21 +76,21 @@ class AttachmentTest extends CouchDBTestCase
         $attachment->getRawData();
     }
 
-    public function testToCouchDBJson()
+    public function testToArray()
     {
         $text = "Hello i am a string";
         $attachment = Attachment::createFromBinaryData($text, "text/plain");
 
-        $this->assertEquals('{"data":"SGVsbG8gaSBhbSBhIHN0cmluZw==","content_type":"text\/plain"}', $attachment->toCouchDBJson());
+        $this->assertEquals(array("data" => "SGVsbG8gaSBhbSBhIHN0cmluZw==", "content_type" => "text\/plain"), $attachment->toArray());
     }
 
-    public function testToCouchDBJsonStub()
+    public function testToArrayStub()
     {
         $httpClient = $this->getMock('Doctrine\ODM\CouchDB\HTTP\Client');
         $httpClient->expects($this->never())->method('request');
         $attachment = Attachment::createStub('plain/text', 28, 2, $httpClient, '/');
 
-        $this->assertEquals('{"stub":true}', $attachment->toCouchDBJson());
+        $this->assertEquals(array('stub' => true), $attachment->toArray());
     }
 
     public function testCreateFromBinaryFileHandle()

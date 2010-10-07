@@ -35,5 +35,9 @@ class CouchDBException extends \Exception
         return new self("No design document with name '" . $designDocumentName . "' was registered with the DocumentManager.");
     }
 
+    public static function invalidAttachment($className, $id, $filename)
+    {
+        return new self("Trying to save invalid attachment with filename " . $filename . " in document " . $className . " with id " . $id);
+    }
 }
 

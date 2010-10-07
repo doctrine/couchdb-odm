@@ -160,6 +160,8 @@ class UnitOfWork
                 continue;
             } else if ($jsonName == '_conflicts') {
                 // TODO: Remember documents and call "onConflict" events
+            } else if ($class->hasAttachments && $jsonName == '_attachments') {
+                $documentState[$class->attachmentField] = $this->createDocumentAttachments($id, $jsonValue);
             } else {
                 $nonMappedData[$jsonName] = $jsonValue;
             }
@@ -210,6 +212,30 @@ class UnitOfWork
         }
 
         return $document;
+    }
+
+    /**
+     * @param  string $documentId
+     * @param  array $data
+     * @return array
+     */
+    private function createDocumentAttachments($documentId, $data)
+    {
+        $attachments = array();
+
+        $client = $this->dm->getConfiguration()->getHttpClient();
+        $basePath = '/' . $this->dm->getConfiguration()->getDatabase() . '/' . $documentId . '/';
+        foreach ($data AS $filename => $attachment) {
+            if (isset($attachment['stub']) && $attachment['stub']) {
+                $instance = Attachment::createStub($attachment['content_type'], $attachment['length'], $attachment['revpos'], $client, $basePath . $filename);
+            } else if (isset($attachment['data'])) {
+                $instance = Attachment::createFromBase64Data($attachment['data'], $attachment['content_type'], $attachment['revpos']);
+            }
+
+            $attachments[$filename] = $instance;
+        }
+
+        return $attachments;
     }
 
     /**
@@ -288,7 +314,6 @@ class UnitOfWork
         if (!isset($this->originalData[$oid])) {
             // Entity is New and should be inserted
             $this->originalData[$oid] = $actualData;
-
             $this->documentChangesets[$oid] = $actualData;
             $this->scheduledUpdates[$oid] = $document;
         } else {
@@ -309,6 +334,12 @@ class UnitOfWork
                             $changed = true;
                             break;
                         }
+                    }
+                } else if ($class->hasAttachments && $fieldName == $class->attachmentField) {
+                    // array of value objects, can compare that stricly
+                    if ($this->originalData[$oid][$fieldName] !== $fieldValue) {
+                        $changed = true;
+                        break;
                     }
                 }
             }
@@ -377,11 +408,23 @@ class UnitOfWork
                         if ($class->associationsMappings[$fieldName]['isOwning']) {
                             // TODO: Optimize when not initialized yet! In ManyToMany case we can keep track of ALL ids
                             $ids = array();
-                            foreach ($fieldValue AS $relatedObject) {
-                                $ids[] = $this->getDocumentIdentifier($relatedObject);
+                            if (is_array($fieldValue) || $fieldValue instanceof \Doctrine\Common\Collections\Collection) {
+                                foreach ($fieldValue AS $relatedObject) {
+                                    $ids[] = $this->getDocumentIdentifier($relatedObject);
+                                }
                             }
 
                             $data['doctrine_metadata']['associations'][$fieldName] = $ids;
+                        }
+                    }
+                } else if ($class->hasAttachments && $fieldName == $class->attachmentField) {
+                    if (is_array($fieldValue) && $fieldValue) {
+                        $data['_attachments'] = array();
+                        foreach ($fieldValue AS $filename => $attachment) {
+                            if (!($attachment instanceof \Doctrine\ODM\CouchDB\Attachment)) {
+                                throw CouchDBException::invalidAttachment($class->name, $this->documentIdentifiers[$oid], $filename);
+                            }
+                            $data['_attachments'][$filename] = $attachment->toArray();
                         }
                     }
                 }

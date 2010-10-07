@@ -141,7 +141,7 @@ class Attachment
     private function lazyLoad()
     {
         if ($this->stub) {
-            $response = $this->httpClient->request('GET', $this->path);
+            $response = $this->httpClient->request('GET', $this->path, null, true); // raw request
             if ($response->status != 200) {
                 throw HTTPException::fromResponse($this->path, $response);
             }
@@ -174,7 +174,7 @@ class Attachment
      * 
      * @return string
      */
-    public function toCouchDBJson()
+    public function toArray()
     {
         if ($this->stub) {
             $json = array('stub' => true);
@@ -184,7 +184,7 @@ class Attachment
                 $json['content_type'] = $this->contentType;
             }
         }
-        return json_encode($json);
+        return $json;
     }
 
     /**
