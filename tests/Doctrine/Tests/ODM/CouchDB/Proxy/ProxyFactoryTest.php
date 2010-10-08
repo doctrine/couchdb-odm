@@ -42,7 +42,7 @@ class ProxyFactoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCase
         }
     }
 
-    public function testProxyGeneration()
+    public function testReferenceProxyDelegatesLoadingToThePersister()
     {
         $proxyClass = 'Proxies\DoctrineTestsModelsECommerceECommerceFeatureProxy';
         $modelClass = 'Doctrine\Tests\Models\ECommerce\ECommerceFeature';
@@ -64,11 +64,6 @@ class ProxyFactoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCase
         $this->assertType('Doctrine\ODM\CouchDB\Proxy\Proxy', $proxy);
 
         $proxy->getDescription();
-    }
-
-    public function createDocumentManagerProvidingMetadataMock()
-    {
-
     }
 }
 
