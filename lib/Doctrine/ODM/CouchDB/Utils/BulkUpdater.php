@@ -18,7 +18,7 @@
  */
 
 
-namespace Doctrine\ODM\CouchDB\Persisters;
+namespace Doctrine\ODM\CouchDB\Utils;
 
 use Doctrine\ODM\CouchDB\HTTP\Client;
 

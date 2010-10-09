@@ -367,7 +367,7 @@ class UnitOfWork
 
         $useDoctrineMetadata = $config->getWriteDoctrineMetadata();
 
-        $bulkUpdater = new Persisters\BulkUpdater($config->getHttpClient(), $config->getDatabase());
+        $bulkUpdater = $this->dm->getCouchDBClient()->createBulkUpdater();
         $bulkUpdater->setAllOrNothing($config->getAllOrNothingFlush());
 
         foreach ($this->scheduledRemovals AS $oid => $document) {

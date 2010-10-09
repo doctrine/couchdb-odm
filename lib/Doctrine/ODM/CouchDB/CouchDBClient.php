@@ -20,6 +20,8 @@
 namespace Doctrine\ODM\CouchDB;
 
 use Doctrine\ODM\CouchDB\HTTP\Client;
+use Doctrine\ODM\CouchDB\HTTP\HTTPException;
+use Doctrine\ODM\CouchDB\Utils\BulkUpdater;
 
 class CouchDBClient
 {
@@ -38,6 +40,13 @@ class CouchDBClient
     private $httpClient;
 
     /**
+     * CouchDB Version
+     * 
+     * @var string
+     */
+    private $version = null;
+
+    /**
      * @param Client $client
      * @param string $databaseName
      */
@@ -47,6 +56,12 @@ class CouchDBClient
         $this->databaseName = $databaseName;
     }
 
+    /**
+     * Let CouchDB generate an array of UUIDs.
+     *
+     * @param  int $count
+     * @return array
+     */
     public function getUuids($count = 1)
     {
         $count = (int)$count;
@@ -60,6 +75,8 @@ class CouchDBClient
     }
 
     /**
+     * Find a document by ID and return the HTTP response.
+     *
      * @param  string $id
      * @return Response
      */
@@ -70,7 +87,7 @@ class CouchDBClient
     }
 
     /**
-     * Find many documents by passing their ids.
+     * Find many documents by passing their ids and return the HTTP response.
      *
      * @param array $ids
      * @return array
@@ -79,5 +96,116 @@ class CouchDBClient
     {
         $allDocsPath = '/' . $this->databaseName . '/_all_docs?include_docs=true';
         return $this->httpClient->request('POST', $allDocsPath, json_encode(array('keys' => $ids)));
+    }
+
+    /**
+     * Get the current version of CouchDB.
+     *
+     * @throws HTTPException
+     * @return string
+     */
+    public function getVersion()
+    {
+        if ($this->version === null) {
+            $response = $this->httpClient->request('GET', '/');
+            if ($response->status != 200) {
+                throw HTTPException::fromResponse('/', $response);
+            }
+
+            $this->version = $response->body['version'];
+        }
+        return $this->version;
+    }
+
+    /**
+     * Get all databases
+     *
+     * @throws HTTPException
+     * @return array
+     */
+    public function getAllDatabases()
+    {
+        $response = $this->httpClient->request('GET', '/_all_dbs');
+        if ($response->status != 200) {
+            throw HTTPException::fromResponse('/_all_dbs', $response);
+        }
+
+        return $response->body;
+    }
+
+    /**
+     * Create a new database
+     *
+     * @throws HTTPException
+     * @param string $name
+     * @return void
+     */
+    public function createDatabase($name)
+    {
+        $response = $this->httpClient->request('PUT', '/' . urlencode($name));
+
+        if ($response->status != 201) {
+            throw HTTPException::fromResponse('/' . urlencode($name), $response);
+        }
+    }
+
+    /**
+     * Drop a database
+     *
+     * @throws HTTPException
+     * @param string $name
+     * @return void
+     */
+    public function deleteDatabase($name)
+    {
+        $response = $this->httpClient->request('DELETE', '/' . urlencode($name));
+
+        if ($response->status != 200 && $response->status != 404) {
+            throw HTTPException::fromResponse('/' . urlencode($name), $response);
+        }
+    }
+
+    /**
+     * Get Information about a database.
+     * 
+     * @param  string $name
+     * @return array
+     */
+    public function getDatabaseInfo($name)
+    {
+        $response = $this->httpClient->request('GET', '/' . $this->databaseName);
+
+        if ($response->status != 200) {
+            throw HTTPException::fromResponse('/' . urlencode($name), $response);
+        }
+
+        return $response->body;
+    }
+
+    /**
+     * Get changes.
+     *
+     * @param  array $params
+     * @return array
+     */
+    public function getChanges($params)
+    {
+        $response = $this->httpClient->request('GET', '/' . $this->databaseName, $params);
+
+        if ($response->status != 200) {
+            throw HTTPException::fromResponse('/' . $this->databaseName, $response);
+        }
+
+        return $reponse->body;
+    }
+
+    /**
+     * Create a bulk updater instance.
+     * 
+     * @return BulkUpdater
+     */
+    public function createBulkUpdater()
+    {
+        return new BulkUpdater($this->httpClient, $this->databaseName);
     }
 }
