@@ -109,14 +109,14 @@ class DocumentManager
      */
     public function find($documentName, $id)
     {
-        return $this->getDocumentRepository($documentName)->find($id);
+        return $this->getRepository($documentName)->find($id);
     }
 
     /**
      * @param  string $documentName
      * @return Doctrine\ODM\CouchDB\DocumentRepository
      */
-    public function getDocumentRepository($documentName)
+    public function getRepository($documentName)
     {
         $documentName  = ltrim($documentName, '\\');
         if (!isset($this->repositories[$documentName])) {
@@ -184,7 +184,7 @@ class DocumentManager
      */
     public function refresh($document)
     {
-        $this->getDocumentRepository(get_class($document))->refresh($document);
+        $this->getRepository(get_class($document))->refresh($document);
     }
 
     /**

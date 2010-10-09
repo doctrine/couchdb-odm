@@ -76,7 +76,7 @@ class DocumentManagerMock extends \Doctrine\ODM\CouchDB\DocumentManager
         $this->repository = $mock;
     }
 
-    public function getDocumentRepository($documentName)
+    public function getRepository($documentName)
     {
         return $this->repository;
     }

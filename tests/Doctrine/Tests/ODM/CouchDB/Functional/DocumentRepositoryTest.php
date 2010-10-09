@@ -23,13 +23,13 @@ class DocumentRepositoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunction
         $this->dm->persist($user2);
         $this->dm->flush();
 
-        $users = $this->dm->getDocumentRepository('Doctrine\Tests\Models\CMS\CmsUser')->findMany(array($user1->id, $user2->id));
+        $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findMany(array($user1->id, $user2->id));
         $this->assertSame($user1, $users[0]);
         $this->assertSame($user2, $users[1]);
 
         $this->dm->clear();
 
-        $users = $this->dm->getDocumentRepository('Doctrine\Tests\Models\CMS\CmsUser')->findMany(array($user1->id, $user2->id));
+        $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findMany(array($user1->id, $user2->id));
         $this->assertEquals($user1->id, $users[0]->id);
         $this->assertEquals($user2->id, $users[1]->id);
     }
