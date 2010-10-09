@@ -81,8 +81,25 @@ class CouchDBClientTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTes
         $this->assertEquals($this->getTestDatabase(), $data['db_name']);
     }
 
+    public function testCreateBulkUpdater()
+    {
+        $updater = $this->dm->getCouchDBClient()->createBulkUpdater();
+        $this->assertType('Doctrine\ODM\CouchDB\Utils\BulkUpdater', $updater);
+    }
+
+    /**
+     * @depends testCreateBulkUpdater
+     */
     public function testGetChanges()
     {
-        
+        $updater = $this->dm->getCouchDBClient()->createBulkUpdater();
+        $updater->updateDocument(array("_id" => "test1", "foo" => "bar"));
+        $updater->updateDocument(array("_id" => "test2", "bar" => "baz"));
+        $updater->execute();
+
+        $changes = $this->dm->getCouchDBClient()->getChanges();
+        $this->assertArrayHasKey('results', $changes);
+        $this->assertEquals(2, count($changes['results']));
+        $this->assertEquals(2, $changes['last_seq']);
     }
 }

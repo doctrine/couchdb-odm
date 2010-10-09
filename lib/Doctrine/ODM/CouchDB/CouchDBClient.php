@@ -188,15 +188,16 @@ class CouchDBClient
      * @param  array $params
      * @return array
      */
-    public function getChanges($params)
+    public function getChanges(array $params = null)
     {
-        $response = $this->httpClient->request('GET', '/' . $this->databaseName, $params);
+        $path = '/' . $this->databaseName . '/_changes';
+        $response = $this->httpClient->request('GET', $path, $params);
 
         if ($response->status != 200) {
-            throw HTTPException::fromResponse('/' . $this->databaseName, $response);
+            throw HTTPException::fromResponse($path, $response);
         }
 
-        return $reponse->body;
+        return $response->body;
     }
 
     /**
