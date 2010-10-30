@@ -21,6 +21,15 @@ namespace Doctrine\ODM\CouchDB;
 
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 
+/**
+ * Unit of work class
+ *
+ * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
+ * @link        www.doctrine-project.com
+ * @since       1.0
+ * @author      Benjamin Eberlei <kontakt@beberlei.de>
+ * @author      Lukas Kahwe Smith <smith@pooteeweet.org>
+ */
 class UnitOfWork
 {
     const STATE_NEW = 1;
@@ -87,7 +96,7 @@ class UnitOfWork
 
     /**
      * Create a document given class, data and the doc-id and revision
-     * 
+     *
      * @param string $documentName
      * @param array $documentState
      * @param array $hints
@@ -451,7 +460,7 @@ class UnitOfWork
                 }
             }
         }
-        
+
         $this->scheduledUpdates =
         $this->scheduledRemovals = array();
 

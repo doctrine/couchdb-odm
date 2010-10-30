@@ -2,6 +2,15 @@
 
 namespace Doctrine\ODM\CouchDB\Mapping;
 
+/**
+ * Mapping exception class
+ *
+ * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
+ * @link        www.doctrine-project.com
+ * @since       1.0
+ * @author      Benjamin Eberlei <kontakt@beberlei.de>
+ * @author      Lukas Kahwe Smith <smith@pooteeweet.org>
+ */
 class MappingException extends \Exception
 {
     public static function classNotFound($className)

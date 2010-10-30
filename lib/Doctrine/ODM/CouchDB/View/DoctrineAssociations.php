@@ -19,12 +19,20 @@
 
 namespace Doctrine\ODM\CouchDB\View;
 
+/**
+ * Associations class
+ *
+ * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
+ * @link        www.doctrine-project.com
+ * @since       1.0
+ * @author      Benjamin Eberlei <kontakt@beberlei.de>
+ */
 class DoctrineAssociations implements DesignDocument
 {
     /**
      * Get view code
      *
-     * Return the view code, which should be comitted to the database, which 
+     * Return the view code, which should be comitted to the database, which
      * should be structured like:
      *
      * <code>

@@ -21,6 +21,11 @@ namespace Doctrine\ODM\CouchDB;
 
 /**
  * Base exception class for package Doctrine\ODM\CouchDB
+ *
+ * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
+ * @link        www.doctrine-project.com
+ * @since       1.0
+ * @author      Benjamin Eberlei <kontakt@beberlei.de>
  */
 class CouchDBException extends \Exception
 {

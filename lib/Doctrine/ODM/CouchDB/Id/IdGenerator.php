@@ -7,6 +7,12 @@ use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 
 /**
  * Used to abstract ID generation
+ *
+ * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
+ * @link        www.doctrine-project.com
+ * @since       1.0
+ * @author      Benjamin Eberlei <kontakt@beberlei.de>
+ * @author      Lukas Kahwe Smith <smith@pooteeweet.org>
  */
 abstract class IdGenerator
 {

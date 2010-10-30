@@ -17,11 +17,18 @@
  * <http://www.doctrine-project.org>.
  */
 
-
 namespace Doctrine\ODM\CouchDB\View;
 
 use Doctrine\ODM\CouchDB\DocumentManager;
 
+/**
+ * Query class
+ *
+ * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
+ * @link        www.doctrine-project.com
+ * @since       1.0
+ * @author      Benjamin Eberlei <kontakt@beberlei.de>
+ */
 class Query extends NativeQuery
 {
     /**

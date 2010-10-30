@@ -23,6 +23,15 @@ use Doctrine\ODM\CouchDB\HTTP\Client;
 use Doctrine\ODM\CouchDB\HTTP\HTTPException;
 use Doctrine\ODM\CouchDB\Utils\BulkUpdater;
 
+/**
+ * CouchDB client class
+ *
+ * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
+ * @link        www.doctrine-project.com
+ * @since       1.0
+ * @author      Benjamin Eberlei <kontakt@beberlei.de>
+ * @author      Lukas Kahwe Smith <smith@pooteeweet.org>
+ */
 class CouchDBClient
 {
    /**
@@ -41,7 +50,7 @@ class CouchDBClient
 
     /**
      * CouchDB Version
-     * 
+     *
      * @var string
      */
     private $version = null;
@@ -167,7 +176,7 @@ class CouchDBClient
 
     /**
      * Get Information about a database.
-     * 
+     *
      * @param  string $name
      * @return array
      */
@@ -202,7 +211,7 @@ class CouchDBClient
 
     /**
      * Create a bulk updater instance.
-     * 
+     *
      * @return BulkUpdater
      */
     public function createBulkUpdater()

@@ -7,12 +7,17 @@ namespace Doctrine\ODM\CouchDB\HTTP;
 
 /**
  * Basic couch DB connection handling class
+ *
+ * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
+ * @link        www.doctrine-project.com
+ * @since       1.0
+ * @author      Kore Nordmann <kore@arbitracker.org>
  */
 abstract class Client
 {
     /**
      * CouchDB connection options
-     * 
+     *
      * @var array
      */
     protected $options = array(
@@ -31,11 +36,11 @@ abstract class Client
      * Construct a CouchDB connection from basic connection parameters for one
      * given database.
      *
-     * @param string $host 
-     * @param int $port 
-     * @param string $username 
-     * @param string $password 
-     * @param string $ip 
+     * @param string $host
+     * @param int $port
+     * @param string $username
+     * @param string $password
+     * @param string $ip
      * @return void
      */
     public function __construct( $host = 'localhost', $port = 5984, $username = null, $password = null, $ip = null )
@@ -57,9 +62,9 @@ abstract class Client
      *
      * Set the value for an connection option. Throws an
      * InvalidArgumentException for unknown options.
-     * 
-     * @param string $option 
-     * @param mixed $value 
+     *
+     * @param string $option
+     * @param mixed $value
      * @return void
      */
     public function setOption( $option, $value )

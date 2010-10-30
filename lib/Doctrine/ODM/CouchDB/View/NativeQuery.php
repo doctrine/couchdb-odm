@@ -24,6 +24,11 @@ use Doctrine\ODM\CouchDB\HTTP\ErrorResponse;
 
 /**
  * Query Object for Views
+ *
+ * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
+ * @link        www.doctrine-project.com
+ * @since       1.0
+ * @author      Benjamin Eberlei <kontakt@beberlei.de>
  */
 class NativeQuery
 {
@@ -46,7 +51,7 @@ class NativeQuery
      * @var string
      */
     private $databaseName;
-    
+
     /**
      * @var Client
      */
@@ -74,7 +79,7 @@ class NativeQuery
 
     /**
      * Query the view with the current params.
-     * 
+     *
      * @return array
      */
     public function execute()
@@ -130,7 +135,7 @@ class NativeQuery
 
     /**
      * Set ending key to query view for.
-     * 
+     *
      * @param  string $val
      * @return Query
      */
@@ -142,7 +147,7 @@ class NativeQuery
 
     /**
      * Document id to start with
-     * 
+     *
      * @param  string $val
      * @return Query
      */
@@ -166,7 +171,7 @@ class NativeQuery
 
     /**
      * Limit the number of documents in the output
-     * 
+     *
      * @param  int $val
      * @return Query
      */
@@ -214,7 +219,7 @@ class NativeQuery
 
     /**
      * The group option controls whether the reduce function reduces to a set of distinct keys or to a single result row.
-     * 
+     *
      * @param  bool $flag
      * @return Query
      */

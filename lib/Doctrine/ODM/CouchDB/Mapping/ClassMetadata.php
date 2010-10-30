@@ -2,6 +2,15 @@
 
 namespace Doctrine\ODM\CouchDB\Mapping;
 
+/**
+ * Metadata class
+ *
+ * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
+ * @link        www.doctrine-project.com
+ * @since       1.0
+ * @author      Benjamin Eberlei <kontakt@beberlei.de>
+ * @author      Lukas Kahwe Smith <smith@pooteeweet.org>
+ */
 class ClassMetadata
 {
     const IDGENERATOR_UUID = 1;
@@ -117,7 +126,7 @@ class ClassMetadata
      * @var bool
      */
     public $isReadOnly = false;
-    
+
     public $associationsMappings = array();
 
     /**
@@ -141,7 +150,7 @@ class ClassMetadata
 
     /**
      * Field that stores the attachments as a key->value array of file-names to attachment objects.
-     * 
+     *
      * @var string
      */
     public $attachmentField = null;
@@ -159,7 +168,7 @@ class ClassMetadata
         $this->reflClass = new \ReflectionClass($documentName);
         $this->namespace = $this->reflClass->getNamespaceName();
     }
-    
+
     /**
      * Checks whether a field is part of the identifier/primary key field(s).
      *
@@ -256,7 +265,7 @@ class ClassMetadata
 
     /**
      * Set the field that will contain attachments of this document.
-     * 
+     *
      * @param string $fieldName
      */
     public function mapAttachments($fieldName)

@@ -29,6 +29,11 @@ use Doctrine\ODM\CouchDB\HTTP\HTTPException;
  *
  * TODO: This is a very inefficient first version implementation that saves both
  * binary and base64 data of everything if possible to ease the API.
+ *
+ * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
+ * @link        www.doctrine-project.com
+ * @since       1.0
+ * @author      Benjamin Eberlei <kontakt@beberlei.de>
  */
 class Attachment
 {
@@ -66,14 +71,14 @@ class Attachment
 
     /**
      * Size of the attachment.
-     * 
+     *
      * @var int
      */
     private $length = 0;
 
     /**
      * Revision Position field of this Attachment.
-     * 
+     *
      * @var int
      */
     private $revpos = 0;
@@ -171,7 +176,7 @@ class Attachment
      *
      * TODO: Is this really necessary with all this special logic? Having attahments as special
      * case without special code would be really awesome.
-     * 
+     *
      * @return string
      */
     public function toArray()

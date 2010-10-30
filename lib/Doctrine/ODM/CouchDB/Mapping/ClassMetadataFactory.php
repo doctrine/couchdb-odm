@@ -26,13 +26,14 @@ use Doctrine\ODM\CouchDB\DocumentManager,
 
 /**
  * The ClassMetadataFactory is used to create ClassMetadata objects that contain all the
- * metadata mapping informations of a class which describes how a class should be mapped
+ * metadata mapping information of a class which describes how a class should be mapped
  * to a document database.
- *
+
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @link        www.doctrine-project.com
- * @author      Jonathan H. Wage <jonwage@gmail.com>
- * @author      Roman Borschel <roman@code-factory.org>
+ * @since       1.0
+ * @author      Benjamin Eberlei <kontakt@beberlei.de>
+ * @author      Lukas Kahwe Smith <smith@pooteeweet.org>
  */
 class ClassMetadataFactory
 {
@@ -52,13 +53,6 @@ class ClassMetadataFactory
      * @var Doctrine\ODM\CouchDB\Mapping\Driver\Driver
      */
     private $driver;
-
-    /**
-     * The event manager instance
-     *
-     * @var \Doctrine\Common\EventManager
-     */
-    private $evm;
 
     /**
      * The used cache driver.

@@ -4,6 +4,14 @@ namespace Doctrine\ODM\CouchDB;
 
 use Doctrine\Common\Collections\Collection;
 
+/**
+ * Persistent collection class
+ *
+ * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
+ * @link        www.doctrine-project.com
+ * @since       1.0
+ * @author      Benjamin Eberlei <kontakt@beberlei.de>
+ */
 abstract class PersistentCollection implements Collection
 {
     /** @var ArrayCollection */

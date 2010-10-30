@@ -1,12 +1,14 @@
 <?php
-/*
- *
- */
 
 namespace Doctrine\ODM\CouchDB\HTTP;
 
 /**
  * Base exception class for package Doctrine\ODM\CouchDB\HTTP
+ *
+ * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
+ * @link        www.doctrine-project.com
+ * @since       1.0
+ * @author      Kore Nordmann <kore@arbitracker.org>
  */
 class HTTPException extends \Doctrine\ODM\CouchDB\CouchDBException
 {
@@ -31,7 +33,7 @@ class HTTPException extends \Doctrine\ODM\CouchDB\CouchDBException
             $errstr
         ) );
     }
-    
+
     /**
      * @param Response $response
      */
