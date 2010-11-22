@@ -1,5 +1,6 @@
 <phpunit bootstrap="./TestInit.php">
     <php>
         <var name="DOCTRINE_COUCHDB_DATABASE" value="doctrine_test_database" />
+        <var name="DOCTRINE_COUCHDB_CLIENT" value="Doctrine\ODM\CouchDB\HTTP\SocketClient" />
     </php>
 </phpunit>

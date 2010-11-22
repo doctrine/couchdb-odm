@@ -12,7 +12,11 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
     public function getHttpClient()
     {
         if ($this->httpClient === null) {
-            $this->httpClient = new \Doctrine\ODM\CouchDB\HTTP\SocketClient();
+            if (isset($GLOBALS['DOCTRINE_COUCHDB_CLIENT'])) {
+                $this->httpClient = new $GLOBALS['DOCTRINE_COUCHDB_CLIENT'];
+            } else {
+                $this->httpClient = new \Doctrine\ODM\CouchDB\HTTP\SocketClient();
+            }
         }
         return $this->httpClient;
     }
