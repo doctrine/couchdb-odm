@@ -87,11 +87,17 @@ class UnitOfWork
     private $idGenerators = array();
 
     /**
+     * @var EventManager
+     */
+    private $evm;
+
+    /**
      * @param DocumentManager $dm
      */
     public function __construct(DocumentManager $dm)
     {
         $this->dm = $dm;
+        $this->evm = $dm->getEventManager();
     }
 
     /**
@@ -124,6 +130,7 @@ class UnitOfWork
         $nonMappedData = array();
         $id = $data['_id'];
         $rev = $data['_rev'];
+        $conflict = false;
         foreach ($data as $jsonName => $jsonValue) {
             if (isset($class->jsonNames[$jsonName])) {
                 $fieldName = $class->jsonNames[$jsonName];
@@ -157,12 +164,19 @@ class UnitOfWork
             } else if ($jsonName == '_rev') {
                 continue;
             } else if ($jsonName == '_conflicts') {
-                // TODO: Remember documents and call "onConflict" events
+                $conflict = true;
             } else if ($class->hasAttachments && $jsonName == '_attachments') {
                 $documentState[$class->attachmentField] = $this->createDocumentAttachments($id, $jsonValue);
             } else {
                 $nonMappedData[$jsonName] = $jsonValue;
             }
+        }
+
+        if ($conflict && $this->evm->hasListeners(Event::onConflict)) {
+            // there is a conflict and we have an event handler that might resolve it
+            $this->evm->dispatchEvent(Event::onConflict, new Events\ConflictEventArgs($data, $this->dm, $documentName));
+            // the event might be resolved in the couch now, load it again:
+            return $this->dm->find($documentName, $id);
         }
 
         // initialize inverse side collections
@@ -207,6 +221,10 @@ class UnitOfWork
                 $reflFields->setValue($document, $value);
                 $this->originalData[$oid][$prop] = $value;
             }
+        }
+
+        if ($this->evm->hasListeners(Event::postLoad)) {
+            $this->evm->dispatchEvent(Event::postLoad, new Events\LifecycleEventArgs($document, $this->dm));
         }
 
         return $document;
@@ -256,6 +274,10 @@ class UnitOfWork
         $id = $this->getIdGenerator($class->idGenerator)->generate($document, $class, $this->dm);
 
         $this->registerManaged($document, $id, null);
+
+        if ($this->evm->hasListeners(Event::prePersist)) {
+            $this->evm->dispatchEvent(Event::prePersist, new Events\LifecycleEventArgs($document, $this->dm));
+        }
     }
 
     private function getIdGenerator($type)
@@ -270,6 +292,10 @@ class UnitOfWork
     {
         $oid = \spl_object_hash($document);
         $this->scheduledRemovals[$oid] = $document;
+
+        if ($this->evm->hasListeners(Event::preRemove)) {
+            $this->evm->dispatchEvent(Event::preRemove, new Events\LifecycleEventArgs($document, $this->dm));
+        }
     }
 
     public function getDocumentState($document)
@@ -372,6 +398,10 @@ class UnitOfWork
     {
         $this->detectChangedDocuments();
 
+        if ($this->evm->hasListeners(Event::onFlush)) {
+            $this->evm->dispatchEvent(Event::onFlush, new Events\OnFlushEventArgs($this));
+        }
+
         $config = $this->dm->getConfiguration();
 
         $useDoctrineMetadata = $config->getWriteDoctrineMetadata();
@@ -382,10 +412,20 @@ class UnitOfWork
         foreach ($this->scheduledRemovals AS $oid => $document) {
             $bulkUpdater->deleteDocument($this->documentIdentifiers[$oid], $this->documentRevisions[$oid]);
             $this->removeFromIdentityMap($document);
+
+            if ($this->evm->hasListeners(Event::postRemove)) {
+                $this->evm->dispatchEvent(Event::postRemove, new Events\LifecycleEventArgs($document, $this->dm));
+            }
         }
 
         foreach ($this->scheduledUpdates AS $oid => $document) {
             $class = $this->dm->getClassMetadata(get_class($document));
+
+            if ($this->evm->hasListeners(Event::preUpdate)) {
+                $this->evm->dispatchEvent(Event::preUpdate, new Events\LifecycleEventArgs($document, $this->dm));
+                $this->computeChangeSet($class, $document); // TODO: prevent association computations in this case?
+            }
+
             $data = array();
             if ($useDoctrineMetadata) {
                 $data['doctrine_metadata'] = array('type' => $class->name);
@@ -458,6 +498,10 @@ class UnitOfWork
                         $class->reflFields[$class->versionField]->setValue($document, $docResponse['rev']);
                     }
                 }
+
+                if ($this->evm->hasListeners(Event::postUpdate)) {
+                    $this->evm->dispatchEvent(Event::postUpdate, new Events\LifecycleEventArgs($document, $this->dm));
+                }
             }
         }
 
@@ -492,6 +536,15 @@ class UnitOfWork
         }
 
         return false;
+    }
+
+    /**
+     * @param  object $document
+     * @return bool
+     */
+    public function contains($document)
+    {
+        return isset($this->documentIdentifiers[\spl_object_hash($document)]);
     }
 
     public function registerManaged($document, $identifier, $revision)

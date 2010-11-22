@@ -21,6 +21,7 @@ namespace Doctrine\ODM\CouchDB;
 
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\CouchDB\HTTP\Client;
+use Doctrine\Common\EventManager;
 
 class DocumentManager
 {
@@ -39,6 +40,9 @@ class DocumentManager
      */
     private $unitOfWork = null;
 
+    /**
+     * @var ProxyFactory
+     */
     private $proxyFactory = null;
 
     /**
@@ -51,12 +55,26 @@ class DocumentManager
      */
     private $couchDBClient = null;
 
-    public function __construct(Configuration $config = null)
+    /**
+     * @var EventManager
+     */
+    private $evm;
+
+    public function __construct(Configuration $config = null, EventManager $evm = null)
     {
-        $this->config = $config ? $config : new Configuration();
+        $this->config = $config ?: new Configuration();
+        $this->evm = $evm ?: new EventManager();
         $this->metadataFactory = new ClassMetadataFactory($this);
         $this->unitOfWork = new UnitOfWork($this);
         $this->proxyFactory = new Proxy\ProxyFactory($this, $this->config->getProxyDir(), $this->config->getProxyNamespace(), true);
+    }
+
+    /**
+     * @return EventManager
+     */
+    public function getEventManager()
+    {
+        return $this->evm;
     }
 
     /**
@@ -71,15 +89,15 @@ class DocumentManager
     }
 
     /**
-     * Creates a new Document that operates on the given Mongo connection
-     * and uses the given Configuration.
-     *
-     * @param Doctrine\ODM\CouchDB\HTTP\Client
-     * @param Doctrine\ODM\CouchDB\Configuration $config
+     * Factory method for a Document Manager.
+     * 
+     * @param Configuration $config
+     * @param EventManager $evm
+     * @return DocumentManager
      */
-    public static function create(Configuration $config = null)
+    public static function create(Configuration $config = null, EventManager $evm = null)
     {
-        return new DocumentManager($config);
+        return new DocumentManager($config, $evm);
     }
 
     /**
@@ -229,6 +247,15 @@ class DocumentManager
     public function flush()
     {
         $this->unitOfWork->flush(); // todo: rename commit
+    }
+
+    /**
+     * @param  object $document
+     * @return bool
+     */
+    public function contains($document)
+    {
+        return $this->unitOfWork->contains($document);
     }
 
     /**
