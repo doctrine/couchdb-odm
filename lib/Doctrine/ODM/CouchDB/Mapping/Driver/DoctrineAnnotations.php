@@ -18,7 +18,7 @@ final class MappedSuperclass extends Annotation {}
 class Field extends Annotation
 {
     public $jsonName;
-    public $type = 'string';
+    public $type = 'mixed';
 }
 final class Id extends Field
 {
@@ -69,11 +69,11 @@ final class EmbedMany extends Reference
 }
 final class ReferenceOne extends Reference
 {
-    public $cascade;
+    public $cascade = array();
 }
 final class ReferenceMany extends Reference
 {
-    public $cascade;
+    public $cascade = array();
     public $mappedBy;
 }
 final class Attachments extends Reference

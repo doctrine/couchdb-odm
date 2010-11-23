@@ -129,9 +129,21 @@ class AnnotationDriver implements Driver
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
                     $class->mapField($mapping);
                 } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\ReferenceOne) {
+                    $cascade = 0;
+                    foreach ($fieldAnnot->cascade AS $cascadeMode) {
+                        $cascade += constant('Doctrine\ODM\CouchDB\Mapping\ClassMetadata::CASCADE_' . strtoupper($cascadeMode));
+                    }
+                    $fieldAnnot->cascade = $cascade;
+
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
                     $class->mapManyToOne($mapping);
                 } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\ReferenceMany) {
+                    $cascade = 0;
+                    foreach ($fieldAnnot->cascade AS $cascadeMode) {
+                        $cascade += constant('Doctrine\ODM\CouchDB\Mapping\ClassMetadata::CASCADE_' . strtoupper($cascadeMode));
+                    }
+                    $fieldAnnot->cascade = $cascade;
+
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
                     $class->mapManyToMany($mapping);
                 } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Attachments) {

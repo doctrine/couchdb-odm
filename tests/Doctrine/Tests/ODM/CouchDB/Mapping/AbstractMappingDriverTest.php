@@ -68,7 +68,7 @@ abstract class AbstractMappingDriverTest extends \PHPUnit_Framework_Testcase
 
         $this->assertEquals(array(
             'fieldName' => 'rights',
-            'cascade' => null,
+            'cascade' => 0,
             'jsonName' => 'rights',
             'targetDocument' => 'Doctrine\Tests\Models\CMS\CmsUserRights',
             'value' => null,
@@ -90,7 +90,7 @@ abstract class AbstractMappingDriverTest extends \PHPUnit_Framework_Testcase
 
         $this->assertEquals(array(
             'fieldName' => 'groups',
-            'cascade' => null,
+            'cascade' => 0,
             'mappedBy' => null,
             'targetDocument' => 'Doctrine\Tests\Models\CMS\CmsGroup',
             'value' => null,

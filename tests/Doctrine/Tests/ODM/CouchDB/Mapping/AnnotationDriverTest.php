@@ -6,9 +6,6 @@ use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 
 class AnnotationDriverTest extends AbstractMappingDriverTest
 {
-    /**
-     * @group DDC-268
-     */
     public function testLoadMetadataForNonDocumentThrowsException()
     {
         $cm = new ClassMetadata('stdClass');
@@ -19,9 +16,6 @@ class AnnotationDriverTest extends AbstractMappingDriverTest
         $annotationDriver->loadMetadataForClass('stdClass', $cm);
     }
 
-    /**
-     * @group DDC-318
-     */
     public function testGetAllClassNamesIsIdempotent()
     {
         $annotationDriver = $this->loadDriverForCMSDocuments();
@@ -33,9 +27,6 @@ class AnnotationDriverTest extends AbstractMappingDriverTest
         $this->assertEquals($original, $afterTestReset);
     }
 
-    /**
-     * @group DDC-318
-     */
     public function testGetAllClassNamesReturnsAlreadyLoadedClassesIfAppropriate()
     {
         $rightClassName = 'Doctrine\Tests\Models\CMS\CmsUser';
@@ -47,9 +38,6 @@ class AnnotationDriverTest extends AbstractMappingDriverTest
         $this->assertContains($rightClassName, $classes);
     }
 
-    /**
-     * @group DDC-318
-     */
     public function testGetClassNamesReturnsOnlyTheAppropriateClasses()
     {
         $extraneousClassName = 'Doctrine\Tests\Models\ECommerce\ECommerceCart';
