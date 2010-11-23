@@ -148,9 +148,13 @@ class UnitOfWork
             if (isset($class->jsonNames[$jsonName])) {
                 $fieldName = $class->jsonNames[$jsonName];
                 if (isset($class->fieldMappings[$fieldName])) {
-                    $documentState[$class->fieldMappings[$fieldName]['fieldName']] = 
-                        Type::getType($class->fieldMappings[$fieldName]['type'])
-                            ->convertToPHPValue($jsonValue);
+                    if ($jsonValue === null) {
+                        $documentState[$class->fieldMappings[$fieldName]['fieldName']] = null;
+                    } else {
+                        $documentState[$class->fieldMappings[$fieldName]['fieldName']] =
+                            Type::getType($class->fieldMappings[$fieldName]['type'])
+                                ->convertToPHPValue($jsonValue);
+                    }
                 }
             } else if ($jsonName == 'doctrine_metadata') {
                 if (!isset($jsonValue['associations'])) {
@@ -348,9 +352,13 @@ class UnitOfWork
         $actualData = array();
         foreach ($class->reflFields AS $propName => $reflProp) {
             if (isset($class->fieldMappings[$propName])) {
-                $actualData[$propName] =
-                    Type::getType($class->fieldMappings[$propName]['type'])
+                $actualData[$propName] = $reflProp->getValue($document);
+                if ($actualData[$propName] === null) {
+                    $actualData[$propName] = null;
+                } else {
+                    $actualData[$propName] = Type::getType($class->fieldMappings[$propName]['type'])
                         ->convertToCouchDBValue($reflProp->getValue($document));
+                }
             } else {
                 $actualData[$propName] = $reflProp->getValue($document);
             }
