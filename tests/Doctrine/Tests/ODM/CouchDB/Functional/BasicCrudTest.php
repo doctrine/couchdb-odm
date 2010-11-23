@@ -9,6 +9,8 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
      */
     private $dm;
 
+    private $type;
+
     public function setUp()
     {
         $this->type = 'Doctrine\Tests\ODM\CouchDB\Functional\User';

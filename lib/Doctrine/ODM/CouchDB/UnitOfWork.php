@@ -36,6 +36,7 @@ class UnitOfWork
     const STATE_NEW = 1;
     const STATE_MANAGED = 2;
     const STATE_REMOVED = 3;
+    const STATE_DETACHED = 4;
 
     /**
      * @var DocumentManager
@@ -282,11 +283,27 @@ class UnitOfWork
         return $this->originalData[\spl_object_hash($document)];
     }
 
+    /**
+     * Schedule insertion of this document and cascade if neccessary.
+     * 
+     * @param object $document
+     */
     public function scheduleInsert($document)
     {
         if ($this->getDocumentState($document) != self::STATE_NEW) {
             throw new \Exception("Object is already managed!");
         }
+        $visited = array();
+        $this->doScheduleInsert($document, $visited);
+    }
+
+    private function doScheduleInsert($document, &$visited)
+    {
+        $oid = \spl_object_hash($document);
+        if (isset($visited[$oid])) {
+            return;
+        }
+        $visited[$oid] = true;
 
         $class = $this->dm->getClassMetadata(get_class($document));
 
@@ -296,6 +313,43 @@ class UnitOfWork
 
         if ($this->evm->hasListeners(Event::prePersist)) {
             $this->evm->dispatchEvent(Event::prePersist, new Events\LifecycleEventArgs($document, $this->dm));
+        }
+
+        $this->cascadeScheduleInsert($class, $document, $visited);
+    }
+
+    /**
+     *
+     * @param ClassMetadata $class
+     * @param object $document
+     * @param array $visited
+     */
+    private function cascadeScheduleInsert($class, $document, &$visited)
+    {
+        foreach ($class->associationsMappings AS $assocName => $assoc) {
+            $related = $class->reflFields[$assocName]->getValue($document);
+            if ($class->associationsMappings[$assocName]['type'] & ClassMetadata::TO_ONE) {
+                if ( ($assoc['cascade'] & ClassMetadata::CASCADE_PERSIST) ) {
+                    $state = $this->getDocumentState($related);
+                    if ($state == self::STATE_NEW || $state == self::STATE_DETACHED) {
+                        $this->doScheduleInsert($related, $visited);
+                    } else if ($state == self::STATE_REMOVED) {
+                        throw CouchDBException::persistRemovedDocument();
+                    }
+                }
+            } else {
+                // $related can never be a persistent collection in case of a new entity.
+                foreach ($related AS $relatedDocument) {
+                    if ( ($assoc['cascade'] & ClassMetadata::CASCADE_PERSIST) ) {
+                        $state = $this->getDocumentState($relatedDocument);
+                        if ($state == self::STATE_NEW || $state == self::STATE_DETACHED) {
+                            $this->doScheduleInsert($relatedDocument, $visited);
+                        } else if ($state == self::STATE_REMOVED) {
+                            throw CouchDBException::persistRemovedDocument();
+                        }
+                    }
+                }
+            }
         }
     }
 

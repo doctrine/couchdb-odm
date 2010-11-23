@@ -25,6 +25,11 @@ abstract class PersistentCollection implements Collection
         return $this->changed;
     }
 
+    public function unwrap()
+    {
+        return $this->col;
+    }
+
     public function add($element)
     {
         $this->load();

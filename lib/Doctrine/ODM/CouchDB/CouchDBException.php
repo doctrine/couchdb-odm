@@ -44,5 +44,17 @@ class CouchDBException extends \Exception
     {
         return new self("Trying to save invalid attachment with filename " . $filename . " in document " . $className . " with id " . $id);
     }
+
+    public static function detachedDocumentFound($className, $id, $assocName)
+    {
+        return new self("Found a detached or new document at property " .
+            $className . "::" . $assocName. " of document with ID " . $id . ", ".
+            "but the assocation is not marked as cascade persist.");
+    }
+
+    public static function persistRemovedDocument()
+    {
+        return new self("Trying to persist document that is scheduled for removal.");
+    }
 }
 
