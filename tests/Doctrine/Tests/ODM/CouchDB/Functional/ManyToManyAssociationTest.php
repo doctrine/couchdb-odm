@@ -115,4 +115,34 @@ class ManyToManyAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunct
         $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $this->userId);
         $this->assertEquals(2, count($user->groups));
     }
+
+    public function testFlushingOwningSideWithAssocationChangesTwiceOnlySavesOnce()
+    {
+        $listener = new CountScheduledUpdatesListener();
+        $this->dm->getEventManager()->addEventListener(array('preUpdate'), $listener);
+        $this->dm->clear(); // new unit of work has new event listener
+
+        $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $this->userId);
+        $group3 = new \Doctrine\Tests\Models\CMS\CmsGroup();
+        $group3->name = "User";
+
+        $user->addGroup($group3);
+        $this->dm->persist($group3);
+
+        $this->dm->flush();
+        $this->assertEquals(2, $listener->preUpdates);
+        
+        $this->dm->flush();
+        $this->assertEquals(2, $listener->preUpdates);
+    }
+}
+
+class CountScheduledUpdatesListener
+{
+    public $preUpdates = 0;
+
+    public function preUpdate($args)
+    {
+        $this->preUpdates++;
+    }
 }

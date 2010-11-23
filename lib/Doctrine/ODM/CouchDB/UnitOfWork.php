@@ -98,6 +98,11 @@ class UnitOfWork
     /**
      * @var array
      */
+    private $visitedCollections = array();
+
+    /**
+     * @var array
+     */
     private $idGenerators = array();
 
     /**
@@ -290,9 +295,6 @@ class UnitOfWork
      */
     public function scheduleInsert($document)
     {
-        if ($this->getDocumentState($document) != self::STATE_NEW) {
-            throw new \Exception("Object is already managed!");
-        }
         $visited = array();
         $this->doScheduleInsert($document, $visited);
     }
@@ -306,13 +308,29 @@ class UnitOfWork
         $visited[$oid] = true;
 
         $class = $this->dm->getClassMetadata(get_class($document));
+        $state = $this->getDocumentState($document);
+        
+        switch ($state) {
+            case self::STATE_NEW:
+                $id = $this->getIdGenerator($class->idGenerator)->generate($document, $class, $this->dm);
 
-        $id = $this->getIdGenerator($class->idGenerator)->generate($document, $class, $this->dm);
+                $this->registerManaged($document, $id, null);
 
-        $this->registerManaged($document, $id, null);
-
-        if ($this->evm->hasListeners(Event::prePersist)) {
-            $this->evm->dispatchEvent(Event::prePersist, new Events\LifecycleEventArgs($document, $this->dm));
+                if ($this->evm->hasListeners(Event::prePersist)) {
+                    $this->evm->dispatchEvent(Event::prePersist, new Events\LifecycleEventArgs($document, $this->dm));
+                }
+                break;
+            case self::STATE_MANAGED:
+                // TODO: Change Tracking Deferred Explicit
+                break;
+            case self::STATE_REMOVED:
+                // document becomes managed again
+                unset($this->scheduledRemovals[$oid]);
+                $this->documentState[$oid] = self::STATE_MANAGED;
+                break;
+            case self::STATE_DETACHED:
+                throw new \InvalidArgumentException("Detached entity passed to persist().");
+                break;
         }
 
         $this->cascadeScheduleInsert($class, $document, $visited);
@@ -327,25 +345,17 @@ class UnitOfWork
     private function cascadeScheduleInsert($class, $document, &$visited)
     {
         foreach ($class->associationsMappings AS $assocName => $assoc) {
-            $related = $class->reflFields[$assocName]->getValue($document);
-            if ($class->associationsMappings[$assocName]['type'] & ClassMetadata::TO_ONE) {
-                if ( ($assoc['cascade'] & ClassMetadata::CASCADE_PERSIST) ) {
-                    $state = $this->getDocumentState($related);
-                    if ($state == self::STATE_NEW || $state == self::STATE_DETACHED) {
+            if ( ($assoc['cascade'] & ClassMetadata::CASCADE_PERSIST) ) {
+                $related = $class->reflFields[$assocName]->getValue($document);
+                if ($class->associationsMappings[$assocName]['type'] & ClassMetadata::TO_ONE) {
+                    if ($this->getDocumentState($related) == self::STATE_NEW) {
                         $this->doScheduleInsert($related, $visited);
-                    } else if ($state == self::STATE_REMOVED) {
-                        throw CouchDBException::persistRemovedDocument();
                     }
-                }
-            } else {
-                // $related can never be a persistent collection in case of a new entity.
-                foreach ($related AS $relatedDocument) {
-                    if ( ($assoc['cascade'] & ClassMetadata::CASCADE_PERSIST) ) {
-                        $state = $this->getDocumentState($relatedDocument);
-                        if ($state == self::STATE_NEW || $state == self::STATE_DETACHED) {
+                } else {
+                    // $related can never be a persistent collection in case of a new entity.
+                    foreach ($related AS $relatedDocument) {
+                        if ($this->getDocumentState($relatedDocument) == self::STATE_NEW) {
                             $this->doScheduleInsert($relatedDocument, $visited);
-                        } else if ($state == self::STATE_REMOVED) {
-                            throw CouchDBException::persistRemovedDocument();
                         }
                     }
                 }
@@ -365,6 +375,7 @@ class UnitOfWork
     {
         $oid = \spl_object_hash($document);
         $this->scheduledRemovals[$oid] = $document;
+        $this->documentState[$oid] = self::STATE_REMOVED;
 
         if ($this->evm->hasListeners(Event::preRemove)) {
             $this->evm->dispatchEvent(Event::preRemove, new Events\LifecycleEventArgs($document, $this->dm));
@@ -441,8 +452,13 @@ class UnitOfWork
                     if ( ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE) && $this->originalData[$oid][$fieldName] !== $fieldValue) {
                         $changed = true;
                         break;
-                    } else if ( ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE)) {
-                        if ( !($fieldValue instanceof PersistentCollection) || $fieldValue->changed()) {
+                    } else if ( ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_MANY)) {
+                        if ( !($fieldValue instanceof PersistentCollection)) {
+                            // if its not a persistent collection and the original value changed. otherwise it could just be null
+                            $changed = true;
+                            break;
+                        } else if ($fieldValue->changed()) {
+                            $this->visitedCollections[] = $fieldValue;
                             $changed = true;
                             break;
                         }
@@ -593,8 +609,13 @@ class UnitOfWork
             }
         }
 
+        foreach ($this->visitedCollections AS $col) {
+            $col->takeSnapshot();
+        }
+
         $this->scheduledUpdates =
-        $this->scheduledRemovals = array();
+        $this->scheduledRemovals =
+        $this->visitedCollections = array();
 
         if (count($updateConflictDocuments)) {
             throw new UpdateConflictException($updateConflictDocuments);

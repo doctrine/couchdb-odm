@@ -103,13 +103,16 @@ class UnitOfWorkTest extends CouchDBTestCase
         $this->assertEquals(end($uuids), $object->id);
     }
 
-    public function testScheduleInsert_IdentityMapObject_ThrowsException()
+    public function testScheduleInsertCancelsScheduleRemove()
     {
         $user1 = $this->uow->createDocument($this->type, array('_id' => '1', '_rev' => 1, 'username' => 'foo'));
+        $this->uow->scheduleRemove($user1);
 
-        $this->setExpectedException("Exception");
+        $this->assertEquals(UnitOfWork::STATE_REMOVED, $this->uow->getDocumentState($user1));
 
         $this->uow->scheduleInsert($user1);
+
+        $this->assertEquals(UnitOfWork::STATE_MANAGED, $this->uow->getDocumentState($user1));
     }
 }
 

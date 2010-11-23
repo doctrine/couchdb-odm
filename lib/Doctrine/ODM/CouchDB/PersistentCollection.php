@@ -20,9 +20,14 @@ abstract class PersistentCollection implements Collection
 
     abstract protected function load();
 
-    public function hasChanged()
+    public function changed()
     {
         return $this->changed;
+    }
+
+    public function takeSnapshot()
+    {
+        $this->changed = false;
     }
 
     public function unwrap()
