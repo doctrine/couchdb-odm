@@ -20,6 +20,7 @@
 namespace Doctrine\ODM\CouchDB;
 
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
+use Doctrine\ODM\CouchDB\Types\Type;
 
 /**
  * Unit of work class
@@ -41,6 +42,9 @@ class UnitOfWork
      */
     private $dm = null;
 
+    /**
+     * @var array
+     */
     private $identityMap = array();
 
     /**
@@ -53,6 +57,9 @@ class UnitOfWork
      */
     private $documentRevisions = array();
 
+    /**
+     * @var array
+     */
     private $documentState = array();
 
     /**
@@ -65,8 +72,14 @@ class UnitOfWork
      */
     private $nonMappedData = array();
 
+    /**
+     * @var array
+     */
     private $originalData = array();
 
+    /**
+     * @var array
+     */
     private $documentChangesets = array();
 
     /**
@@ -135,7 +148,9 @@ class UnitOfWork
             if (isset($class->jsonNames[$jsonName])) {
                 $fieldName = $class->jsonNames[$jsonName];
                 if (isset($class->fieldMappings[$fieldName])) {
-                    $documentState[$class->fieldMappings[$fieldName]['fieldName']] = $jsonValue;
+                    $documentState[$class->fieldMappings[$fieldName]['fieldName']] = 
+                        Type::getType($class->fieldMappings[$fieldName]['type'])
+                            ->convertToPHPValue($jsonValue);
                 }
             } else if ($jsonName == 'doctrine_metadata') {
                 if (!isset($jsonValue['associations'])) {
@@ -318,6 +333,11 @@ class UnitOfWork
         }
     }
 
+    /**
+     * @param ClassMetadata $class
+     * @param object $document
+     * @return void
+     */
     public function computeChangeSet(ClassMetadata $class, $document)
     {
         if ($document instanceof Proxy\Proxy && !$document->__isInitialized__) {
@@ -327,7 +347,13 @@ class UnitOfWork
         $oid = \spl_object_hash($document);
         $actualData = array();
         foreach ($class->reflFields AS $propName => $reflProp) {
-            $actualData[$propName] = $reflProp->getValue($document);
+            if (isset($class->fieldMappings[$propName])) {
+                $actualData[$propName] =
+                    Type::getType($class->fieldMappings[$propName]['type'])
+                        ->convertToCouchDBValue($reflProp->getValue($document));
+            } else {
+                $actualData[$propName] = $reflProp->getValue($document);
+            }
             // TODO: ORM transforms arrays and collections into persistent collections
         }
         // unset the revision field if necessary, it is not to be managed by the user in write scenarios.

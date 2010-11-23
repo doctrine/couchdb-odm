@@ -294,7 +294,7 @@ class ClassMetadata
         $mapping = $this->validateAndCompleteFieldMapping($mapping);
 
         if (!isset($mapping['type'])) {
-            $mapping['type'] = "string";
+            $mapping['type'] = "mixed";
         }
 
         if (isset($mapping['id']) && $mapping['id'] === true) {

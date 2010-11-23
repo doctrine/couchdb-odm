@@ -94,13 +94,13 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
         $this->assertEquals('version', $cm->versionField);
     }
 
-    public function testmapFieldWithoutType_DefaultsToString()
+    public function testmapFieldWithoutType_DefaultsToMixed()
     {
         $cm = new ClassMetadata("Doctrine\Tests\ODM\CouchDB\Mapping\Person");
 
         $cm->mapField(array('fieldName' => 'username'));
 
-        $this->assertEquals(array('jsonName' => 'username', 'type' => 'string', 'fieldName' => 'username'), $cm->fieldMappings['username']);
+        $this->assertEquals(array('jsonName' => 'username', 'type' => 'mixed', 'fieldName' => 'username'), $cm->fieldMappings['username']);
     }
 
     /**
