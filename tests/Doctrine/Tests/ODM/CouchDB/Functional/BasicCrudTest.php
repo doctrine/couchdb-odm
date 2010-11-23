@@ -151,6 +151,19 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $user = $this->dm->find($this->type.'2', 1);
     }
 
+    public function testNullConversionHandledAutomatically()
+    {
+        $user1 = $this->dm->find($this->type, 1);
+        $user1->username = null;
+
+        $this->dm->flush();
+        $this->dm->clear();
+
+        $pUser1 = $this->dm->find($this->type, 1);
+
+        $this->assertNull($pUser1->username);
+    }
+
     public function testKeepTrackOfUnmappedData()
     {
         $httpClient = $this->dm->getConfiguration()->getHttpClient();
