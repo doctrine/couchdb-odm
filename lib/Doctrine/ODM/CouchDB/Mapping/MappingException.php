@@ -42,4 +42,9 @@ class MappingException extends \Exception
     {
         return new self();
     }
+
+    public static function duplicateFieldMapping($className, $fieldName)
+    {
+        return new self("Cannot map duplicate field '" . $className . "::" . $fieldName . "'.");
+    }
 }

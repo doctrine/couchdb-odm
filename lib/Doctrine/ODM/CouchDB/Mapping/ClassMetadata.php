@@ -477,21 +477,40 @@ class ClassMetadata
     {
         // This metadata is always serialized/cached.
         $serialized = array(
+            'name',
+            'alsoLoadMethods',
+            'associationsMappings',
             'fieldMappings',
+            'jsonNames',
+            'idGenerator',
             'identifier',
-            'jsonName',
-            'namespace', // TODO: REMOVE
-            'db',
-            'collection',
             'rootDocumentName',
         );
+
+        if ($this->isVersioned) {
+            $serialized[] = 'isVersioned';
+            $serialized[] = 'versionField';
+        }
 
         if ($this->customRepositoryClassName) {
             $serialized[] = 'customRepositoryClassName';
         }
 
+        if ($this->hasAttachments) {
+            $serialized[] = 'hasAttachments';
+            $serialized[] = 'attachmentField';
+        }
+
         if ($this->isEmbeddedDocument) {
             $serialized[] = 'isEmbeddedDocument';
+        }
+
+        if ($this->isReadOnly) {
+            $serialized[] = 'isReadOnly';
+        }
+
+        if ($this->isMappedSuperclass) {
+            $serialized[] = 'isMappedSuperclass';
         }
 
         return $serialized;
@@ -506,6 +525,7 @@ class ClassMetadata
     {
         // Restore ReflectionClass and properties
         $this->reflClass = new \ReflectionClass($this->name);
+        $this->namespace = $this->reflClass->getNamespaceName();
 
         foreach ($this->fieldMappings as $field => $mapping) {
             if (isset($mapping['declared'])) {
@@ -517,7 +537,7 @@ class ClassMetadata
             $this->reflFields[$field] = $reflField;
         }
 
-        foreach ($this->fieldMappings as $field => $mapping) {
+        foreach ($this->associationsMappings as $field => $mapping) {
             if (isset($mapping['declared'])) {
                 $reflField = new \ReflectionProperty($mapping['declared'], $field);
             } else {
@@ -526,6 +546,13 @@ class ClassMetadata
 
             $reflField->setAccessible(true);
             $this->reflFields[$field] = $reflField;
+        }
+
+        if ($this->hasAttachments) {
+            // TODO: doesnt support inheritance
+            $reflField = $this->reflClass->getProperty($this->attachmentField);
+            $reflField->setAccessible(true);
+            $this->reflFields[$this->attachmentField] = $reflField;
         }
     }
 

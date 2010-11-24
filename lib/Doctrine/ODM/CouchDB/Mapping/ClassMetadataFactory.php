@@ -143,12 +143,12 @@ class ClassMetadataFactory
             }
 
             if ($this->cacheDriver) {
-                if (($cached = $this->cacheDriver->fetch("$realClassName\$COUCHDBODMCLASSMETADATA")) !== false) {
+                if (($cached = $this->cacheDriver->fetch("$realClassName\$COUCHDBCLASSMETADATA")) !== false) {
                     $this->loadedMetadata[$realClassName] = $cached;
                 } else {
                     foreach ($this->loadMetadata($realClassName) as $loadedClassName) {
                         $this->cacheDriver->save(
-                            "$loadedClassName\$COUCHDBODMCLASSMETADATA", $this->loadedMetadata[$loadedClassName], null
+                            "$loadedClassName\$COUCHDBCLASSMETADATA", $this->loadedMetadata[$loadedClassName], null
                         );
                     }
                 }

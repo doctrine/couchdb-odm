@@ -35,7 +35,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
     /**
      * @depends testMapFieldWithId
      */
-    public function testmapField($cm)
+    public function testMapField($cm)
     {
         $cm->mapField(array('fieldName' => 'username', 'type' => 'string'));
         $cm->mapField(array('fieldName' => 'created', 'type' => 'datetime'));
@@ -52,7 +52,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
     }
 
     /**
-     * @depends testmapField
+     * @depends testMapField
      */
     public function testmapFieldWithoutNameThrowsException($cm)
     {
@@ -62,7 +62,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
     }
 
     /**
-     * @depends testmapField
+     * @depends testMapField
      */
     public function testReflectionProperties($cm)
     {
@@ -71,7 +71,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
     }
     
     /**
-     * @depends testmapField
+     * @depends testMapField
      */
     public function testNewInstance($cm)
     {
@@ -83,7 +83,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
     }
 
     /**
-     * @depends testmapField
+     * @depends testMapField
      */
     public function testMapVersionField($cm)
     {
@@ -94,7 +94,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
         $this->assertEquals('version', $cm->versionField);
     }
 
-    public function testmapFieldWithoutType_DefaultsToMixed()
+    public function testMapFieldWithoutType_DefaultsToMixed()
     {
         $cm = new ClassMetadata("Doctrine\Tests\ODM\CouchDB\Mapping\Person");
 
@@ -138,6 +138,30 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
         $this->assertTrue($cm->hasAttachments);
         $this->assertEquals("attachments", $cm->attachmentField);
         $this->assertArrayHasKey("attachments", $cm->reflFields);
+    }
+
+    /**
+     * @depends testClassName
+     */
+    public function testSerializeUnserialize()
+    {
+        $cm = new ClassMetadata("Doctrine\Tests\ODM\CouchDB\Mapping\Person");
+
+        $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $cm->name);
+        $this->assertType('ReflectionClass', $cm->reflClass);
+
+        // property based comparison
+        $this->assertEquals($cm, unserialize(serialize($cm)));
+
+        $cm->mapField(array('fieldName' => 'id', 'id' => true));
+        $cm->mapField(array('fieldName' => 'username', 'type' => 'string'));
+        $cm->mapField(array('fieldName' => 'created', 'type' => 'datetime'));
+        $cm->mapField(array('fieldName' => 'version', 'jsonName' => '_rev', 'isVersionField' => true));
+        $cm->mapManyToOne(array('fieldName' => 'address', 'targetDocument' => 'Doctrine\Tests\ODM\CouchDB\Mapping\Address'));
+        $cm->mapAttachments("attachments");
+
+        // property based comparison
+        $this->assertEquals($cm, unserialize(serialize($cm)));
     }
 }
 
