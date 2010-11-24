@@ -126,7 +126,6 @@ class ManyToManyAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunct
         $group3 = new \Doctrine\Tests\Models\CMS\CmsGroup();
         $group3->name = "User";
 
-
         $user->addGroup($group3);
         $this->dm->persist($group3);
 

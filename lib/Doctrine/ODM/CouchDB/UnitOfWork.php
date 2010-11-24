@@ -415,18 +415,9 @@ class UnitOfWork
 
         $oid = \spl_object_hash($document);
         $actualData = array();
+        // TODO: Do we need two loops?
         foreach ($class->reflFields AS $propName => $reflProp) {
-            if (isset($class->fieldMappings[$propName])) {
-                $actualData[$propName] = $reflProp->getValue($document);
-                if ($actualData[$propName] === null) {
-                    $actualData[$propName] = null;
-                } else {
-                    $actualData[$propName] = Type::getType($class->fieldMappings[$propName]['type'])
-                        ->convertToCouchDBValue($reflProp->getValue($document));
-                }
-            } else {
-                $actualData[$propName] = $reflProp->getValue($document);
-            }
+            $actualData[$propName] = $reflProp->getValue($document);
             // TODO: ORM transforms arrays and collections into persistent collections
         }
         // unset the revision field if necessary, it is not to be managed by the user in write scenarios.
@@ -542,7 +533,13 @@ class UnitOfWork
             // Convert field values to json values.
             foreach ($this->documentChangesets[$oid] AS $fieldName => $fieldValue) {
                 if (isset($class->fieldMappings[$fieldName])) {
+                    if ($fieldValue !== null) {
+                        $fieldValue = Type::getType($class->fieldMappings[$fieldName]['type'])
+                            ->convertToCouchDBValue($fieldValue);
+                    }
+
                     $data[$class->fieldMappings[$fieldName]['jsonName']] = $fieldValue;
+
                 } else if (isset($class->associationsMappings[$fieldName]) && $useDoctrineMetadata) {
                     if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE) {
                         if (\is_object($fieldValue)) {
