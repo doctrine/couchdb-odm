@@ -126,6 +126,7 @@ class ManyToManyAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunct
         $group3 = new \Doctrine\Tests\Models\CMS\CmsGroup();
         $group3->name = "User";
 
+
         $user->addGroup($group3);
         $this->dm->persist($group3);
 
@@ -143,6 +144,7 @@ class CountScheduledUpdatesListener
 
     public function preUpdate($args)
     {
+        $uow = $args->getDocumentManager()->getUnitOfWork();
         $this->preUpdates++;
     }
 }

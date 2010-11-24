@@ -449,6 +449,10 @@ class UnitOfWork
                     $changed = true;
                     break;
                 } else if(isset($class->associationsMappings[$fieldName])) {
+                    if (!$class->associationsMappings[$fieldName]['isOwning']) {
+                        continue;
+                    }
+
                     if ( ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE) && $this->originalData[$oid][$fieldName] !== $fieldValue) {
                         $changed = true;
                         break;
