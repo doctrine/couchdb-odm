@@ -528,4 +528,10 @@ class ClassMetadata
             $this->reflFields[$field] = $reflField;
         }
     }
+
+    public function isCollectionValuedAssociation($name)
+    {
+        // TODO: included @EmbedMany here also?
+        return isset($this->associationsMappings[$name]) && ($this->associationsMappings[$name]['type'] & self::TO_MANY);
+    }
 }

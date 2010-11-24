@@ -21,6 +21,8 @@ namespace Doctrine\ODM\CouchDB;
 
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 use Doctrine\ODM\CouchDB\Types\Type;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * Unit of work class
@@ -416,8 +418,37 @@ class UnitOfWork
         $oid = \spl_object_hash($document);
         $actualData = array();
         // TODO: Do we need two loops?
-        foreach ($class->reflFields AS $propName => $reflProp) {
-            $actualData[$propName] = $reflProp->getValue($document);
+        foreach ($class->reflFields AS $fieldName => $reflProperty) {
+            $value = $reflProperty->getValue($document);
+            if ($class->isCollectionValuedAssociation($fieldName) && $value !== null
+                    && !($value instanceof PersistentCollection)) {
+
+                if (!$value instanceof Collection) {
+                    $value = new ArrayCollection($value);
+                }
+
+                if ($class->associationsMappings[$fieldName]['isOwning']) {
+                    $coll = new PersistentIdsCollection(
+                        $value,
+                        $class->associationsMappings[$fieldName]['targetDocument'],
+                        $this->dm,
+                        array()
+                    );
+                } else {
+                    $coll = new PersistentViewCollection(
+                        $value,
+                        $this->dm,
+                        $this->documentIdentifiers[$oid],
+                        $class->associationsMappings[$fieldName]['mappedBy']
+                    );
+                }
+
+                $class->reflFields[$fieldName]->setValue($document, $coll);
+
+                $actualData[$fieldName] = $coll;
+            } else {
+                $actualData[$fieldName] = $value;
+            }
             // TODO: ORM transforms arrays and collections into persistent collections
         }
         // unset the revision field if necessary, it is not to be managed by the user in write scenarios.
