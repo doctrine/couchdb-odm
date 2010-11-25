@@ -56,5 +56,10 @@ class CouchDBException extends \Exception
     {
         return new self("Trying to persist document that is scheduled for removal.");
     }
+
+    public static function luceneNotConfigured()
+    {
+        return  new self("CouchDB Lucene is not configured. You have to configure the handler name to enable support for Lucene Queries.");
+    }
 }
 

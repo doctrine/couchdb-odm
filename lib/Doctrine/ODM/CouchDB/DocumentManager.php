@@ -175,11 +175,7 @@ class DocumentManager
      */
     public function createQuery($designDocName, $viewName)
     {
-        $designDoc = $this->config->getDesignDocumentClass($designDocName);
-        if ($designDoc) {
-            $designDoc = new $designDoc;
-        }
-        $query = new View\Query($this->config->getHttpClient(), $this->config->getDatabase(), $designDocName, $viewName, $designDoc);
+        $query = $this->createNativeQuery($designDocName, $viewName);
         $query->setDocumentManager($this);
         return $query;
     }
@@ -199,7 +195,30 @@ class DocumentManager
         if ($designDoc) {
             $designDoc = new $designDoc;
         }
-        return new View\NativeQuery($this->config->getHttpClient(), $this->config->getDatabase(), $designDocName, $viewName, $designDoc);
+        $query = new View\Query($this->config->getHttpClient(), $this->config->getDatabase(), $designDocName, $viewName, $designDoc);
+        return $query;
+    }
+
+    /**
+     * Create a CouchDB-Lucene Query.
+     * 
+     * @param string $designDocName
+     * @param string $viewName
+     * @return View\LuceneQuery
+     */
+    public function createLuceneQuery($designDocName, $viewName)
+    {
+        $luceneHandlerName = $this->config->getLuceneHandlerName();
+        $designDoc = $this->config->getDesignDocumentClass($designDocName);
+        if ($designDoc) {
+            $designDoc = new $designDoc;
+        }
+        $query = new View\LuceneQuery($this->config->getHttpClient(),
+            $this->config->getDatabase(), $luceneHandlerName, $designDocName,
+            $viewName, $designDoc
+        );
+        $query->setDocumentManager($this);
+        return $query;
     }
 
     public function persist($object)

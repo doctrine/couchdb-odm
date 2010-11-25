@@ -5,7 +5,7 @@ namespace Doctrine\Tests\ODM\CouchDB;
 use Doctrine\ODM\CouchDB\HTTP\SocketClient;
 use Doctrine\ODM\CouchDB\View\DoctrineAssociations;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
-use Doctrine\ODM\CouchDB\View\NativeQuery;
+use Doctrine\ODM\CouchDB\View\Query;
 
 class RelationsTest extends CouchDBFunctionalTestCase
 {
@@ -21,7 +21,7 @@ class RelationsTest extends CouchDBFunctionalTestCase
      */
     protected function createDoctrineViewQuery()
     {
-        return new NativeQuery(
+        return new Query(
             $this->dm->getConfiguration()->getHttpClient(),
             $this->dm->getConfiguration()->getDatabase(),
             'doctrine',
@@ -110,7 +110,7 @@ class RelationsTest extends CouchDBFunctionalTestCase
                        ->setEndKey(   array("doc_d", "type_b", "z") )
                        ->execute();
 
-        $this->assertEquals(array(), $result );
+        $this->assertEquals(array(), $result->toArray() );
     }
 
 
@@ -123,7 +123,7 @@ class RelationsTest extends CouchDBFunctionalTestCase
                        ->setEndKey(   array("doc_c", "type_a", "z") )
                        ->execute();
 
-        $this->assertEquals(array(), $result );
+        $this->assertEquals(array(), $result->toArray() );
     }
 }
 

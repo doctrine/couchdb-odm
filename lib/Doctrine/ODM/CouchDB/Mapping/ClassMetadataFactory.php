@@ -183,6 +183,8 @@ class ClassMetadataFactory
 
         $this->loadedMetadata[$className] = new ClassMetadata($className);
         $this->driver->loadMetadataForClass($className, $this->loadedMetadata[$className]);
+
+        return array($className);
     }
 
     /**

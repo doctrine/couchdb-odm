@@ -134,6 +134,11 @@ class ClassMetadata
      */
     public $isReadOnly = false;
 
+    /**
+     * READ-ONLY
+     *
+     * @var array
+     */
     public $associationsMappings = array();
 
     /**

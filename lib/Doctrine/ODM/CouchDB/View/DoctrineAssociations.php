@@ -45,7 +45,7 @@ class DoctrineAssociations implements DesignDocument
      *  )
      * </code>
      */
-    public function getViews()
+    public function getData()
     {
         $mapInverseAssociations = <<<'JS'
 function (doc)
@@ -70,9 +70,11 @@ function (doc)
 JS;
 
         return array(
-            'inverse_associations' => array(
-                'map' => $mapInverseAssociations,
-            ),
+            'views' => array(
+                'inverse_associations' => array(
+                    'map' => $mapInverseAssociations,
+                ),
+            )
         );
     }
 }

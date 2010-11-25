@@ -48,6 +48,7 @@ class Configuration
         'UUIDGenerationBufferSize' => 20,
         'proxyNamespace' => 'MyCouchDBProxyNS',
         'allOrNothingFlush' => true,
+        'luceneHandlerName' => false,
     );
 
     /**
@@ -330,5 +331,19 @@ class Configuration
     public function getAllOrNothingFlush()
     {
         return $this->attributes['allOrNothingFlush'];
+    }
+
+    public function setLuceneHandlerName($handlerName = '_fti')
+    {
+        $this->attributes['luceneHandlerName'] = $handlerName;
+    }
+
+    public function getLuceneHandlerName()
+    {
+        if (!$this->attributes['luceneHandlerName']) {
+            throw CouchDBException::luceneNotConfigured();
+        }
+
+        return $this->attributes['luceneHandlerName'];
     }
 }

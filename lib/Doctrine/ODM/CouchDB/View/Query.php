@@ -29,53 +29,171 @@ use Doctrine\ODM\CouchDB\DocumentManager;
  * @since       1.0
  * @author      Benjamin Eberlei <kontakt@beberlei.de>
  */
-class Query extends NativeQuery
+class Query extends AbstractQuery
 {
-    /**
-     * @var DocumentManager
-     */
-    private $dm;
-
-    private $onlyDocs = false;
-
-    /**
-     * @param DocumentManager $dm
-     */
-    public function setDocumentManager(DocumentManager $dm)
+    protected function createResult($response)
     {
-        $this->dm = $dm;
+        return new Result($response->body);
+    }
+
+    protected function getHttpQuery()
+    {
+        return sprintf(
+            "/%s/_design/%s/_view/%s?%s",
+            $this->databaseName,
+            $this->designDocumentName,
+            $this->viewName,
+            http_build_query( array_map( "json_encode", $this->params ) )
+        );
     }
 
     /**
-     * @param  bool $flag
+     * Find key in view.
+     *
+     * @param  string $val
      * @return Query
      */
-    public function onlyDocs($flag)
+    public function setKey($val)
     {
-        $this->includeDocs(true);
-        $this->onlyDocs = $flag;
+        $this->params['key'] = $val;
         return $this;
     }
 
     /**
-     * Query the view with the current params.
+     * Set starting key to query view for.
      *
-     * @return array
+     * @param  string $val
+     * @return Query
      */
-    public function execute()
+    public function setStartKey($val)
     {
-        $result = parent::execute();
-        if ($this->getParameter('include_docs') === true) {
-            $uow = $this->dm->getUnitOfWork();
-            foreach ($result AS $k => $v) {
-                $doc = $uow->createDocument($v['doc']['doctrine_metadata']['type'], $v['doc']);
-                if ($this->onlyDocs) {
-                    $result[$k] = $doc;
-                } else {
-                    $result[$k]['doc'] = $doc;
-                }
-            }
-        }
-        return $result;
+        $this->params['startkey'] = $val;
+        return $this;
+    }
+
+    /**
+     * Set ending key to query view for.
+     *
+     * @param  string $val
+     * @return Query
+     */
+    public function setEndKey($val)
+    {
+        $this->params['endkey'] = $val;
+        return $this;
+    }
+
+    /**
+     * Document id to start with
+     *
+     * @param  string $val
+     * @return Query
+     */
+    public function setStartKeyDocId($val)
+    {
+        $this->params['startkey_docid'] = $val;
+        return $this;
+    }
+
+    /**
+     * Last document id to include in the output
+     *
+     * @param  string $val
+     * @return Query
+     */
+    public function setEndKeyDocId($val)
+    {
+        $this->params['endkey_docid'] = $val;
+        return $this;
+    }
+
+    /**
+     * Limit the number of documents in the output
+     *
+     * @param  int $val
+     * @return Query
+     */
+    public function setLimit($val)
+    {
+        $this->params['limit'] = $val;
+        return $this;
+    }
+
+    /**
+     * Skip n number of documents
+     *
+     * @param  int $val
+     * @return Query
+     */
+    public function setSkip($val)
+    {
+        $this->params['skip'] = $val;
+        return $this;
+    }
+
+    /**
+     * If stale=ok is set CouchDB will not refresh the view even if it is stalled.
+     *
+     * @param  bool $flag
+     * @return Query
+     */
+    public function setStale($flag)
+    {
+        $this->params['stale'] = $flag;
+        return $this;
+    }
+
+    /**
+     * reverse the output
+     *
+     * @param  bool $flag
+     * @return Query
+     */
+    public function setDescending($flag)
+    {
+        $this->params['descending'] = $flag;
+        return $this;
+    }
+
+    /**
+     * The group option controls whether the reduce function reduces to a set of distinct keys or to a single result row.
+     *
+     * @param  bool $flag
+     * @return Query
+     */
+    public function setGroup($flag)
+    {
+        $this->params['group'] = $flag;
+        return $this;
+    }
+
+    public function setGroupLevel($level)
+    {
+        $this->params['group_level'] = $level;
+        return $this;
+    }
+
+    /**
+     * Use the reduce function of the view. It defaults to true, if a reduce function is defined and to false otherwise.
+     *
+     * @param  bool $flag
+     * @return Query
+     */
+    public function setReduce($flag)
+    {
+        $this->params['reduce'] = $flag;
+        return $this;
+    }
+
+    /**
+     * Controls whether the endkey is included in the result. It defaults to true.
+     *
+     * @param  bool $flag
+     * @return Query
+     */
+    public function setInclusiveEnd($flag)
+    {
+        $this->params['inclusive_end'] = $flag;
+        return $this;
     }
 }
