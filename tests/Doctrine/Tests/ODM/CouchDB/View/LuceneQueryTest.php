@@ -53,5 +53,7 @@ JSO;
         $result = $query->execute();
 
         $this->assertType('Doctrine\ODM\CouchDB\View\LuceneResult', $result);
+
+        $this->assertEquals(176852, $result->getTotalRows());
     }
 }

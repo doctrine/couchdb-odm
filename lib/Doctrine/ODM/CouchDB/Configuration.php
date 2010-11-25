@@ -41,7 +41,10 @@ class Configuration
      */
     private $attributes = array(
         'designDocuments' => array(
-            'doctrine_associations' => 'Doctrine\ODM\CouchDB\View\DoctrineAssociations',
+            'doctrine_associations' => array(    
+                'className' => 'Doctrine\ODM\CouchDB\View\DoctrineAssociations',
+                'options' => array(),
+            ),
         ),
         'writeDoctrineMetadata' => true,
         'validateDoctrineMetadata' => true,
@@ -300,16 +303,19 @@ class Configuration
      * @param string $name
      * @param string $className
      */
-    public function addDesignDocument($name, $className)
+    public function addDesignDocument($name, $className, $options)
     {
-        $this->attributes['designDocuments'][$name][$className];
+        $this->attributes['designDocuments'][$name] = array(
+            'className' => $className,
+            'options' => $options,
+        );
     }
 
     /**
      * @param  string $name
      * @return string|null
      */
-    public function getDesignDocumentClass($name)
+    public function getDesignDocument($name)
     {
         if (isset($this->attributes['designDocuments'][$name])) {
             return $this->attributes['designDocuments'][$name];

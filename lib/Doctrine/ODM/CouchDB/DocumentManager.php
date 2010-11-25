@@ -191,9 +191,9 @@ class DocumentManager
      */
     public function createNativeQuery($designDocName, $viewName)
     {
-        $designDoc = $this->config->getDesignDocumentClass($designDocName);
+        $designDoc = $this->config->getDesignDocument($designDocName);
         if ($designDoc) {
-            $designDoc = new $designDoc;
+            $designDoc = new $designDoc['className']($designDoc['options']);
         }
         $query = new View\Query($this->config->getHttpClient(), $this->config->getDatabase(), $designDocName, $viewName, $designDoc);
         return $query;
@@ -209,9 +209,9 @@ class DocumentManager
     public function createLuceneQuery($designDocName, $viewName)
     {
         $luceneHandlerName = $this->config->getLuceneHandlerName();
-        $designDoc = $this->config->getDesignDocumentClass($designDocName);
+        $$designDoc = $this->config->getDesignDocument($designDocName);
         if ($designDoc) {
-            $designDoc = new $designDoc;
+            $designDoc = new $designDoc['className']($designDoc['options']);
         }
         $query = new View\LuceneQuery($this->config->getHttpClient(),
             $this->config->getDatabase(), $luceneHandlerName, $designDocName,
