@@ -18,7 +18,7 @@ class Result implements \IteratorAggregate, \Countable, \ArrayAccess
 
     public function count()
     {
-        return $this->result['limit'];
+        return count($this->result['rows']);
     }
 
     public function offsetExists($offset)

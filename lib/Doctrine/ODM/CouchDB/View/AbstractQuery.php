@@ -4,6 +4,7 @@ namespace Doctrine\ODM\CouchDB\View;
 
 use Doctrine\ODM\CouchDB\HTTP\Client;
 use Doctrine\ODM\CouchDB\HTTP\ErrorResponse;
+use Doctrine\ODM\CouchDB\DocumentManager;
 
 abstract class AbstractQuery
 {
@@ -160,6 +161,9 @@ abstract class AbstractQuery
         }
 
         $data = $this->doc->getData();
+        if ($data === null) {
+            throw \Doctrine\ODM\CouchDB\JsonDecodeException::fromLastJsonError();
+        }
         $data['_id'] = '_design/' . $this->designDocumentName;
 
         $response = $this->client->request(
