@@ -22,6 +22,7 @@ namespace Doctrine\ODM\CouchDB;
 use Doctrine\ODM\CouchDB\HTTP\Client;
 use Doctrine\ODM\CouchDB\HTTP\HTTPException;
 use Doctrine\ODM\CouchDB\Utils\BulkUpdater;
+use Doctrine\ODM\CouchDB\View\DesignDocument;
 
 /**
  * CouchDB client class
@@ -277,5 +278,35 @@ class CouchDBClient
         if ($response->status != 200) {
             throw HTTPException::fromResponse($path, $response);
         }
+    }
+
+    /**
+     * @param string $designDocName
+     * @param string $viewName
+     * @param DesignDocument $designDoc
+     * @return View\Query
+     */
+    public function createViewQuery($designDocName, $viewName, DesignDocument $designDoc)
+    {
+        return new View\Query($this->httpClient, $this->databaseName, $designDocName, $viewName, $designDoc);
+    }
+
+    /**
+     * Create a design document from the definition at the named location.
+     * 
+     * @param string $designDocName
+     * @param DesignDocument $designDoc
+     * @return HTTP\Response
+     */
+    public function createDesignDocument($designDocName, DesignDocument $designDoc)
+    {
+        $data = $designDoc->getData();
+        $data['_id'] = '_design/' . $designDocName;
+
+        return $this->httpClient->request(
+            "PUT",
+            sprintf("/%s/_design/%s", $this->databaseName, $designDocName),
+            json_encode($data)
+        );
     }
 }

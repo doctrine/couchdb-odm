@@ -137,4 +137,29 @@ class CouchDBClientTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTes
         $response = $client->findDocument($id);
         $this->assertEquals(404, $response->status);
     }
+
+    public function testCreateDesignDocument()
+    {
+        $designDocPath = __DIR__ . "/../../../Models/CMS/_files";
+
+        $client = $this->dm->getCouchDBClient();
+        $client->createDesignDocument('test-design-doc-create', new \Doctrine\ODM\CouchDB\View\FolderDesignDocument($designDocPath));
+
+        $response = $client->findDocument('_design/test-design-doc-create');
+        $this->assertEquals(200, $response->status);
+    }
+
+    public function testCreateViewQuery()
+    {
+        $designDocPath = __DIR__ . "/../../../Models/CMS/_files";
+
+        $client = $this->dm->getCouchDBClient();
+        $designDoc = new \Doctrine\ODM\CouchDB\View\FolderDesignDocument($designDocPath);
+
+        $query = $client->createViewQuery('test-design-doc-query', 'username', $designDoc);
+        $this->assertType('Doctrine\ODM\CouchDB\View\Query', $query);
+        
+        $result = $query->execute();
+        $this->assertType('Doctrine\ODM\CouchDB\View\Result', $result);
+    }
 }
