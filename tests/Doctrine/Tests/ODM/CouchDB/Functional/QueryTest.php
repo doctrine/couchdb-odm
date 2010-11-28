@@ -8,10 +8,10 @@ class QueryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 
     public function testQuery()
     {
+        $designDocPath = __DIR__ . "/../../../Models/CMS/_files";
         $this->dm = $this->createDocumentManager();
         $this->dm->getConfiguration()
-                 ->addDesignDocument('cms', 'Doctrine\ODM\CouchDB\View\FileDesignDocument',
-                     __DIR__ . "/../../../Models/CMS/_files/cms.json");
+                 ->addDesignDocument('cms', 'Doctrine\ODM\CouchDB\View\FolderDesignDocument', $designDocPath);
 
         $user1 = new \Doctrine\Tests\Models\CMS\CmsUser();
         $user1->username = "beberlei";

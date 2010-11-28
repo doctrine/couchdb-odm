@@ -50,9 +50,15 @@ class LuceneQuery extends AbstractQuery
         return (isset($this->params['analyzer'])) ? $this->params['analyzer'] : null;
     }
 
-    public function setIncludeDocs($bool)
+    /**
+     * Automatically fetch and include the document which emitted each view entry
+     *
+     * @param  bool $flag
+     * @return Query
+     */
+    public function setIncludeDocs($flag)
     {
-        $this->params['include_docs'] = (bool)$bool;
+        $this->params['include_docs'] = $flag;
         return $this;
     }
 

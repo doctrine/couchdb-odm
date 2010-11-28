@@ -175,7 +175,11 @@ class DocumentManager
      */
     public function createQuery($designDocName, $viewName)
     {
-        $query = $this->createNativeQuery($designDocName, $viewName);
+        $designDoc = $this->config->getDesignDocument($designDocName);
+        if ($designDoc) {
+            $designDoc = new $designDoc['className']($designDoc['options']);
+        }
+        $query = new View\ODMQuery($this->config->getHttpClient(), $this->config->getDatabase(), $designDocName, $viewName, $designDoc);
         $query->setDocumentManager($this);
         return $query;
     }
@@ -204,7 +208,7 @@ class DocumentManager
      * 
      * @param string $designDocName
      * @param string $viewName
-     * @return View\LuceneQuery
+     * @return View\ODMLuceneQuery
      */
     public function createLuceneQuery($designDocName, $viewName)
     {
@@ -213,7 +217,7 @@ class DocumentManager
         if ($designDoc) {
             $designDoc = new $designDoc['className']($designDoc['options']);
         }
-        $query = new View\LuceneQuery($this->config->getHttpClient(),
+        $query = new View\ODMLuceneQuery($this->config->getHttpClient(),
             $this->config->getDatabase(), $luceneHandlerName, $designDocName,
             $viewName, $designDoc
         );

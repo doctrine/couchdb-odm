@@ -196,4 +196,16 @@ class Query extends AbstractQuery
         $this->params['inclusive_end'] = $flag;
         return $this;
     }
+
+    /**
+     * Automatically fetch and include the document which emitted each view entry
+     *
+     * @param  bool $flag
+     * @return Query
+     */
+    public function setIncludeDocs($flag)
+    {
+        $this->params['include_docs'] = $flag;
+        return $this;
+    }
 }

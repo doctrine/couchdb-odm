@@ -39,16 +39,6 @@ abstract class AbstractQuery
     protected $params = array();
 
     /**
-     * @var DocumentManager
-     */
-    private $dm;
-
-    /**
-     * @var bool
-     */
-    private $onlyDocs = false;
-
-    /**
      * @param Client $client
      * @param string $databaseName
      * @param string $viewName
@@ -61,37 +51,6 @@ abstract class AbstractQuery
         $this->designDocumentName = $designDocName;
         $this->viewName = $viewName;
         $this->doc = $doc;
-    }
-
-    /**
-     * @param DocumentManager $dm
-     */
-    public function setDocumentManager(DocumentManager $dm)
-    {
-        $this->dm = $dm;
-    }
-
-    /**
-     * @param  bool $flag
-     * @return Query
-     */
-    public function onlyDocs($flag)
-    {
-        $this->setIncludeDocs(true);
-        $this->onlyDocs = $flag;
-        return $this;
-    }
-
-    /**
-     * Automatically fetch and include the document which emitted each view entry
-     *
-     * @param  bool $flag
-     * @return Query
-     */
-    public function setIncludeDocs($flag)
-    {
-        $this->params['include_docs'] = $flag;
-        return $this;
     }
 
     /**
@@ -115,6 +74,11 @@ abstract class AbstractQuery
      */
     public function execute()
     {
+        return $this->createResult($this->doExecute());
+    }
+
+    protected function doExecute()
+    {
         $path = $this->getHttpQuery();
         $response = $this->client->request("GET", $path);
 
@@ -124,24 +88,10 @@ abstract class AbstractQuery
             $response = $this->client->request( "GET", $path );
         }
 
-
         if ($response->status >= 400) {
             throw new \Exception("Error [" . $response->status . "]: " . $response->body['error'] . " " . $response->body['reason']);
         }
-
-        if ($this->dm && $this->getParameter('include_docs') === true) {
-            $uow = $this->dm->getUnitOfWork();
-            foreach ($response->body['rows'] AS $k => $v) {
-                $doc = $uow->createDocument($v['doc']['doctrine_metadata']['type'], $v['doc']);
-                if ($this->onlyDocs) {
-                    $response->body['rows'][$k] = $doc;
-                } else {
-                    $response->body['rows'][$k]['doc'] = $doc;
-                }
-            }
-        }
-
-        return $this->createResult($response);
+        return $response;
     }
 
     /**
