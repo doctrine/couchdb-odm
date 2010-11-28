@@ -218,4 +218,64 @@ class CouchDBClient
     {
         return new BulkUpdater($this->httpClient, $this->databaseName);
     }
+
+    /**
+     * Execute a POST request against CouchDB inserting a new document, leaving the server to generate a uuid.
+     *
+     * @param  array $data
+     * @return array<id, rev>
+     */
+    public function postDocument(array $data)
+    {
+        $path = '/' . $this->databaseName;
+        $response = $this->httpClient->request('POST', $path, json_encode($data));
+
+        if ($response->status != 201) {
+            throw HTTPException::fromResponse($path, $response);
+        }
+
+        return array($response->body['id'], $response->body['rev']);
+    }
+
+    /**
+     * Execute a PUT request against CouchDB inserting or updating a document.
+     * 
+     * @param array $data
+     * @param string $id
+     * @param string|null $rev
+     * @return array<id, rev>
+     */
+    public function putDocument($data, $id, $rev = null)
+    {
+        $data['_id'] = $id;
+        if ($rev) {
+            $data['_rev'] = $rev;
+        }
+
+        $path = '/' . $this->databaseName . '/' . $id;
+        $response = $this->httpClient->request('PUT', $path, json_encode($data));
+
+        if ($response->status != 201) {
+            throw HTTPException::fromResponse($path, $response);
+        }
+
+        return array($response->body['id'], $response->body['rev']);
+    }
+
+    /**
+     * Delete a document.
+     * 
+     * @param  string $id
+     * @param  string $rev
+     * @return void
+     */
+    public function deleteDocument($id, $rev)
+    {
+        $path = '/' . $this->databaseName . '/' . $id . '?rev=' . $rev;
+        $response = $this->httpClient->request('DELETE', $path);
+
+        if ($response->status != 200) {
+            throw HTTPException::fromResponse($path, $response);
+        }
+    }
 }

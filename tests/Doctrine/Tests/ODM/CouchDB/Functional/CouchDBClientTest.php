@@ -102,4 +102,39 @@ class CouchDBClientTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTes
         $this->assertEquals(2, count($changes['results']));
         $this->assertEquals(2, $changes['last_seq']);
     }
+
+    public function testPostDocument()
+    {
+        $client = $this->dm->getCouchDBClient();
+        list($id, $rev) = $client->postDocument(array("foo" => "bar"));
+
+        $response = $client->findDocument($id);
+        $this->assertEquals(array("_id" => $id, "_rev" => $rev, "foo" => "bar"), $response->body);
+    }
+
+    public function testPutDocument()
+    {
+        $id = "foo-bar-baz";
+        $client = $this->dm->getCouchDBClient();
+        list($id, $rev) = $client->putDocument(array("foo" => "bar"), $id);
+
+        $response = $client->findDocument($id);
+        $this->assertEquals(array("_id" => $id, "_rev" => $rev, "foo" => "bar"), $response->body);
+
+        list($id, $rev) = $client->putDocument(array("foo" => "baz"), $id, $rev);
+
+        $response = $client->findDocument($id);
+        $this->assertEquals(array("_id" => $id, "_rev" => $rev, "foo" => "baz"), $response->body);
+    }
+
+    public function testDeleteDocument()
+    {
+        $client = $this->dm->getCouchDBClient();
+        list($id, $rev) = $client->postDocument(array("foo" => "bar"));
+
+        $client->deleteDocument($id, $rev);
+
+        $response = $client->findDocument($id);
+        $this->assertEquals(404, $response->status);
+    }
 }
