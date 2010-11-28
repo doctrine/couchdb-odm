@@ -252,7 +252,7 @@ class CouchDBClient
             $data['_rev'] = $rev;
         }
 
-        $path = '/' . $this->databaseName . '/' . $id;
+        $path = '/' . $this->databaseName . '/' . urlencode($id);
         $response = $this->httpClient->request('PUT', $path, json_encode($data));
 
         if ($response->status != 201) {
