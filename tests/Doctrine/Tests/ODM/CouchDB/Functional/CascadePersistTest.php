@@ -18,6 +18,9 @@ class CascadePersistTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTe
         $class = $this->dm->getClassMetadata('Doctrine\Tests\Models\CMS\CmsUser');
         $class->associationsMappings['groups']['cascade'] = ClassMetadata::CASCADE_PERSIST;
 
+        $class = $this->dm->getClassMetadata('Doctrine\Tests\Models\CMS\CmsGroup');
+        $class->associationsMappings['users']['cascade'] = ClassMetadata::CASCADE_PERSIST;
+
         $class = $this->dm->getClassMetadata('Doctrine\Tests\Models\CMS\CmsArticle');
         $class->associationsMappings['user']['cascade'] = ClassMetadata::CASCADE_PERSIST;
     }

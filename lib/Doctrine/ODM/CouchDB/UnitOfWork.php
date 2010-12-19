@@ -372,12 +372,45 @@ class UnitOfWork
 
     public function scheduleRemove($document)
     {
+        $visited = array();
+        $this->doRemove($document, $visited);
+    }
+
+    private function doRemove($document, &$visited)
+    {
         $oid = \spl_object_hash($document);
+        if (isset($visited[$oid])) {
+            return;
+        }
+        $visited[$oid] = true;
+
         $this->scheduledRemovals[$oid] = $document;
         $this->documentState[$oid] = self::STATE_REMOVED;
 
         if ($this->evm->hasListeners(Event::preRemove)) {
             $this->evm->dispatchEvent(Event::preRemove, new Events\LifecycleEventArgs($document, $this->dm));
+        }
+
+        $this->cascadeRemove($document, $visited);
+    }
+
+    private function cascadeRemove($document, &$visited)
+    {
+        $class = $this->dm->getClassMetadata(get_class($document));
+        foreach ($class->associationsMappings AS $name => $assoc) {
+            var_dump($name);
+            if ($assoc['cascade'] & ClassMetadata::CASCADE_REMOVE) {
+                $related = $class->reflFields[$assoc['fieldName']]->getValue($document);
+                var_dump($name . " ".self::objToStr($related));
+                if ($related instanceof Collection || is_array($related)) {
+                    // If its a PersistentCollection initialization is intended! No unwrap!
+                    foreach ($related as $relatedDocument) {
+                        $this->doRemove($relatedDocument, $visited);
+                    }
+                } else if ($related !== null) {
+                    $this->doRemove($related, $visited);
+                }
+            }
         }
     }
 
@@ -535,7 +568,7 @@ class UnitOfWork
             $oid = spl_object_hash($entry);
             if ($state == self::STATE_NEW) {
                 if ( !($assoc['cascade'] & ClassMetadata::CASCADE_PERSIST) ) {
-                    throw new InvalidArgumentException("A new entity was found through a relationship that was not"
+                    throw new \InvalidArgumentException("A new entity was found through a relationship that was not"
                             . " configured to cascade persist operations: " . self::objToStr($entry) . "."
                             . " Explicitly persist the new entity or configure cascading persist operations"
                             . " on the relationship.");
@@ -543,12 +576,12 @@ class UnitOfWork
                 $this->persistNew($targetClass, $entry);
                 $this->computeChangeSet($targetClass, $entry);
             } else if ($state == self::STATE_REMOVED) {
-                return new InvalidArgumentException("Removed entity detected during flush: "
+                return new \InvalidArgumentException("Removed entity detected during flush: "
                         . self::objToStr($entry).". Remove deleted entities from associations.");
             } else if ($state == self::STATE_DETACHED) {
                 // Can actually not happen right now as we assume STATE_NEW,
                 // so the exception will be raised from the DBAL layer (constraint violation).
-                throw new InvalidArgumentException("A detached entity was found through a "
+                throw new \InvalidArgumentException("A detached entity was found through a "
                         . "relationship during cascading a persist operation.");
             }
             // MANAGED associated entities are already taken into account
