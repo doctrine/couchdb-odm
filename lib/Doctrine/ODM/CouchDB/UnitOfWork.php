@@ -76,14 +76,13 @@ class UnitOfWork
     private $nonMappedData = array();
 
     /**
+     * There is no need for a differentiation between original and changeset data in CouchDB, since
+     * updates have to be complete updates of the document (unless you are using an update handler, which
+     * is not yet a feature of CouchDB ODM).
+     *
      * @var array
      */
     private $originalData = array();
-
-    /**
-     * @var array
-     */
-    private $documentChangesets = array();
 
     /**
      * Contrary to the ORM, CouchDB only knows "updates". The question is wheater a revion exists (Real update vs insert).
@@ -314,13 +313,7 @@ class UnitOfWork
         
         switch ($state) {
             case self::STATE_NEW:
-                $id = $this->getIdGenerator($class->idGenerator)->generate($document, $class, $this->dm);
-
-                $this->registerManaged($document, $id, null);
-
-                if ($this->evm->hasListeners(Event::prePersist)) {
-                    $this->evm->dispatchEvent(Event::prePersist, new Events\LifecycleEventArgs($document, $this->dm));
-                }
+                $this->persistNew($class, $document);
                 break;
             case self::STATE_MANAGED:
                 // TODO: Change Tracking Deferred Explicit
@@ -349,6 +342,10 @@ class UnitOfWork
         foreach ($class->associationsMappings AS $assocName => $assoc) {
             if ( ($assoc['cascade'] & ClassMetadata::CASCADE_PERSIST) ) {
                 $related = $class->reflFields[$assocName]->getValue($document);
+                if (!$related) {
+                    continue;
+                }
+
                 if ($class->associationsMappings[$assocName]['type'] & ClassMetadata::TO_ONE) {
                     if ($this->getDocumentState($related) == self::STATE_NEW) {
                         $this->doScheduleInsert($related, $visited);
@@ -417,7 +414,7 @@ class UnitOfWork
 
         $oid = \spl_object_hash($document);
         $actualData = array();
-        // TODO: Do we need two loops?
+        // 1. compute the actual values of the current document
         foreach ($class->reflFields AS $fieldName => $reflProperty) {
             $value = $reflProperty->getValue($document);
             if ($class->isCollectionValuedAssociation($fieldName) && $value !== null
@@ -456,10 +453,10 @@ class UnitOfWork
             unset($actualData[$class->versionField]);
         }
 
+        // 2. Compare to the original, or find out that this entity is new.
         if (!isset($this->originalData[$oid])) {
             // Entity is New and should be inserted
             $this->originalData[$oid] = $actualData;
-            $this->documentChangesets[$oid] = $actualData;
             $this->scheduledUpdates[$oid] = $document;
         } else {
             // Entity is "fully" MANAGED: it was already fully persisted before
@@ -499,24 +496,85 @@ class UnitOfWork
             }
 
             if ($changed) {
-                $this->documentChangesets[$oid] = $actualData;
+                $this->originalData[$oid] = $actualData;
                 $this->scheduledUpdates[$oid] = $document;
+            }
+        }
+
+        // 3. check if any cascading needs to happen
+        foreach ($class->associationsMappings AS $name => $assoc) {
+            if ($this->originalData[$oid][$name]) {
+                $this->computeAssociationChanges($assoc, $this->originalData[$oid][$name]);
             }
         }
     }
 
     /**
-     * Gets the changeset for an document.
+     * Computes the changes of an association.
      *
-     * @return array
+     * @param AssociationMapping $assoc
+     * @param mixed $value The value of the association.
      */
-    public function getDocumentChangeSet($document)
+    private function computeAssociationChanges($assoc, $value)
     {
-        $oid = spl_object_hash($document);
-        if (isset($this->documentChangesets[$oid])) {
-            return $this->documentChangesets[$oid];
+        // Look through the entities, and in any of their associations, for transient (new)
+        // enities, recursively. ("Persistence by reachability")
+        if ($assoc['type'] & ClassMetadata::TO_ONE) {
+            if ($value instanceof Proxy && ! $value->__isInitialized__) {
+                return; // Ignore uninitialized proxy objects
+            }
+            $value = array($value);
+        } else if ($value instanceof PersistentCollection) {
+            // Unwrap. Uninitialized collections will simply be empty.
+            $value = $value->unwrap();
         }
-        return array();
+
+        $targetClass = $this->dm->getClassMetadata($assoc['targetDocument']);
+        foreach ($value as $entry) {
+            $state = $this->getDocumentState($entry);
+            $oid = spl_object_hash($entry);
+            if ($state == self::STATE_NEW) {
+                if ( !($assoc['cascade'] & ClassMetadata::CASCADE_PERSIST) ) {
+                    throw new InvalidArgumentException("A new entity was found through a relationship that was not"
+                            . " configured to cascade persist operations: " . self::objToStr($entry) . "."
+                            . " Explicitly persist the new entity or configure cascading persist operations"
+                            . " on the relationship.");
+                }
+                $this->persistNew($targetClass, $entry);
+                $this->computeChangeSet($targetClass, $entry);
+            } else if ($state == self::STATE_REMOVED) {
+                return new InvalidArgumentException("Removed entity detected during flush: "
+                        . self::objToStr($entry).". Remove deleted entities from associations.");
+            } else if ($state == self::STATE_DETACHED) {
+                // Can actually not happen right now as we assume STATE_NEW,
+                // so the exception will be raised from the DBAL layer (constraint violation).
+                throw new InvalidArgumentException("A detached entity was found through a "
+                        . "relationship during cascading a persist operation.");
+            }
+            // MANAGED associated entities are already taken into account
+            // during changeset calculation anyway, since they are in the identity map.
+        }
+    }
+
+    /**
+     * Persist new document, marking it managed and generating the id.
+     *
+     * This method is either called through `DocumentManager#persist()` or during `DocumentManager#flush()`,
+     * when persistence by reachability is applied.
+     *
+     * @param ClassMetadata $class
+     * @param object $document
+     * @return void
+     */
+    public function persistNew($class, $document)
+    {
+        $id = $this->getIdGenerator($class->idGenerator)->generate($document, $class, $this->dm);
+
+        $this->registerManaged($document, $id, null);
+
+        if ($this->evm->hasListeners(Event::prePersist)) {
+            $this->evm->dispatchEvent(Event::prePersist, new Events\LifecycleEventArgs($document, $this->dm));
+        }
     }
 
     /**
@@ -562,7 +620,7 @@ class UnitOfWork
             }
 
             // Convert field values to json values.
-            foreach ($this->documentChangesets[$oid] AS $fieldName => $fieldValue) {
+            foreach ($this->originalData[$oid] AS $fieldName => $fieldValue) {
                 if (isset($class->fieldMappings[$fieldName])) {
                     if ($fieldValue !== null) {
                         $fieldValue = Type::getType($class->fieldMappings[$fieldName]['type'])
@@ -738,5 +796,10 @@ class UnitOfWork
         } else {
             throw new CouchDBException("Document is not managed and has no identifier.");
         }
+    }
+
+    private static function objToStr($obj)
+    {
+        return method_exists($obj, '__toString') ? (string)$obj : get_class($obj).'@'.spl_object_hash($obj);
     }
 }
