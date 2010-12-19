@@ -4,7 +4,7 @@ namespace Doctrine\Tests\ODM\CouchDB\Functional;
 
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 
-class CascadePersistTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
+class CascadeRemoveTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 {
     /**
      * @var DocumentManager

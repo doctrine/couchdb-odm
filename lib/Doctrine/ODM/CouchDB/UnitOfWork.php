@@ -398,10 +398,8 @@ class UnitOfWork
     {
         $class = $this->dm->getClassMetadata(get_class($document));
         foreach ($class->associationsMappings AS $name => $assoc) {
-            var_dump($name);
             if ($assoc['cascade'] & ClassMetadata::CASCADE_REMOVE) {
                 $related = $class->reflFields[$assoc['fieldName']]->getValue($document);
-                var_dump($name . " ".self::objToStr($related));
                 if ($related instanceof Collection || is_array($related)) {
                     // If its a PersistentCollection initialization is intended! No unwrap!
                     foreach ($related as $relatedDocument) {
