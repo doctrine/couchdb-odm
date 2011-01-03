@@ -28,7 +28,7 @@ class CollectionTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
         $this->dm->persist($group1);
         $this->dm->flush();
 
-        $this->assertType('Doctrine\ODM\CouchDB\PersistentIdsCollection', $user1->groups);
-        $this->assertType('Doctrine\ODM\CouchDB\PersistentViewCollection', $group1->users);
+        $this->assertInstanceOf('Doctrine\ODM\CouchDB\PersistentIdsCollection', $user1->groups);
+        $this->assertInstanceOf('Doctrine\ODM\CouchDB\PersistentViewCollection', $group1->users);
     }
 }

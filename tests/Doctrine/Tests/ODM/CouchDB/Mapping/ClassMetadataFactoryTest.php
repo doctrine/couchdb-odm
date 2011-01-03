@@ -43,6 +43,6 @@ class ClassMetadataFactoryTest extends \PHPUnit_Framework_Testcase
 
         $metadata = $cmf->getAllMetadata();
 
-        $this->assertType('array', $metadata);
+        $this->assertInternalType('array', $metadata);
     }
 }

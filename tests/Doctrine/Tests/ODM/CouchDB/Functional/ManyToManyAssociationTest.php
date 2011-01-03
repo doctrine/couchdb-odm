@@ -47,7 +47,7 @@ class ManyToManyAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunct
     public function testSaveManyToMany()
     {
         $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $this->userId);
-        $this->assertType('Doctrine\ODM\CouchDB\PersistentCollection', $user->groups);
+        $this->assertInstanceOf('Doctrine\ODM\CouchDB\PersistentCollection', $user->groups);
         $this->assertFalse($user->groups->isInitialized);
         $this->assertEquals(2, count($user->groups));
         $this->assertTrue($user->groups->isInitialized);
@@ -66,9 +66,9 @@ class ManyToManyAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunct
     public function testInverseManyToManyLazyLoad()
     {
         $group = $this->dm->find('Doctrine\Tests\Models\CMS\CmsGroup', $this->groupIds[0]);
-        $this->assertType('Doctrine\Tests\Models\CMS\CmsGroup', $group);
+        $this->assertInstanceOf('Doctrine\Tests\Models\CMS\CmsGroup', $group);
 
-        $this->assertType('Doctrine\ODM\CouchDB\PersistentCollection', $group->users);
+        $this->assertInstanceOf('Doctrine\ODM\CouchDB\PersistentCollection', $group->users);
         $this->assertFalse($group->users->isInitialized);
         $this->assertEquals(1, count($group->users));
         $this->assertTrue($group->users->isInitialized);
@@ -82,9 +82,9 @@ class ManyToManyAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunct
     {
         $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $this->userId);
         $group = $this->dm->find('Doctrine\Tests\Models\CMS\CmsGroup', $this->groupIds[0]);
-        $this->assertType('Doctrine\Tests\Models\CMS\CmsGroup', $group);
+        $this->assertInstanceOf('Doctrine\Tests\Models\CMS\CmsGroup', $group);
 
-        $this->assertType('Doctrine\ODM\CouchDB\PersistentCollection', $group->users);
+        $this->assertInstanceOf('Doctrine\ODM\CouchDB\PersistentCollection', $group->users);
         $this->assertFalse($group->users->isInitialized);
         $this->assertEquals(1, count($group->users));
         $this->assertTrue($group->users->isInitialized);

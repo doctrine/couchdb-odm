@@ -48,7 +48,7 @@ class ProxyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
     {
         $proxy = $this->dm->getReference($this->type, 1);
 
-        $this->assertType('Doctrine\ODM\CouchDB\Proxy\Proxy', $proxy);
+        $this->assertInstanceOf('Doctrine\ODM\CouchDB\Proxy\Proxy', $proxy);
         $this->assertFalse($proxy->__isInitialized__);
 
         $this->assertEquals('foo', $proxy->getTitle());

@@ -12,7 +12,7 @@ class DocumentManagerTest extends CouchDBTestCase
         
         $dm = \Doctrine\ODM\CouchDB\DocumentManager::create($config);
 
-        $this->assertType('Doctrine\ODM\CouchDB\DocumentManager', $dm);
+        $this->assertInstanceOf('Doctrine\ODM\CouchDB\DocumentManager', $dm);
         $this->assertSame($config, $dm->getConfiguration());
         $this->assertSame($httpClient, $dm->getConfiguration()->getHttpClient());
     }
@@ -21,7 +21,7 @@ class DocumentManagerTest extends CouchDBTestCase
     {
         $dm = \Doctrine\ODM\CouchDB\DocumentManager::create();
 
-        $this->assertType('Doctrine\ODM\CouchDB\Mapping\ClassMetadataFactory', $dm->getClassMetadataFactory());
+        $this->assertInstanceOf('Doctrine\ODM\CouchDB\Mapping\ClassMetadataFactory', $dm->getClassMetadataFactory());
     }
 
     public function testGetClassMetadataFor()
@@ -31,13 +31,13 @@ class DocumentManagerTest extends CouchDBTestCase
         $cmf = $dm->getClassMetadataFactory();
         $cmf->setMetadataFor('stdClass', new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata('stdClass'));
 
-        $this->assertType('Doctrine\ODM\CouchDB\Mapping\ClassMetadata', $dm->getClassMetadata('stdClass'));
+        $this->assertInstanceOf('Doctrine\ODM\CouchDB\Mapping\ClassMetadata', $dm->getClassMetadata('stdClass'));
     }
 
     public function testCreateNewDocumentManagerWithoutHttpClientUsingSocketDefault()
     {
         $dm = \Doctrine\ODM\CouchDB\DocumentManager::create();
 
-        $this->assertType('Doctrine\ODM\CouchDB\HTTP\SocketClient', $dm->getConfiguration()->getHttpClient());
+        $this->assertInstanceOf('Doctrine\ODM\CouchDB\HTTP\SocketClient', $dm->getConfiguration()->getHttpClient());
     }
 }

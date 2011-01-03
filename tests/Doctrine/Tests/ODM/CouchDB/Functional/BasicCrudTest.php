@@ -33,7 +33,7 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
     {
         $user = $this->dm->find($this->type, 1);
 
-        $this->assertType($this->type, $user);
+        $this->assertInstanceOf($this->type, $user);
         $this->assertEquals('1', $user->id);
         $this->assertEquals('lsmith', $user->username);
     }
@@ -143,11 +143,11 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
     {
         $this->dm->getConfiguration()->setValidateDoctrineMetadata(false);
         $user = $this->dm->find($this->type.'2', 1);
-        $this->assertType($this->type, $user);
+        $this->assertInstanceOf($this->type, $user);
 
         $this->dm->getConfiguration()->setValidateDoctrineMetadata(true);
         $user = $this->dm->find($this->type, 1);
-        $this->assertType($this->type, $user);
+        $this->assertInstanceOf($this->type, $user);
 
         $this->setExpectedException('InvalidArgumentException');
         $user = $this->dm->find($this->type.'2', 1);
@@ -181,7 +181,7 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $this->assertEquals(201, $resp->status);
 
         $user = $this->dm->find($this->type, 2);
-        $this->assertType($this->type, $user);
+        $this->assertInstanceOf($this->type, $user);
         $this->assertEquals('beberlei', $user->username);
 
         $user->username = 'beberlei2';

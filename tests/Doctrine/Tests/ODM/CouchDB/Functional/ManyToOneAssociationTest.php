@@ -40,7 +40,7 @@ class ManyToOneAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFuncti
     public function testSaveWithAssociation()
     {
         $article = $this->dm->find('Doctrine\Tests\Models\CMS\CmsArticle', $this->articleId);
-        $this->assertType('Doctrine\Tests\Models\CMS\CmsUser', $article->user);
+        $this->assertInstanceOf('Doctrine\Tests\Models\CMS\CmsUser', $article->user);
         $this->assertNull($article->user->username, 'CmsUser is a proxy, username is NULL through public access');
         $this->assertEquals('beberlei', $article->user->getUsername());
     }
@@ -56,7 +56,7 @@ class ManyToOneAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFuncti
         $this->dm->clear();
 
         $article = $this->dm->find('Doctrine\Tests\Models\CMS\CmsArticle', $this->articleId);
-        $this->assertType('Doctrine\Tests\Models\CMS\CmsUser', $article->user);
+        $this->assertInstanceOf('Doctrine\Tests\Models\CMS\CmsUser', $article->user);
         $this->assertEquals('lsmith', $article->user->getUsername());
     }
 
@@ -65,7 +65,7 @@ class ManyToOneAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFuncti
         $author = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $this->userIds[0]);
         $article = $this->dm->find('Doctrine\Tests\Models\CMS\CmsArticle', $this->articleId);
 
-        $this->assertNotType('Doctrine\ODM\CouchDB\Proxy\Proxy', $article->user);
+        $this->assertNotInstanceOf('Doctrine\ODM\CouchDB\Proxy\Proxy', $article->user);
         $this->assertSame($author, $article->user);
     }
 
