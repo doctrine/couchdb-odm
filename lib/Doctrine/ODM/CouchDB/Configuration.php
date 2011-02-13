@@ -94,26 +94,6 @@ class Configuration
     }
 
     /**
-     * Sets if all CouchDB documents should automatically get doctrine metadata added on write
-     *
-     * @param boolean $writeDoctrineMetadata
-     */
-    public function setWriteDoctrineMetadata($writeDoctrineMetadata)
-    {
-        $this->attributes['writeDoctrineMetadata'] = $writeDoctrineMetadata;
-    }
-
-    /**
-     * Gets if all CouchDB documents should automatically get doctrine metadata added on write
-     *
-     * @return boolean
-     */
-    public function getWriteDoctrineMetadata()
-    {
-        return $this->attributes['writeDoctrineMetadata'];
-    }
-
-    /**
      * Sets the HTTP client instance to use for the CouchDB communication
      *
      * @param Client $client

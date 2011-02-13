@@ -242,7 +242,7 @@ class DocumentManager
      */
     public function refresh($document)
     {
-        $this->getRepository(get_class($document))->refresh($document);
+        $this->getUnitOfWork()->refresh($document);
     }
 
     /**

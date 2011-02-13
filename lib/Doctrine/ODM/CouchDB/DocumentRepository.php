@@ -90,14 +90,7 @@ class DocumentRepository
     public function refresh($document)
     {
         $uow = $this->dm->getUnitOfWork();
-        $response = $this->dm->getCouchDBClient()->findDocument($uow->getDocumentIdentifier($document));
-
-        if ($response->status == 404) {
-            throw new \Doctrine\ODM\CouchDB\DocumentNotFoundException();
-        }
-
-        $hints = array('refresh' => true);
-        $uow->createDocument($this->documentName, $response->body, $hints);
+        $uow->refresh($document);
     }
 
     /**

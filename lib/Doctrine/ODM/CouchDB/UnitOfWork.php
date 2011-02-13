@@ -131,17 +131,15 @@ class UnitOfWork
     public function createDocument($documentName, $data, array &$hints = array())
     {
         if (isset($data['doctrine_metadata']['type'])) {
-             $type = $data['doctrine_metadata']['type'];
-             if (isset($documentName) && $this->dm->getConfiguration()->getValidateDoctrineMetadata()) {
-                $validate = true;
-             }
+            $type = $data['doctrine_metadata']['type'];
+            if (isset($documentName) && $this->dm->getConfiguration()->getValidateDoctrineMetadata()) {
+               $validate = true;
+            }
         } else if (isset($documentName)) {
-             $type = $documentName;
-             if ($this->dm->getConfiguration()->getWriteDoctrineMetadata()) {
-                $data['doctrine_metadata'] = array('type' => $documentName);
-             }
+            $type = $documentName;
+            $data['doctrine_metadata'] = array('type' => $documentName);
         } else {
-             throw new \InvalidArgumentException("Missing Doctrine metadata in the Document, cannot hydrate (yet)!");
+            throw new \InvalidArgumentException("Missing Doctrine metadata in the Document, cannot hydrate (yet)!");
         }
 
         $class = $this->dm->getClassMetadata($type);
@@ -412,6 +410,53 @@ class UnitOfWork
         }
     }
 
+    public function refresh($document)
+    {
+        $visited = array();
+        $this->doRefresh($document, $visited);
+    }
+
+    private function doRefresh($document, &$visited)
+    {
+        $oid = \spl_object_hash($document);
+        if (isset($visited[$oid])) {
+            return;
+        }
+        $visited[$oid] = true;
+
+        $response = $this->dm->getCouchDBClient()->findDocument($this->getDocumentIdentifier($document));
+
+        if ($response->status == 404) {
+            throw new \Doctrine\ODM\CouchDB\DocumentNotFoundException();
+        }
+
+        $hints = array('refresh' => true);
+        $this->createDocument(get_class($document), $response->body, $hints);
+
+        $this->cascadeRefresh($document, $visited);
+    }
+
+    private function cascadeRefresh($document, &$visited)
+    {
+        $class = $this->dm->getClassMetadata(get_class($document));
+        foreach ($class->associationsMappings as $assoc) {
+            if ($assoc['cascade'] & ClassMetadata::CASCADE_REFRESH) {
+                $related = $class->reflFields[$assoc['fieldName']]->getValue($document);
+                if ($related instanceof Collection) {
+                    if ($related instanceof PersistentCollection) {
+                        // Unwrap so that foreach() does not initialize
+                        $related = $related->unwrap();
+                    }
+                    foreach ($related as $relatedDocument) {
+                        $this->doRefresh($relatedDocument, $visited);
+                    }
+                } else if ($related !== null) {
+                    $this->doRefresh($related, $visited);
+                }
+            }
+        }
+    }
+
     public function getDocumentState($document)
     {
         $oid = \spl_object_hash($document);
@@ -623,8 +668,6 @@ class UnitOfWork
 
         $config = $this->dm->getConfiguration();
 
-        $useDoctrineMetadata = $config->getWriteDoctrineMetadata();
-
         $bulkUpdater = $this->dm->getCouchDBClient()->createBulkUpdater();
         $bulkUpdater->setAllOrNothing($config->getAllOrNothingFlush());
 
@@ -645,10 +688,7 @@ class UnitOfWork
                 $this->computeChangeSet($class, $document); // TODO: prevent association computations in this case?
             }
 
-            $data = array();
-            if ($useDoctrineMetadata) {
-                $data['doctrine_metadata'] = array('type' => $class->name);
-            }
+            $data = array('doctrine_metadata' => array('type' => $class->name));
 
             // Convert field values to json values.
             foreach ($this->originalData[$oid] AS $fieldName => $fieldValue) {
@@ -660,7 +700,7 @@ class UnitOfWork
 
                     $data[$class->fieldMappings[$fieldName]['jsonName']] = $fieldValue;
 
-                } else if (isset($class->associationsMappings[$fieldName]) && $useDoctrineMetadata) {
+                } else if (isset($class->associationsMappings[$fieldName])) {
                     if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE) {
                         if (\is_object($fieldValue)) {
                             $data['doctrine_metadata']['associations'][$fieldName] = $this->getDocumentIdentifier($fieldValue);
