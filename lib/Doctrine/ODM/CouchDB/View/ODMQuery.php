@@ -40,7 +40,7 @@ class ODMQuery extends Query
         if ($this->dm && $this->getParameter('include_docs') === true) {
             $uow = $this->dm->getUnitOfWork();
             foreach ($response->body['rows'] AS $k => $v) {
-                $doc = $uow->createDocument($v['doc']['doctrine_metadata']['type'], $v['doc']);
+                $doc = $uow->createDocument(null, $v['doc']);
                 if ($this->onlyDocs) {
                     $response->body['rows'][$k] = $doc;
                 } else {

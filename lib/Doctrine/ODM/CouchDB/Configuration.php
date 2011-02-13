@@ -19,9 +19,11 @@
 
 namespace Doctrine\ODM\CouchDB;
 
+use Doctrine\Common\Cache\Cache;
 use Doctrine\ODM\CouchDB\HTTP\Client;
 use Doctrine\ODM\CouchDB\Mapping\Driver\Driver;
-use Doctrine\Common\Cache\Cache;
+use Doctrine\ODM\CouchDB\Mapping\MetadataResolver\MetadataResolver;
+use Doctrine\ODM\CouchDB\Mapping\MetadataResolver\DoctrineResolver;
 
 /**
  * Configuration class
@@ -52,6 +54,7 @@ class Configuration
         'proxyNamespace' => 'MyCouchDBProxyNS',
         'allOrNothingFlush' => true,
         'luceneHandlerName' => false,
+        'metadataResolver' => null,
     );
 
     /**
@@ -179,6 +182,19 @@ class Configuration
         $reader->setDefaultAnnotationNamespace('Doctrine\ODM\CouchDB\Mapping\\');
 
         return new \Doctrine\ODM\CouchDB\Mapping\Driver\AnnotationDriver($reader, (array) $paths);
+    }
+
+    public function setMetadataResolverImpl(MetadataResolver $resolver)
+    {
+        $this->attributes['metadataResolver'] = $resolver;
+    }
+
+    public function getMetadataResolverImpl()
+    {
+        if (!$this->attributes['metadataResolver']) {
+            return new DoctrineResolver();
+        }
+        return $this->attributes['metadataResolver'];
     }
 
     /**

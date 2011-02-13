@@ -112,12 +112,18 @@ class UnitOfWork
     private $evm;
 
     /**
+     * @var MetadataResolver
+     */
+    private $metadataResolver;
+
+    /**
      * @param DocumentManager $dm
      */
     public function __construct(DocumentManager $dm)
     {
         $this->dm = $dm;
         $this->evm = $dm->getEventManager();
+        $this->metadataResolver = $dm->getConfiguration()->getMetadataResolverImpl();
     }
 
     /**
@@ -130,18 +136,11 @@ class UnitOfWork
      */
     public function createDocument($documentName, $data, array &$hints = array())
     {
-        if (isset($data['doctrine_metadata']['type'])) {
-            $type = $data['doctrine_metadata']['type'];
-            if (isset($documentName) && $this->dm->getConfiguration()->getValidateDoctrineMetadata()) {
-               $validate = true;
-            }
-        } else if (isset($documentName)) {
-            $type = $documentName;
-            $data['doctrine_metadata'] = array('type' => $documentName);
-        } else {
-            throw new \InvalidArgumentException("Missing Doctrine metadata in the Document, cannot hydrate (yet)!");
+        if (!$this->metadataResolver->canMapDocument($data)) {
+            throw new \InvalidArgumentException("Missing or missmatching metadata description in the Document, cannot hydrate!");
         }
 
+        $type = $this->metadataResolver->getDocumentType($data);
         $class = $this->dm->getClassMetadata($type);
 
         $documentState = array();
@@ -161,36 +160,14 @@ class UnitOfWork
                                 ->convertToPHPValue($jsonValue);
                     }
                 }
-            } else if ($jsonName == 'doctrine_metadata') {
-                if (!isset($jsonValue['associations'])) {
-                    continue;
-                }
-
-                foreach ($jsonValue['associations'] AS $assocName => $assocValue) {
-                    if (isset($class->associationsMappings[$assocName])) {
-                        if ($class->associationsMappings[$assocName]['type'] & ClassMetadata::TO_ONE) {
-                            if ($assocValue) {
-                                $assocValue = $this->dm->getReference($class->associationsMappings[$assocName]['targetDocument'], $assocValue);
-                            }
-                            $documentState[$class->associationsMappings[$assocName]['fieldName']] = $assocValue;
-                        } else if ($class->associationsMappings[$assocName]['type'] & ClassMetadata::MANY_TO_MANY) {
-                            if ($class->associationsMappings[$assocName]['isOwning']) {
-                                $documentState[$class->associationsMappings[$assocName]['fieldName']] = new PersistentIdsCollection(
-                                    new \Doctrine\Common\Collections\ArrayCollection(),
-                                    $class->associationsMappings[$assocName]['targetDocument'],
-                                    $this->dm,
-                                    $assocValue
-                                );
-                            }
-                        }
-                    }
-                }
             } else if ($jsonName == '_rev') {
                 continue;
             } else if ($jsonName == '_conflicts') {
                 $conflict = true;
             } else if ($class->hasAttachments && $jsonName == '_attachments') {
                 $documentState[$class->attachmentField] = $this->createDocumentAttachments($id, $jsonValue);
+            } else if ($this->metadataResolver->canResolveJsonField($jsonName)) {
+                $documentState = $this->metadataResolver->resolveJsonField($class, $this->dm, $documentState, $jsonName, $jsonValue);
             } else {
                 $nonMappedData[$jsonName] = $jsonValue;
             }
@@ -198,9 +175,9 @@ class UnitOfWork
 
         if ($conflict && $this->evm->hasListeners(Event::onConflict)) {
             // there is a conflict and we have an event handler that might resolve it
-            $this->evm->dispatchEvent(Event::onConflict, new Events\ConflictEventArgs($data, $this->dm, $documentName));
+            $this->evm->dispatchEvent(Event::onConflict, new Events\ConflictEventArgs($data, $this->dm, $type));
             // the event might be resolved in the couch now, load it again:
-            return $this->dm->find($documentName, $id);
+            return $this->dm->find($type, $id);
         }
 
         // initialize inverse side collections
@@ -234,7 +211,7 @@ class UnitOfWork
             $overrideLocalValues = true;
         }
 
-        if (!($document instanceof $documentName)) {
+        if ($documentName && !($document instanceof $documentName)) {
             throw new InvalidDocumentTypeException($type, $documentName);
         }
 
@@ -688,7 +665,7 @@ class UnitOfWork
                 $this->computeChangeSet($class, $document); // TODO: prevent association computations in this case?
             }
 
-            $data = array('doctrine_metadata' => array('type' => $class->name));
+            $data = $this->metadataResolver->createDefaultDocumentStruct($class);
 
             // Convert field values to json values.
             foreach ($this->originalData[$oid] AS $fieldName => $fieldValue) {
@@ -703,10 +680,11 @@ class UnitOfWork
                 } else if (isset($class->associationsMappings[$fieldName])) {
                     if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE) {
                         if (\is_object($fieldValue)) {
-                            $data['doctrine_metadata']['associations'][$fieldName] = $this->getDocumentIdentifier($fieldValue);
+                            $fieldValue = $this->getDocumentIdentifier($fieldValue);
                         } else {
-                            $data['doctrine_metadata']['associations'][$fieldName] = null;
+                            $fieldValue = null;
                         }
+                        $data = $this->metadataResolver->storeAssociationField($data, $class, $this->dm, $fieldName, $fieldValue);
                     } else if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_MANY) {
                         if ($class->associationsMappings[$fieldName]['isOwning']) {
                             // TODO: Optimize when not initialized yet! In ManyToMany case we can keep track of ALL ids
@@ -716,8 +694,7 @@ class UnitOfWork
                                     $ids[] = $this->getDocumentIdentifier($relatedObject);
                                 }
                             }
-
-                            $data['doctrine_metadata']['associations'][$fieldName] = $ids;
+                            $data = $this->metadataResolver->storeAssociationField($data, $class, $this->dm, $fieldName, $ids);
                         }
                     }
                 } else if ($class->hasAttachments && $fieldName == $class->attachmentField) {
