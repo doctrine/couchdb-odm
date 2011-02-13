@@ -10,7 +10,7 @@ class FolderDesignDocumentTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCa
 
         $this->assertEquals(array(
             "views" => array("username" => array("map" => "function(doc) {
-    if (doc.doctrine_metadata.type == 'Doctrine\\\\Tests\\\\Models\\\\CMS\\\\CmsUser') {
+    if (doc.doctrine_metadata.type == 'Doctrine.Tests.Models.CMS.CmsUser') {
         emit(doc.username, doc._id);
     }
 }"))
