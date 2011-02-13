@@ -29,7 +29,7 @@ class DoctrineResolver implements MetadataResolver
 {
     public function createDefaultDocumentStruct(ClassMetadata $class)
     {
-        return array('doctrine_metadata' => array('type' => $class->name));
+        return array('doctrine_metadata' => array('type' => str_replace("\\", ".", $class->name)));
     }
 
     public function canResolveJsonField($jsonName)
@@ -39,7 +39,7 @@ class DoctrineResolver implements MetadataResolver
 
     public function getDocumentType(array $documentData)
     {
-        return ($documentData['doctrine_metadata']['type']);
+        return (str_replace(".", "\\", $documentData['doctrine_metadata']['type']));
     }
 
     public function resolveJsonField(ClassMetadata $class, DocumentManager $dm, $documentState, $jsonName, $jsonValue)

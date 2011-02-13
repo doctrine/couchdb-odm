@@ -52,7 +52,7 @@ class PersistentViewCollection extends PersistentCollection
 
             $uow = $this->dm->getUnitOfWork();
             foreach ($relatedObjects AS $relatedRow) {
-                $this->col->add($uow->createDocument($relatedRow['doc']['doctrine_metadata']['type'], $relatedRow['doc']));
+                $this->col->add($uow->createDocument(null, $relatedRow['doc']));
             }
 
             foreach ($elements AS $object) {
