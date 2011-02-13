@@ -15,7 +15,7 @@ class DateTimeTypeTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTest
 
     public function testRegisteredInstance()
     {
-        $this->assertType('Doctrine\ODM\CouchDB\Types\DateTimeType', $this->type);
+        $this->assertInstanceOf('Doctrine\ODM\CouchDB\Types\DateTimeType', $this->type);
     }
 
     static public function dataConvertRoundtrip()

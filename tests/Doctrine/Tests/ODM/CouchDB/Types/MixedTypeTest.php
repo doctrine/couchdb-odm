@@ -15,7 +15,7 @@ class MixedTypeTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
 
     public function testRegisteredInstance()
     {
-        $this->assertType('Doctrine\ODM\CouchDB\Types\MixedType', $this->type);
+        $this->assertInstanceOf('Doctrine\ODM\CouchDB\Types\MixedType', $this->type);
     }
 
     static public function dataConvertRoundtrip()

@@ -47,7 +47,7 @@ class OneToManyAssocationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctio
     {
         $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $this->userIds[0]);
 
-        $this->assertType('Doctrine\ODM\CouchDB\PersistentCollection', $user->articles);
+        $this->assertInstanceOf('Doctrine\ODM\CouchDB\PersistentCollection', $user->articles);
         $this->assertFalse($user->articles->isInitialized);
         $this->assertEquals(2, count($user->articles));
 

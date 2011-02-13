@@ -30,7 +30,7 @@ class UnitOfWorkTest extends CouchDBTestCase
     {
         $user = $this->uow->createDocument($this->type, array('_id' => '1', '_rev' => 23, 'username' => 'foo', 'doctrine_metadata' => array('type' => $this->type)));
 
-        $this->assertType($this->type, $user);
+        $this->assertInstanceOf($this->type, $user);
         $this->assertEquals('1', $user->id);
         $this->assertEquals('foo', $user->username);
         $this->assertEquals(UnitOfWork::STATE_MANAGED, $this->uow->getDocumentState($user));

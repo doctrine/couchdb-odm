@@ -11,7 +11,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
         $cm = new ClassMetadata("Doctrine\Tests\ODM\CouchDB\Mapping\Person");
 
         $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $cm->name);
-        $this->assertType('ReflectionClass', $cm->reflClass);
+        $this->assertInstanceOf('ReflectionClass', $cm->reflClass);
 
         return $cm;
     }
@@ -66,8 +66,8 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
      */
     public function testReflectionProperties($cm)
     {
-        $this->assertType('ReflectionProperty', $cm->reflFields['username']);
-        $this->assertType('ReflectionProperty', $cm->reflFields['created']);
+        $this->assertInstanceOf('ReflectionProperty', $cm->reflFields['username']);
+        $this->assertInstanceOf('ReflectionProperty', $cm->reflFields['created']);
     }
     
     /**
@@ -78,7 +78,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
         $instance1 = $cm->newInstance();
         $instance2 = $cm->newInstance();
 
-        $this->assertType('Doctrine\Tests\ODM\CouchDB\Mapping\Person', $instance1);
+        $this->assertInstanceOf('Doctrine\Tests\ODM\CouchDB\Mapping\Person', $instance1);
         $this->assertNotSame($instance1, $instance2);
     }
 
@@ -148,7 +148,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
         $cm = new ClassMetadata("Doctrine\Tests\ODM\CouchDB\Mapping\Person");
 
         $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $cm->name);
-        $this->assertType('ReflectionClass', $cm->reflClass);
+        $this->assertInstanceOf('ReflectionClass', $cm->reflClass);
 
         // property based comparison
         $this->assertEquals($cm, unserialize(serialize($cm)));

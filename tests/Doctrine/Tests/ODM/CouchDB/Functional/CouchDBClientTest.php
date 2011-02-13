@@ -76,7 +76,7 @@ class CouchDBClientTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTes
     {
         $data = $this->dm->getCouchDBClient()->getDatabaseInfo($this->getTestDatabase());
 
-        $this->assertType('array', $data);
+        $this->assertInternalType('array', $data);
         $this->assertArrayHasKey('db_name', $data);
         $this->assertEquals($this->getTestDatabase(), $data['db_name']);
     }
@@ -84,7 +84,7 @@ class CouchDBClientTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTes
     public function testCreateBulkUpdater()
     {
         $updater = $this->dm->getCouchDBClient()->createBulkUpdater();
-        $this->assertType('Doctrine\ODM\CouchDB\Utils\BulkUpdater', $updater);
+        $this->assertInstanceOf('Doctrine\ODM\CouchDB\Utils\BulkUpdater', $updater);
     }
 
     /**
@@ -157,9 +157,9 @@ class CouchDBClientTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTes
         $designDoc = new \Doctrine\ODM\CouchDB\View\FolderDesignDocument($designDocPath);
 
         $query = $client->createViewQuery('test-design-doc-query', 'username', $designDoc);
-        $this->assertType('Doctrine\ODM\CouchDB\View\Query', $query);
+        $this->assertInstanceOf('Doctrine\ODM\CouchDB\View\Query', $query);
         
         $result = $query->execute();
-        $this->assertType('Doctrine\ODM\CouchDB\View\Result', $result);
+        $this->assertInstanceOf('Doctrine\ODM\CouchDB\View\Result', $result);
     }
 }

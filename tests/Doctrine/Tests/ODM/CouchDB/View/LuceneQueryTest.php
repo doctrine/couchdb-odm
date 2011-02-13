@@ -52,7 +52,7 @@ JSO;
         $query = new \Doctrine\ODM\CouchDB\View\LuceneQuery($client, 'test', '_fti', 'test', 'test', $doc);
         $result = $query->execute();
 
-        $this->assertType('Doctrine\ODM\CouchDB\View\LuceneResult', $result);
+        $this->assertInstanceOf('Doctrine\ODM\CouchDB\View\LuceneResult', $result);
 
         $this->assertEquals(176852, $result->getTotalRows());
     }
