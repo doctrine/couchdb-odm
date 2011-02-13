@@ -234,8 +234,8 @@ class UnitOfWork
             $overrideLocalValues = true;
         }
 
-        if (isset($validate) && !($document instanceof $documentName)) {
-            throw new \InvalidArgumentException("Doctrine metadata mismatch! Requested type '$documentName' type does not match type '$type' stored in the metdata");
+        if (!($document instanceof $documentName)) {
+            throw new InvalidDocumentTypeException($type, $documentName);
         }
 
         if ($overrideLocalValues) {
@@ -431,7 +431,7 @@ class UnitOfWork
         }
 
         $hints = array('refresh' => true);
-        $this->createDocument(get_class($document), $response->body, $hints);
+        $this->createDocument($this->dm->getClassMetadata(get_class($document))->name, $response->body, $hints);
 
         $this->cascadeRefresh($document, $visited);
     }
