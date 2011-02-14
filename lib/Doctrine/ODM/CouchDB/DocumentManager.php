@@ -245,6 +245,16 @@ class DocumentManager
         $this->getUnitOfWork()->refresh($document);
     }
 
+    public function merge($document)
+    {
+        return $this->getUnitOfWork()->merge($document);
+    }
+
+    public function detach($document)
+    {
+        $this->getUnitOfWork()->detach($document);
+    }
+
     /**
      * Gets a reference to the entity identified by the given type and identifier
      * without actually loading it, if the entity is not yet loaded.

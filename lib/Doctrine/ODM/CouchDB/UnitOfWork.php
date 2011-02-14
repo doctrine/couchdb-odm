@@ -413,6 +413,16 @@ class UnitOfWork
         $this->cascadeRefresh($document, $visited);
     }
 
+    public function merge($document)
+    {
+        throw new \BadMethodCallException("Not yet implemented.");
+    }
+
+    public function detach($document)
+    {
+        throw new \BadMethodCallException("Not yet implemented.");
+    }
+
     private function cascadeRefresh($document, &$visited)
     {
         $class = $this->dm->getClassMetadata(get_class($document));
