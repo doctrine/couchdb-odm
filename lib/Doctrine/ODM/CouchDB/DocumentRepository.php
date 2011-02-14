@@ -40,6 +40,11 @@ class DocumentRepository
     protected $documentName;
 
     /**
+     * @var string
+     */
+    protected $documentType;
+
+    /**
      * @var DocumentManager
      */
     protected $dm;
@@ -58,6 +63,7 @@ class DocumentRepository
     public function __construct($dm, Mapping\ClassMetadata $class)
     {
         $this->documentName = $class->name;
+        $this->documentType = str_replace("\\", ".", $this->documentName);
         $this->dm = $dm;
         $this->class = $class;
     }
@@ -115,6 +121,60 @@ class DocumentRepository
             }
         }
         return $docs;
+    }
+
+    public function findAll()
+    {
+        $result = $this->dm->createQuery('doctrine_repositories', 'type_constraint')
+                           ->setKey($this->documentType)
+                           ->setIncludeDocs(true)
+                           ->execute();
+        $docs = array();
+        foreach ($result AS $doc) {
+            $docs[] = $doc['doc'];
+        }
+        return $docs;
+    }
+
+    public function findBy(array $criteria)
+    {
+        if (count($criteria) == 1) {
+            foreach ($criteria AS $field => $value) {
+                $result = $this->dm->createQuery('doctrine_repositories', 'equal_constraint')
+                                   ->setKey(array($this->documentType, $field, $value))
+                                   ->setIncludeDocs(true)
+                                   ->execute();
+                $docs = array();
+                foreach ($result AS $doc) {
+                    $docs[] = $doc['doc'];
+                }
+                return $docs;
+            }
+        } else {
+            $ids = array();
+            $num = 0;
+            foreach ($criteria AS $field => $value) {
+                $result = $this->dm->createNativeQuery('doctrine_repositories', 'equal_constraint')
+                                   ->setKey(array($this->documentType, $field, $value))
+                                   ->execute();
+                foreach ($result aS $doc) {
+                    $ids[$num][] = $doc['id'];
+                }
+                $num++;
+            }
+            $mergeIds = $ids[0];
+            for ($i = 1; $i < $num; $i++) {
+                $mergeIds = array_intersect($mergeIds, $ids[$i]);
+            }
+
+            return $this->findMany(array_values($mergeIds));
+        }
+    }
+
+    public function findOneBy(array $criteria)
+    {
+        $docs = $this->findBy($criteria);
+        return isset($docs[0]) ? $docs[0] : null;
     }
 
     /**

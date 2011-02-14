@@ -47,6 +47,10 @@ class Configuration
                 'className' => 'Doctrine\ODM\CouchDB\View\DoctrineAssociations',
                 'options' => array(),
             ),
+            'doctrine_repositories' => array(
+                'className' => 'Doctrine\ODM\CouchDB\View\DoctrineRepository',
+                'options' => array(),
+            ),
         ),
         'writeDoctrineMetadata' => true,
         'validateDoctrineMetadata' => true,

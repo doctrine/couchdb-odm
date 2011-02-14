@@ -90,6 +90,15 @@ class ClassMetadata
     public $fieldMappings = array();
 
     /**
+     * An array of indexed fields, accessible through a generic view shipped with Doctrine.
+     *
+     * @var array
+     */
+    public $indexes = array();
+
+    public $indexed = false;
+
+    /**
      * An array of json result-key-names to field-names
      *
      * @var array
@@ -319,6 +328,10 @@ class ClassMetadata
         } else if (isset($mapping['isVersionField'])) {
             $this->isVersioned = true;
             $this->versionField = $mapping['fieldName'];
+        }
+
+        if (isset($mapping['indexed']) && $mapping['indexed']) {
+            $this->indexes[] = $mapping['fieldName'];
         }
 
         $this->fieldMappings[$mapping['fieldName']] = $mapping;

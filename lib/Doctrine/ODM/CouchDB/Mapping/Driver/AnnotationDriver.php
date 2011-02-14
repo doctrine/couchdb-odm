@@ -108,6 +108,10 @@ class AnnotationDriver implements Driver
         $classAnnotations = $this->reader->getClassAnnotations($reflClass);
         if (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\Document'])) {
             $documentAnnot = $classAnnotations['Doctrine\ODM\CouchDB\Mapping\Document'];
+
+            if ($documentAnnot->indexed) {
+                $class->indexed = true;
+            }
         } elseif (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\EmbeddedDocument'])) {
             $documentAnnot = $classAnnotations['Doctrine\ODM\CouchDB\Mapping\EmbeddedDocument'];
             $class->isEmbeddedDocument = true;

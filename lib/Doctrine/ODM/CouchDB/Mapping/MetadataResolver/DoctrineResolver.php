@@ -29,7 +29,14 @@ class DoctrineResolver implements MetadataResolver
 {
     public function createDefaultDocumentStruct(ClassMetadata $class)
     {
-        return array('doctrine_metadata' => array('type' => str_replace("\\", ".", $class->name)));
+        $struct = array('doctrine_metadata' => array('type' => str_replace("\\", ".", $class->name)));
+        if ($class->indexed) {
+            $struct['doctrine_metadata']['indexed'] = true;
+        }
+        if ($class->indexes) {
+            $struct['doctrine_metadata']['indexes'] = $class->indexes;
+        }
+        return $struct;
     }
 
     public function canResolveJsonField($jsonName)
