@@ -7,7 +7,7 @@ namespace Doctrine\Tests\Models\CMS;
  */
 class CmsAddress
 {
-    /** @Id */
+    /** @ No Id for embedded */
     public $id;
     /** @String */
     public $country;
