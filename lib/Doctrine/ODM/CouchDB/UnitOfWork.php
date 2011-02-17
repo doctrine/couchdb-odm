@@ -19,6 +19,7 @@
 
 namespace Doctrine\ODM\CouchDB;
 
+use Doctrine\ODM\CouchDB\Mapping\Converter;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 use Doctrine\ODM\CouchDB\Types\Type;
 use Doctrine\Common\Collections\Collection;
@@ -58,52 +59,6 @@ class UnitOfWork
     /**
      * @var array
      */
-    private $documentRevisions = array();
-
-    /**
-     * @var array
-     */
-    private $documentState = array();
-
-    /**
-     * CouchDB always returns and updates the whole data of a document. If on update data is "missing"
-     * this means the data is deleted. This also applies to attachments. This is why we need to ensure
-     * that data that is not mapped is not lost. This map here saves all the "left-over" data and keeps
-     * track of it if necessary.
-     *
-     * @var array
-     */
-    private $nonMappedData = array();
-
-    /**
-     * There is no need for a differentiation between original and changeset data in CouchDB, since
-     * updates have to be complete updates of the document (unless you are using an update handler, which
-     * is not yet a feature of CouchDB ODM).
-     *
-     * @var array
-     */
-    private $originalData = array();
-
-    /**
-     * Contrary to the ORM, CouchDB only knows "updates". The question is wheater a revion exists (Real update vs insert).
-     *
-     * @var array
-     */
-    private $scheduledUpdates = array();
-
-    /**
-     * @var array
-     */
-    private $scheduledRemovals = array();
-
-    /**
-     * @var array
-     */
-    private $visitedCollections = array();
-
-    /**
-     * @var array
-     */
     private $idGenerators = array();
 
     /**
@@ -120,173 +75,78 @@ class UnitOfWork
         $this->evm = $dm->getEventManager();
     }
 
-    /**
-     * Create a document given class, data and the doc-id and revision
-     *
-     * @param string $documentName
-     * @param array $documentState
-     * @param array $hints
-     * @return object
-     */
     public function createDocument($documentName, $data, array &$hints = array())
     {
-        if (isset($data['doctrine_metadata']['type'])) {
-             $type = $data['doctrine_metadata']['type'];
-             if (isset($documentName) && $this->dm->getConfiguration()->getValidateDoctrineMetadata()) {
-                $validate = true;
-             }
-        } else if (isset($documentName)) {
-             $type = $documentName;
-             if ($this->dm->getConfiguration()->getWriteDoctrineMetadata()) {
-                $data['doctrine_metadata'] = array('type' => $documentName);
-             }
-        } else {
-             throw new \InvalidArgumentException("Missing Doctrine metadata in the Document, cannot hydrate (yet)!");
-        }
-
-        $class = $this->dm->getClassMetadata($type);
-
-        $documentState = array();
-        $nonMappedData = array();
         $id = $data['_id'];
-        $rev = $data['_rev'];
-        $conflict = false;
-        foreach ($data as $jsonName => $jsonValue) {
-            if (isset($class->jsonNames[$jsonName])) {
-                $fieldName = $class->jsonNames[$jsonName];
-                if (isset($class->fieldMappings[$fieldName])) {
-                    if ($jsonValue === null) {
-                        $documentState[$class->fieldMappings[$fieldName]['fieldName']] = null;
-                    } else {
-                        $documentState[$class->fieldMappings[$fieldName]['fieldName']] =
-                            Type::getType($class->fieldMappings[$fieldName]['type'])
-                                ->convertToPHPValue($jsonValue);
-                    }
-                }
-            } else if ($jsonName == 'doctrine_metadata') {
-                if (!isset($jsonValue['associations'])) {
-                    continue;
-                }
-
-                foreach ($jsonValue['associations'] AS $assocName => $assocValue) {
-                    if (isset($class->associationsMappings[$assocName])) {
-                        if ($class->associationsMappings[$assocName]['type'] & ClassMetadata::TO_ONE) {
-                            if ($assocValue) {
-                                $assocValue = $this->dm->getReference($class->associationsMappings[$assocName]['targetDocument'], $assocValue);
-                            }
-                            $documentState[$class->associationsMappings[$assocName]['fieldName']] = $assocValue;
-                        } else if ($class->associationsMappings[$assocName]['type'] & ClassMetadata::MANY_TO_MANY) {
-                            if ($class->associationsMappings[$assocName]['isOwning']) {
-                                $documentState[$class->associationsMappings[$assocName]['fieldName']] = new PersistentIdsCollection(
-                                    new \Doctrine\Common\Collections\ArrayCollection(),
-                                    $class->associationsMappings[$assocName]['targetDocument'],
-                                    $this->dm,
-                                    $assocValue
-                                );
-                            }
-                        }
-                    }
-                }
-            } else if ($jsonName == '_rev') {
-                continue;
-            } else if ($jsonName == '_conflicts') {
-                $conflict = true;
-            } else if ($class->hasAttachments && $jsonName == '_attachments') {
-                $documentState[$class->attachmentField] = $this->createDocumentAttachments($id, $jsonValue);
-            } else {
-                $nonMappedData[$jsonName] = $jsonValue;
+        $instance = null;
+        if ( ($converter = $this->byId($id)) !== null) {
+            $instance = $converter->getInstance();
+            if (($instance instanceof Proxy && !$instance->__isInitialized__) || 
+                isset($hints['refresh'])) {
+                $converter->refresh($data);
             }
-        }
+            if ($this->dm->getConfiguration()->getValidateDoctrineMetadata()) {
 
-        if ($conflict && $this->evm->hasListeners(Event::onConflict)) {
-            // there is a conflict and we have an event handler that might resolve it
-            $this->evm->dispatchEvent(Event::onConflict, new Events\ConflictEventArgs($data, $this->dm, $documentName));
-            // the event might be resolved in the couch now, load it again:
-            return $this->dm->find($documentName, $id);
-        }
-
-        // initialize inverse side collections
-        foreach ($class->associationsMappings AS $assocName => $assocOptions) {
-            if (!$assocOptions['isOwning'] && $assocOptions['type'] & ClassMetadata::TO_MANY) {
-                $documentState[$class->associationsMappings[$assocName]['fieldName']] = new PersistentViewCollection(
-                    new \Doctrine\Common\Collections\ArrayCollection(),
-                    $this->dm,
-                    $id,
-                    $class->associationsMappings[$assocName]['mappedBy']
-                );
-            }
-        }
-
-        if (isset($this->identityMap[$id])) {
-            $document = $this->identityMap[$id];
-            $overrideLocalValues = false;
-
-            if ( ($document instanceof Proxy && !$document->__isInitialized__) || isset($hints['refresh'])) {
-                $overrideLocalValues = true;
-                $oid = spl_object_hash($document);
             }
         } else {
-            $document = $class->newInstance();
-            $this->identityMap[$id] = $document;
-
-            $oid = spl_object_hash($document);
-            $this->documentState[$oid] = self::STATE_MANAGED;
-            $this->documentIdentifiers[$oid] = $id;
-            $this->documentRevisions[$oid] = $rev;
-            $overrideLocalValues = true;
-        }
-
-        if (isset($validate) && !($document instanceof $documentName)) {
-            throw new \InvalidArgumentException("Doctrine metadata mismatch! Requested type '$documentName' type does not match type '$type' stored in the metdata");
-        }
-
-        if ($overrideLocalValues) {
-            $this->nonMappedData[$oid] = $nonMappedData;
-            foreach ($class->reflFields as $prop => $reflFields) {
-                $value = isset($documentState[$prop]) ? $documentState[$prop] : null;
-                $reflFields->setValue($document, $value);
-                $this->originalData[$oid][$prop] = $value;
+            if (isset($data['doctrine_metadata']['type'])) {
+                $documentName = $data['doctrine_metadata']['type'];
             }
-        }
+            $class = $this->dm->getClassMetadata($documentName);
+            $converter = new Converter($class->newInstance(), $class, $this);
+            $converter->setValidateMetadata(isset($documentName) && $this->dm->getConfiguration()->getValidateDoctrineMetadata());
+            $converter->refresh($data);
+            $converter->setState(self::STATE_MANAGED);
+            $this->identityMap[$id] = $converter;
 
-        if ($this->evm->hasListeners(Event::postLoad)) {
-            $this->evm->dispatchEvent(Event::postLoad, new Events\LifecycleEventArgs($document, $this->dm));
+            $instance = $converter->getInstance();
+            $this->documentIdentifiers[\spl_object_hash($instance)] = $id;
         }
-
-        return $document;
+        $instance = $converter->getInstance();
+        return $instance;
     }
 
     /**
-     * @param  string $documentId
-     * @param  array $data
-     * @return array
+     * Persist new document, marking it managed and generating the id.
+     *
+     * This method is either called through `DocumentManager#persist()` or during `DocumentManager#flush()`,
+     * when persistence by reachability is applied.
+     *
+     * @param ClassMetadata $class
+     * @param object $document
+     * @return void
      */
-    private function createDocumentAttachments($documentId, $data)
+    public function persistNew($class, $document)
     {
-        $attachments = array();
+        $id = $this->getIdGenerator($class->idGenerator)->generate($document, $class, $this->dm);
 
-        $client = $this->dm->getConfiguration()->getHttpClient();
-        $basePath = '/' . $this->dm->getConfiguration()->getDatabase() . '/' . $documentId . '/';
-        foreach ($data AS $filename => $attachment) {
-            if (isset($attachment['stub']) && $attachment['stub']) {
-                $instance = Attachment::createStub($attachment['content_type'], $attachment['length'], $attachment['revpos'], $client, $basePath . $filename);
-            } else if (isset($attachment['data'])) {
-                $instance = Attachment::createFromBase64Data($attachment['data'], $attachment['content_type'], $attachment['revpos']);
-            }
+        $this->registerManaged($document, $id, null);
 
-            $attachments[$filename] = $instance;
+        if ($this->evm->hasListeners(Event::prePersist)) {
+            $this->evm->dispatchEvent(Event::prePersist, new Events\LifecycleEventArgs($document, $this->dm));
         }
-
-        return $attachments;
     }
 
-    /**
-     * @param  object $document
-     * @return array
-     */
-    public function getOriginalData($document)
+    public function registerManaged($document, $identifier, $revision = null)
     {
-        return $this->originalData[\spl_object_hash($document)];
+        $class = $this->dm->getClassMetadata(\get_class($document));
+
+        $converter = new Converter($document, $class, $this);
+        $converter->setIdentifier($identifier);
+        $converter->setValidateMetadata($this->dm->getConfiguration()->getValidateDoctrineMetadata());
+        $converter->setState(self::STATE_MANAGED);
+
+        $this->identityMap[$identifier] = $converter;
+        $this->documentIdentifiers[\spl_object_hash($document)] = $identifier;
+    }
+
+    public function getDocumentState($document)
+    {
+        $oid = \spl_object_hash($document);
+        if ( ($converter = $this->byOid($oid)) !== null) {
+            return $converter->getState();
+        }
+        return self::STATE_NEW;
     }
 
     /**
@@ -320,8 +180,7 @@ class UnitOfWork
                 break;
             case self::STATE_REMOVED:
                 // document becomes managed again
-                unset($this->scheduledRemovals[$oid]);
-                $this->documentState[$oid] = self::STATE_MANAGED;
+                $this->byOid($oid)->setState(self::STATE_MANAGED);
                 break;
             case self::STATE_DETACHED:
                 throw new \InvalidArgumentException("Detached entity passed to persist().");
@@ -382,10 +241,14 @@ class UnitOfWork
         if (isset($visited[$oid])) {
             return;
         }
-        $visited[$oid] = true;
+        $converter = $this->byOid($oid);
+        if ($converter === null) {
+            throw new \Exception('EHH');
+        }
 
-        $this->scheduledRemovals[$oid] = $document;
-        $this->documentState[$oid] = self::STATE_REMOVED;
+        $visited[$oid] = true;
+        
+        $converter->setState(self::STATE_REMOVED);
 
         if ($this->evm->hasListeners(Event::preRemove)) {
             $this->evm->dispatchEvent(Event::preRemove, new Events\LifecycleEventArgs($document, $this->dm));
@@ -412,199 +275,35 @@ class UnitOfWork
         }
     }
 
-    public function getDocumentState($document)
+    private function bulkUpdate($bulkUpdater, $converter, $context)
     {
-        $oid = \spl_object_hash($document);
-        if (isset($this->documentState[$oid])) {
-            return $this->documentState[$oid];
-        }
-        return self::STATE_NEW;
-    }
-
-    private function detectChangedDocuments()
-    {
-        foreach ($this->identityMap AS $id => $document) {
-            $state = $this->getDocumentState($document);
-            if ($state == self::STATE_MANAGED) {
-                $class = $this->dm->getClassMetadata(get_class($document));
-                $this->computeChangeSet($class, $document);
+        if ($converter->isInState(self::STATE_REMOVED)) {
+            $bulkUpdater->deleteDocument($converter->getIdentifier(), $converter->getRevision());
+            $this->removeFromIdentityMap($converter->getInstance());
+            
+            if ($this->evm->hasListeners(Event::postRemove)) {
+                $this->evm->dispatchEvent(Event::postRemove, new Events\LifecycleEventArgs($converter->getInstance(), $this->dm));
             }
-        }
-    }
+        } else if ($converter->isInState(self::STATE_NEW) || $converter->isInState(self::STATE_MANAGED)) {
+            $converter->updateActualState($context);
+            if (!$converter->isChanged()) {
+                return;
+            }
 
-    /**
-     * @param ClassMetadata $class
-     * @param object $document
-     * @return void
-     */
-    public function computeChangeSet(ClassMetadata $class, $document)
-    {
-        if ($document instanceof Proxy\Proxy && !$document->__isInitialized__) {
-            return;
-        }
-
-        $oid = \spl_object_hash($document);
-        $actualData = array();
-        // 1. compute the actual values of the current document
-        foreach ($class->reflFields AS $fieldName => $reflProperty) {
-            $value = $reflProperty->getValue($document);
-            if ($class->isCollectionValuedAssociation($fieldName) && $value !== null
-                    && !($value instanceof PersistentCollection)) {
-
-                if (!$value instanceof Collection) {
-                    $value = new ArrayCollection($value);
-                }
-
-                if ($class->associationsMappings[$fieldName]['isOwning']) {
-                    $coll = new PersistentIdsCollection(
-                        $value,
-                        $class->associationsMappings[$fieldName]['targetDocument'],
-                        $this->dm,
-                        array()
-                    );
-                } else {
-                    $coll = new PersistentViewCollection(
-                        $value,
-                        $this->dm,
-                        $this->documentIdentifiers[$oid],
-                        $class->associationsMappings[$fieldName]['mappedBy']
-                    );
-                }
-
-                $class->reflFields[$fieldName]->setValue($document, $coll);
-
-                $actualData[$fieldName] = $coll;
+            if ($this->evm->hasListeners(Event::preUpdate)) {
+                $this->evm->dispatchEvent(Event::preUpdate, 
+                                          new Events\LifecycleEventArgs($converter->getInstance(), 
+                                                                        $this->dm));
+            }
+            
+            $data = $converter->serialize();
+            $rev = $converter->getRevision();
+            if ($rev) {
+                $data['_rev'] = $rev;
             } else {
-                $actualData[$fieldName] = $value;
+                unset($data['_rev']);
             }
-            // TODO: ORM transforms arrays and collections into persistent collections
-        }
-        // unset the revision field if necessary, it is not to be managed by the user in write scenarios.
-        if ($class->isVersioned) {
-            unset($actualData[$class->versionField]);
-        }
-
-        // 2. Compare to the original, or find out that this entity is new.
-        if (!isset($this->originalData[$oid])) {
-            // Entity is New and should be inserted
-            $this->originalData[$oid] = $actualData;
-            $this->scheduledUpdates[$oid] = $document;
-        } else {
-            // Entity is "fully" MANAGED: it was already fully persisted before
-            // and we have a copy of the original data
-
-            $changed = false;
-            foreach ($actualData AS $fieldName => $fieldValue) {
-                if (isset($class->fieldMappings[$fieldName]) && $this->originalData[$oid][$fieldName] !== $fieldValue) {
-                    $changed = true;
-                    break;
-                } else if(isset($class->associationsMappings[$fieldName])) {
-                    if (!$class->associationsMappings[$fieldName]['isOwning']) {
-                        continue;
-                    }
-
-                    if ( ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE) && $this->originalData[$oid][$fieldName] !== $fieldValue) {
-                        $changed = true;
-                        break;
-                    } else if ( ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_MANY)) {
-                        if ( !($fieldValue instanceof PersistentCollection)) {
-                            // if its not a persistent collection and the original value changed. otherwise it could just be null
-                            $changed = true;
-                            break;
-                        } else if ($fieldValue->changed()) {
-                            $this->visitedCollections[] = $fieldValue;
-                            $changed = true;
-                            break;
-                        }
-                    }
-                } else if ($class->hasAttachments && $fieldName == $class->attachmentField) {
-                    // array of value objects, can compare that stricly
-                    if ($this->originalData[$oid][$fieldName] !== $fieldValue) {
-                        $changed = true;
-                        break;
-                    }
-                }
-            }
-
-            if ($changed) {
-                $this->originalData[$oid] = $actualData;
-                $this->scheduledUpdates[$oid] = $document;
-            }
-        }
-
-        // 3. check if any cascading needs to happen
-        foreach ($class->associationsMappings AS $name => $assoc) {
-            if ($this->originalData[$oid][$name]) {
-                $this->computeAssociationChanges($assoc, $this->originalData[$oid][$name]);
-            }
-        }
-    }
-
-    /**
-     * Computes the changes of an association.
-     *
-     * @param AssociationMapping $assoc
-     * @param mixed $value The value of the association.
-     */
-    private function computeAssociationChanges($assoc, $value)
-    {
-        // Look through the entities, and in any of their associations, for transient (new)
-        // enities, recursively. ("Persistence by reachability")
-        if ($assoc['type'] & ClassMetadata::TO_ONE) {
-            if ($value instanceof Proxy && ! $value->__isInitialized__) {
-                return; // Ignore uninitialized proxy objects
-            }
-            $value = array($value);
-        } else if ($value instanceof PersistentCollection) {
-            // Unwrap. Uninitialized collections will simply be empty.
-            $value = $value->unwrap();
-        }
-
-        $targetClass = $this->dm->getClassMetadata($assoc['targetDocument']);
-        foreach ($value as $entry) {
-            $state = $this->getDocumentState($entry);
-            $oid = spl_object_hash($entry);
-            if ($state == self::STATE_NEW) {
-                if ( !($assoc['cascade'] & ClassMetadata::CASCADE_PERSIST) ) {
-                    throw new \InvalidArgumentException("A new entity was found through a relationship that was not"
-                            . " configured to cascade persist operations: " . self::objToStr($entry) . "."
-                            . " Explicitly persist the new entity or configure cascading persist operations"
-                            . " on the relationship.");
-                }
-                $this->persistNew($targetClass, $entry);
-                $this->computeChangeSet($targetClass, $entry);
-            } else if ($state == self::STATE_REMOVED) {
-                return new \InvalidArgumentException("Removed entity detected during flush: "
-                        . self::objToStr($entry).". Remove deleted entities from associations.");
-            } else if ($state == self::STATE_DETACHED) {
-                // Can actually not happen right now as we assume STATE_NEW,
-                // so the exception will be raised from the DBAL layer (constraint violation).
-                throw new \InvalidArgumentException("A detached entity was found through a "
-                        . "relationship during cascading a persist operation.");
-            }
-            // MANAGED associated entities are already taken into account
-            // during changeset calculation anyway, since they are in the identity map.
-        }
-    }
-
-    /**
-     * Persist new document, marking it managed and generating the id.
-     *
-     * This method is either called through `DocumentManager#persist()` or during `DocumentManager#flush()`,
-     * when persistence by reachability is applied.
-     *
-     * @param ClassMetadata $class
-     * @param object $document
-     * @return void
-     */
-    public function persistNew($class, $document)
-    {
-        $id = $this->getIdGenerator($class->idGenerator)->generate($document, $class, $this->dm);
-
-        $this->registerManaged($document, $id, null);
-
-        if ($this->evm->hasListeners(Event::prePersist)) {
-            $this->evm->dispatchEvent(Event::prePersist, new Events\LifecycleEventArgs($document, $this->dm));
+            $bulkUpdater->updateDocument($data);
         }
     }
 
@@ -615,8 +314,6 @@ class UnitOfWork
      */
     public function flush()
     {
-        $this->detectChangedDocuments();
-
         if ($this->evm->hasListeners(Event::onFlush)) {
             $this->evm->dispatchEvent(Event::onFlush, new Events\OnFlushEventArgs($this));
         }
@@ -628,82 +325,19 @@ class UnitOfWork
         $bulkUpdater = $this->dm->getCouchDBClient()->createBulkUpdater();
         $bulkUpdater->setAllOrNothing($config->getAllOrNothingFlush());
 
-        foreach ($this->scheduledRemovals AS $oid => $document) {
-            $bulkUpdater->deleteDocument($this->documentIdentifiers[$oid], $this->documentRevisions[$oid]);
-            $this->removeFromIdentityMap($document);
-
-            if ($this->evm->hasListeners(Event::postRemove)) {
-                $this->evm->dispatchEvent(Event::postRemove, new Events\LifecycleEventArgs($document, $this->dm));
-            }
+        $context = new SerializationContext($this);
+        foreach ($this->identityMap as $converter) {
+            $this->bulkUpdate($bulkUpdater, $converter, $context);
         }
 
-        foreach ($this->scheduledUpdates AS $oid => $document) {
-            $class = $this->dm->getClassMetadata(get_class($document));
-
-            if ($this->evm->hasListeners(Event::preUpdate)) {
-                $this->evm->dispatchEvent(Event::preUpdate, new Events\LifecycleEventArgs($document, $this->dm));
-                $this->computeChangeSet($class, $document); // TODO: prevent association computations in this case?
+        while(!empty($context->cascadeNew)) {
+            $ids = $context->cascadeNew;
+            $context->cascadeNew = array();
+            foreach ($ids as $scheduleId) {
+                $this->bulkUpdate($bulkUpdater, $this->byOid($scheduleId), $context);
             }
-
-            $data = array();
-            if ($useDoctrineMetadata) {
-                $data['doctrine_metadata'] = array('type' => $class->name);
-            }
-
-            // Convert field values to json values.
-            foreach ($this->originalData[$oid] AS $fieldName => $fieldValue) {
-                if (isset($class->fieldMappings[$fieldName])) {
-                    if ($fieldValue !== null) {
-                        $fieldValue = Type::getType($class->fieldMappings[$fieldName]['type'])
-                            ->convertToCouchDBValue($fieldValue);
-                    }
-
-                    $data[$class->fieldMappings[$fieldName]['jsonName']] = $fieldValue;
-
-                } else if (isset($class->associationsMappings[$fieldName]) && $useDoctrineMetadata) {
-                    if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE) {
-                        if (\is_object($fieldValue)) {
-                            $data['doctrine_metadata']['associations'][$fieldName] = $this->getDocumentIdentifier($fieldValue);
-                        } else {
-                            $data['doctrine_metadata']['associations'][$fieldName] = null;
-                        }
-                    } else if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_MANY) {
-                        if ($class->associationsMappings[$fieldName]['isOwning']) {
-                            // TODO: Optimize when not initialized yet! In ManyToMany case we can keep track of ALL ids
-                            $ids = array();
-                            if (is_array($fieldValue) || $fieldValue instanceof \Doctrine\Common\Collections\Collection) {
-                                foreach ($fieldValue AS $relatedObject) {
-                                    $ids[] = $this->getDocumentIdentifier($relatedObject);
-                                }
-                            }
-
-                            $data['doctrine_metadata']['associations'][$fieldName] = $ids;
-                        }
-                    }
-                } else if ($class->hasAttachments && $fieldName == $class->attachmentField) {
-                    if (is_array($fieldValue) && $fieldValue) {
-                        $data['_attachments'] = array();
-                        foreach ($fieldValue AS $filename => $attachment) {
-                            if (!($attachment instanceof \Doctrine\ODM\CouchDB\Attachment)) {
-                                throw CouchDBException::invalidAttachment($class->name, $this->documentIdentifiers[$oid], $filename);
-                            }
-                            $data['_attachments'][$filename] = $attachment->toArray();
-                        }
-                    }
-                }
-            }
-
-            // respect the non mapped data, otherwise they will be deleted.
-            if (isset($this->nonMappedData[$oid]) && $this->nonMappedData[$oid]) {
-                $data = array_merge($data, $this->nonMappedData[$oid]);
-            }
-
-            $rev = $this->getDocumentRevision($document);
-            if ($rev) {
-                $data['_rev'] = $rev;
-            }
-            $bulkUpdater->updateDocument($data);
         }
+        
         $response = $bulkUpdater->execute();
         $updateConflictDocuments = array();
         if ($response->status == 201) {
@@ -713,15 +347,13 @@ class UnitOfWork
                     continue;
                 }
 
-                $document = $this->identityMap[$docResponse['id']];
+                $converter = $this->identityMap[$docResponse['id']];
+                $document = $converter->getInstance();
+
                 if (isset($docResponse['error'])) {
                     $updateConflictDocuments[] = $document;
                 } else {
-                    $this->documentRevisions[spl_object_hash($document)] = $docResponse['rev'];
-                    $class = $this->dm->getClassMetadata(get_class($document));
-                    if ($class->isVersioned) {
-                        $class->reflFields[$class->versionField]->setValue($document, $docResponse['rev']);
-                    }
+                    $converter->setRevision($docResponse['rev']);
                 }
 
                 if ($this->evm->hasListeners(Event::postUpdate)) {
@@ -729,19 +361,16 @@ class UnitOfWork
                 }
             }
         }
-
-        foreach ($this->visitedCollections AS $col) {
-            $col->takeSnapshot();
+        foreach ($this->identityMap as $converter) {
+            $converter->afterFlush();
         }
-
-        $this->scheduledUpdates =
-        $this->scheduledRemovals =
-        $this->visitedCollections = array();
 
         if (count($updateConflictDocuments)) {
             throw new UpdateConflictException($updateConflictDocuments);
         }
     }
+
+
 
     /**
      * INTERNAL:
@@ -758,9 +387,8 @@ class UnitOfWork
 
         if (isset($this->identityMap[$this->documentIdentifiers[$oid]])) {
             unset($this->identityMap[$this->documentIdentifiers[$oid]],
-                  $this->documentIdentifiers[$oid],
-                  $this->documentRevisions[$oid],
-                  $this->documentState[$oid]);
+                  $this->documentIdentifiers[$oid]
+                );
 
             return true;
         }
@@ -777,15 +405,6 @@ class UnitOfWork
         return isset($this->documentIdentifiers[\spl_object_hash($document)]);
     }
 
-    public function registerManaged($document, $identifier, $revision)
-    {
-        $oid = spl_object_hash($document);
-        $this->documentState[$oid] = self::STATE_MANAGED;
-        $this->documentIdentifiers[$oid] = $identifier;
-        $this->documentRevisions[$oid] = $revision;
-        $this->identityMap[$identifier] = $document;
-    }
-
     /**
      * Tries to find an entity with the given identifier in the identity map of
      * this UnitOfWork.
@@ -798,14 +417,14 @@ class UnitOfWork
     public function tryGetById($id)
     {
         if (isset($this->identityMap[$id])) {
-            return $this->identityMap[$id];
+            return $this->identityMap[$id]->getInstance();
         }
         return false;
     }
 
     /**
      * Get the CouchDB revision of the document that was current upon retrieval.
-     *
+     * 
      * @throws CouchDBException
      * @param  object $document
      * @return string
@@ -813,9 +432,10 @@ class UnitOfWork
     public function getDocumentRevision($document)
     {
         $oid = \spl_object_hash($document);
-        if (isset($this->documentRevisions[$oid])) {
-            return $this->documentRevisions[$oid];
+        if (isset($this->documentIdentifiers[$oid])) {
+            return $this->identityMap[$this->documentIdentifiers[$oid]]->getRevision();
         }
+        
         return null;
     }
 
@@ -829,8 +449,45 @@ class UnitOfWork
         }
     }
 
-    private static function objToStr($obj)
+    private function byOid($oid) {
+        if (isset($this->documentIdentifiers[$oid])) {
+            return $this->identityMap[$this->documentIdentifiers[$oid]];
+        }
+        return null;
+    }
+    
+    private function byId($id)
+    {
+        return (isset($this->identityMap[$id])) ? $this->identityMap[$id] : null;
+    }
+
+    public function getDocumentManager()
+    {
+        return $this->dm;
+    }
+
+    public static function objToStr($obj)
     {
         return method_exists($obj, '__toString') ? (string)$obj : get_class($obj).'@'.spl_object_hash($obj);
+    }
+
+}
+
+class SerializationContext
+{
+    private $uow;
+
+    public $cascadeNew = array();
+
+    public function __construct(UnitOfWork $uow) 
+    {
+        $this->uow = $uow;
+    }
+
+    public function cascadePersistNew($class, $document)
+    {
+        $this->uow->persistNew($class, $document);
+        $this->cascadeNew[] = \spl_object_hash($document);
+        return $this->uow->getDocumentIdentifier($document);
     }
 }

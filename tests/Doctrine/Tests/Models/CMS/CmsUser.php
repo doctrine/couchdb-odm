@@ -18,7 +18,7 @@ class CmsUser
     /** @String */
     public $name;
 
-    /** @EmbedOne */
+    /** @EmbedOne(targetDocument="Doctrine\Tests\Models\CMS\CmsAddress") */
     public $address;
 
     /** @ReferenceOne(targetDocument="CmsUserRights") */
@@ -75,7 +75,7 @@ class CmsUser
     public function setAddress(CmsAddress $address) {
         if ($this->address !== $address) {
             $this->address = $address;
-            $address->setUser($this);
+//            $address->setUser($this);
         }
     }
 }
