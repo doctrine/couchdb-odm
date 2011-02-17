@@ -67,16 +67,26 @@ class UnitOfWork
     private $evm;
 
     /**
+     * @var MetadataResolver
+     */
+    private $metadataResolver;
+
+    /**
      * @param DocumentManager $dm
      */
     public function __construct(DocumentManager $dm)
     {
         $this->dm = $dm;
         $this->evm = $dm->getEventManager();
+        $this->metadataResolver = $dm->getConfiguration()->getMetadataResolverImpl();
     }
 
     public function createDocument($documentName, $data, array &$hints = array())
     {
+        if (!$this->metadataResolver->canMapDocument($data)) {
+            throw new \InvalidArgumentException("Missing or missmatching metadata description in the Document, cannot hydrate!");
+        }
+
         $id = $data['_id'];
         $instance = null;
         if ( ($converter = $this->byId($id)) !== null) {
@@ -86,14 +96,17 @@ class UnitOfWork
                 $converter->refresh($data);
             }
             if ($this->dm->getConfiguration()->getValidateDoctrineMetadata()) {
-
             }
         } else {
-            if (isset($data['doctrine_metadata']['type'])) {
-                $documentName = $data['doctrine_metadata']['type'];
-            }
-            $class = $this->dm->getClassMetadata($documentName);
+            $type = $this->metadataResolver->getDocumentType($data);
+            $class = $this->dm->getClassMetadata($type);
+
             $converter = new Converter($class->newInstance(), $class, $this);
+
+            if ($documentName && !($converter->getInstance() instanceof $documentName)) {
+                throw new InvalidDocumentTypeException($type, $documentName);
+            }
+
             $converter->setValidateMetadata(isset($documentName) && $this->dm->getConfiguration()->getValidateDoctrineMetadata());
             $converter->refresh($data);
             $converter->setState(self::STATE_MANAGED);
@@ -275,6 +288,54 @@ class UnitOfWork
         }
     }
 
+    public function refresh($document)
+    {
+        $visited = array();
+        $this->doRefresh($document, $visited);
+    }
+
+    private function doRefresh($document, &$visited)
+    {
+        $oid = \spl_object_hash($document);
+        if (isset($visited[$oid])) {
+            return;
+        }
+        $visited[$oid] = true;
+
+        $response = $this->dm->getCouchDBClient()->findDocument($this->getDocumentIdentifier($document));
+
+        if ($response->status == 404) {
+            throw new \Doctrine\ODM\CouchDB\DocumentNotFoundException();
+        }
+
+        $hints = array('refresh' => true);
+        $this->createDocument($this->dm->getClassMetadata(get_class($document))->name, $response->body, $hints);
+
+        $this->cascadeRefresh($document, $visited);
+    }
+
+    private function cascadeRefresh($document, &$visited)
+    {
+        $class = $this->dm->getClassMetadata(get_class($document));
+        foreach ($class->associationsMappings as $assoc) {
+            if ($assoc['cascade'] & ClassMetadata::CASCADE_REFRESH) {
+                $related = $class->reflFields[$assoc['fieldName']]->getValue($document);
+                if ($related instanceof Collection) {
+                    if ($related instanceof PersistentCollection) {
+                        // Unwrap so that foreach() does not initialize
+                        $related = $related->unwrap();
+                    }
+                    foreach ($related as $relatedDocument) {
+                        $this->doRefresh($relatedDocument, $visited);
+                    }
+                } else if ($related !== null) {
+                    $this->doRefresh($related, $visited);
+                }
+            }
+        }
+    }
+
+
     private function bulkUpdate($bulkUpdater, $converter, $context)
     {
         if ($converter->isInState(self::STATE_REMOVED)) {
@@ -319,8 +380,6 @@ class UnitOfWork
         }
 
         $config = $this->dm->getConfiguration();
-
-        $useDoctrineMetadata = $config->getWriteDoctrineMetadata();
 
         $bulkUpdater = $this->dm->getCouchDBClient()->createBulkUpdater();
         $bulkUpdater->setAllOrNothing($config->getAllOrNothingFlush());
@@ -464,6 +523,11 @@ class UnitOfWork
     public function getDocumentManager()
     {
         return $this->dm;
+    }
+
+    public function getMetadataResolver()
+    {
+        return $this->metadataResolver;
     }
 
     public static function objToStr($obj)

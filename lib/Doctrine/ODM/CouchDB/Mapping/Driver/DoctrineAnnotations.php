@@ -8,6 +8,7 @@ final class Document extends Annotation
 {
     public $type;
     public $repositoryClass;
+    public $indexed = false;
 }
 final class EmbeddedDocument extends Annotation
 {
@@ -19,6 +20,7 @@ class Field extends Annotation
 {
     public $jsonName;
     public $type = 'mixed';
+    public $indexed = false;
 }
 final class Id extends Field
 {

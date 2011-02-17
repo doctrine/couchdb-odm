@@ -5,15 +5,15 @@ namespace Doctrine\Tests\Models\CMS;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
- * @Document
+ * @Document(indexed=true)
  */
 class CmsUser
 {
     /** @Id */
     public $id;
-    /** @String */
+    /** @String(indexed=true) */
     public $status;
-    /** @String */
+    /** @String(indexed=true) */
     public $username;
     /** @String */
     public $name;

@@ -141,15 +141,7 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
 
     public function testFindTypeValidation()
     {
-        $this->dm->getConfiguration()->setValidateDoctrineMetadata(false);
-        $user = $this->dm->find($this->type.'2', 1);
-        $this->assertInstanceOf($this->type, $user);
-
-        $this->dm->getConfiguration()->setValidateDoctrineMetadata(true);
-        $user = $this->dm->find($this->type, 1);
-        $this->assertInstanceOf($this->type, $user);
-
-        $this->setExpectedException('InvalidArgumentException');
+        $this->setExpectedException('Doctrine\ODM\CouchDB\InvalidDocumentTypeException');
         $user = $this->dm->find($this->type.'2', 1);
     }
 
@@ -175,7 +167,7 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
             'username' => 'beberlei',
             'email' => 'kontakt@beberlei.de',
             'address' => array('city' => 'Bonn', 'country' => 'DE'),
-            'doctrine_metadata' => array('type' => $this->type)
+            'doctrine_metadata' => array('type' => str_replace("\\", ".", $this->type))
         );
         $resp = $httpClient->request('PUT', '/' . $this->dm->getConfiguration()->getDatabase() . '/2', json_encode($data));
         $this->assertEquals(201, $resp->status);

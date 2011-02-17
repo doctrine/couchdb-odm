@@ -109,6 +109,10 @@ class AnnotationDriver implements Driver
         if (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\Document'])) {
             $documentAnnot = $classAnnotations['Doctrine\ODM\CouchDB\Mapping\Document'];
             $class->setCustomRepositoryClass($documentAnnot->repositoryClass);
+
+            if ($documentAnnot->indexed) {
+                $class->indexed = true;
+            }
         } elseif (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\EmbeddedDocument'])) {
             $documentAnnot = $classAnnotations['Doctrine\ODM\CouchDB\Mapping\EmbeddedDocument'];
             $class->isEmbeddedDocument = true;

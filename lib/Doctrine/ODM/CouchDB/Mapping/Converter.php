@@ -94,6 +94,11 @@ class Converter
      */
     private $identifier;
     
+    /**
+     * @var MetadataResolver
+     */
+    private $metadataResolver;
+
     public function __construct($instance, $class, /*UnitOfWork*/ $uow)
     {
         $this->instance = $instance;
