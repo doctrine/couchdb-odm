@@ -62,10 +62,12 @@ class Reference extends Annotation
 final class EmbedOne extends Reference
 {
     public $jsonName;
+    public $embedded = 'one';
 }
 final class EmbedMany extends Reference
 {
     public $jsonName;
+    public $embedded = 'many';
 }
 final class ReferenceOne extends Reference
 {

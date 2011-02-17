@@ -108,6 +108,7 @@ class AnnotationDriver implements Driver
         $classAnnotations = $this->reader->getClassAnnotations($reflClass);
         if (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\Document'])) {
             $documentAnnot = $classAnnotations['Doctrine\ODM\CouchDB\Mapping\Document'];
+            $class->setCustomRepositoryClass($documentAnnot->repositoryClass);
         } elseif (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\EmbeddedDocument'])) {
             $documentAnnot = $classAnnotations['Doctrine\ODM\CouchDB\Mapping\EmbeddedDocument'];
             $class->isEmbeddedDocument = true;
@@ -148,6 +149,9 @@ class AnnotationDriver implements Driver
                     $class->mapManyToMany($mapping);
                 } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Attachments) {
                     $class->mapAttachments($mapping['fieldName']);
+                } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\EmbedOne || $fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\EmbedMany) {
+                    $mapping = array_merge($mapping, (array) $fieldAnnot);
+                    $class->mapField($mapping);
                 }
             }
         }

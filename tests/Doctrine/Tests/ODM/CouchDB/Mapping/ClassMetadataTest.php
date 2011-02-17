@@ -26,7 +26,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_Testcase
         $this->assertTrue(isset($cm->fieldMappings['id']));
         $this->assertEquals(array('jsonName' => '_id', 'id' => true, 'type' => 'string', 'fieldName' => 'id'), $cm->fieldMappings['id']);
 
-        $this->assertEquals('id', $cm->identifier);
+        $this->assertEquals('id', $cm->getIdentifier());
         $this->assertEquals(array('_id' => 'id'), $cm->jsonNames);
 
         return $cm;
