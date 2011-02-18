@@ -291,27 +291,36 @@ class UnitOfWork
     public function refresh($document)
     {
         $visited = array();
-        $this->doRefresh($document, $visited);
+        $context = new SerializationContext($this);
+        $this->doRefresh($document, $context);
     }
 
-    private function doRefresh($document, &$visited)
+    public function doRefresh($document, $context)
     {
         $oid = \spl_object_hash($document);
+/*
         if (isset($visited[$oid])) {
             return;
         }
         $visited[$oid] = true;
-
+*/
         $response = $this->dm->getCouchDBClient()->findDocument($this->getDocumentIdentifier($document));
 
         if ($response->status == 404) {
             throw new \Doctrine\ODM\CouchDB\DocumentNotFoundException();
         }
 
+        $converter = $this->byOid($oid);
+        if ($converter !== null) {
+            $converter->refresh($response->body, $context);
+        }
+
+/*
         $hints = array('refresh' => true);
         $this->createDocument($this->dm->getClassMetadata(get_class($document))->name, $response->body, $hints);
 
         $this->cascadeRefresh($document, $visited);
+*/
     }
 
     private function cascadeRefresh($document, &$visited)
@@ -413,15 +422,13 @@ class UnitOfWork
                     $updateConflictDocuments[] = $document;
                 } else {
                     $converter->setRevision($docResponse['rev']);
+                    $converter->afterFlush();
                 }
 
                 if ($this->evm->hasListeners(Event::postUpdate)) {
                     $this->evm->dispatchEvent(Event::postUpdate, new Events\LifecycleEventArgs($document, $this->dm));
                 }
             }
-        }
-        foreach ($this->identityMap as $converter) {
-            $converter->afterFlush();
         }
 
         if (count($updateConflictDocuments)) {
@@ -537,21 +544,47 @@ class UnitOfWork
 
 }
 
+/**
+ * A context object is for keeping state for operations involving many converters.
+ */
 class SerializationContext
 {
     private $uow;
 
     public $cascadeNew = array();
 
+    public $cascadeRefreshIds = array();
+
     public function __construct(UnitOfWork $uow) 
     {
         $this->uow = $uow;
     }
 
+    /**
+     * @return The id of the persisted document
+     */
     public function cascadePersistNew($class, $document)
     {
         $this->uow->persistNew($class, $document);
         $this->cascadeNew[] = \spl_object_hash($document);
         return $this->uow->getDocumentIdentifier($document);
     }
+
+    /**
+     * Refreshes the document with the given id.
+     */
+    public function cascadeRefresh($documentId)
+    {
+        if (in_array($documentId, $this->cascadeRefreshIds)) {
+            return;
+        }
+
+        $this->cascadeRefreshIds[] = $documentId;
+        $document = $this->uow->tryGetById($documentId);
+        if ($document) {
+            $this->uow->doRefresh($document, $this);
+        }
+    }
+
 }
+

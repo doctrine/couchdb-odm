@@ -49,5 +49,15 @@ class UnitOfWorkMock
     {
         return ''.\spl_object_hash($doc);
     }
+
+    public function getMetadataResolver()
+    {
+        return $this->dm->getConfiguration()->getMetadataResolverImpl();
+    }
+
+    public function getDocumentState($doc)
+    {
+        return \Doctrine\ODM\CouchDB\UnitOfWork::STATE_MANAGED;
+    }
 }
 

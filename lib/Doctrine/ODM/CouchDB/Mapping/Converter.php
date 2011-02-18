@@ -103,6 +103,7 @@ class Converter
     {
         $this->instance = $instance;
         $this->uow = $uow;
+        $this->metadataResolver = $this->uow->getMetadataResolver();
         
         $this->classMetadata = (is_object($class)) ? $class : $this->uow->getDocumentManager()->getClassMetadata($class);
 
@@ -146,27 +147,13 @@ class Converter
 
     private function getTypeFromMetadata(&$data)
     {
-        if (isset($data['doctrine_metadata']['type'])) {
-            return $data['doctrine_metadata']['type'];
+        if ($this->metadataResolver->canMapDocument($data)) {
+            return $this->metadataResolver->getDocumentType($data);
         } else {
             throw new \InvalidArgumentException("Missing Doctrine metadata in the Document, cannot hydrate (yet)!");
         }
     }
-    
-    private function checkDocumentClass(&$data)
-    {
-        if (isset($data['doctrine_metadata']['type'])) {
-            $type = $data['doctrine_metadata']['type'];
-            $documentName = get_class($this->instance);
-            if ($this->validateMetadata && !($this->instance instanceof $type)) {
-                throw new \InvalidArgumentException("Doctrine metadata mismatch! Requested type '$documentName' type does not match type '$type' stored in the metdata");
-            }
-        } else {
-             throw new \InvalidArgumentException("Missing Doctrine metadata in the Document, cannot hydrate (yet)!");
-        }
-        return $type;
-    }
-    
+
     private function handleConflicts(&$data, $documentName) {
         if (isset($data['_conflicts'])) {
             $conflictEvent = new ConflictEventArgs($data, 
@@ -180,16 +167,29 @@ class Converter
     }
 
     /**
-     * Refreshes the entity with the data loaded from the datasource.
+     * Refreshes the entity with the data loaded from the datasource. 
+     * The cascadeContext param is used by UnitOfWork to implement CASCADE_PERSIST
+     * association mapping.
+     *
+     * 
+     * @param array
+     * @param SerializationContext
      */
-    public function refresh(&$data)
+    public function refresh(&$data, $cascadeContext = null)
     {
+        $this->actualData = array();
+        $this->actualMetadata = array();
+        $this->actualChildConverters = array();
+        $this->visitedCollections = array();
+
         // before we do anything with our instance, we check for trouble spots
         $this->identifier = (isset($data['_id'])) ? $data['_id'] : null;
         $this->rev = (isset($data['_rev'])) ? $data['_rev'] : null;
 
-        $documentName = $this->checkDocumentClass($data);
+        //$documentName = $this->checkDocumentClass($data);
+        $documentName = $this->getTypeFromMetadata($data);
         $this->handleConflicts($data, $documentName);
+
         foreach ($data as $jsonName => $jsonValue) {
             if ($fieldMapping = $this->getFieldMappingForJsonName($jsonName)) {
                 $fieldName = $fieldMapping['fieldName'];
@@ -210,7 +210,7 @@ class Converter
                 // handle metadata
                 $this->innerSetMetadata($jsonName, $jsonValue);
                 if (isset($jsonValue['associations'])) {
-                    $this->refreshAssociations($jsonName, $jsonValue);
+                    $this->refreshAssociations($jsonName, $jsonValue, $cascadeContext);
                 }
             } else if ($jsonName == '_rev' || $jsonName == '_conflicts') {
                 continue;
@@ -260,30 +260,43 @@ class Converter
         $this->setFieldInInstance($this->classMetadata->attachmentField, $attachments);
     }
 
-    private function refreshAssociations($fieldName, &$jsonValue)
+    private function refreshAssociations($jsonName, $jsonValue, $cascadeContext = null)
     {
-        $class = $this->classMetadata;
-        foreach ($jsonValue['associations'] as $assocName => $assocValue) {
-            if (isset($class->associationsMappings[$assocName])) {
-                $associationsMapping = $class->associationsMappings[$assocName];
-                if ($associationsMapping['type'] & ClassMetadata::TO_ONE) {
-                    if ($assocValue) {
-                        $assocValue = $this->uow->getDocumentManager()->getReference(
-                            $associationsMapping['targetDocument'],
-                            $assocValue);
-                    }
-                    $this->setFieldInInstance($assocName, $assocValue);
-                } else if ($associationsMapping['type'] & ClassMetadata::TO_MANY) {
-                    if ($associationsMapping['isOwning']) {
-                        $assocValue = new PersistentIdsCollection(
-                            new ArrayCollection(),
-                            $associationsMapping['targetDocument'],
-                            $this->uow->getDocumentManager(),
-                            $assocValue
-                            );
-                        $this->setFieldInInstance($assocName, $assocValue);
+        $resolvedAssociations = array();
+        $resolvedAssociations = $this->metadataResolver->resolveJsonField(
+            $this->classMetadata,
+            $this->uow->getDocumentManager(),
+            $resolvedAssociations,
+            $jsonName,
+            $jsonValue
+            );
+        foreach ($resolvedAssociations as $fieldName => $resolvedAssociation) {
+            $this->setFieldInInstance($fieldName, $resolvedAssociation);
+        }
+
+        if ($cascadeContext !== null) {
+            $cascades = array();
+            foreach ($jsonValue['associations'] as $assocName => $assocValue) {
+                if (isset($class->associationsMappings[$assocName])) {
+                    $associationsMapping = $class->associationsMappings[$assocName];
+                    if ($associationsMapping['type'] & ClassMetadata::TO_ONE) {
+                        if ($assocValue) {
+                            if ($associationsMapping['cascade'] & ClassMetadata::CASCADE_REFRESH) {
+                                $cascades[] = $assocValue;
+                            }
+                        }
+                    } else if ($associationsMapping['type'] & ClassMetadata::TO_MANY) {
+                        if ($assocValue && $associationsMapping['isOwning']) {
+                            if ($associationsMapping['cascade'] & ClassMetadata::CASCADE_REFRESH) {
+                                $cascades = array_merge($cascades, $assocValue);
+                            }
+                        }
                     }
                 }
+            }
+            
+            foreach ($cascades as $id) {
+                $cascadeContext->cascadeRefresh($id);
             }
         }
     }
@@ -356,7 +369,7 @@ class Converter
     public function updateActualState($context)
     {
         $this->actualData = array();
-        $this->actualMetadata = array('doctrine_metadata'=>array('type' => $this->classMetadata->getName()));
+        $this->actualMetadata = $this->metadataResolver->createDefaultDocumentStruct($this->classMetadata);
         $this->actualChildConverters = array();
 
         $actualData = array();
@@ -455,27 +468,33 @@ class Converter
             return;
         }
 
+        $ids = null;
         if ($assocMapping['type'] & ClassMetadata::TO_ONE && \is_object($propValue)) {
-            $this->addAssociationIdentifer($this->actualMetadata, 
-                                           $fieldName, 
-                                           $this->uow->getDocumentIdentifier($propValue));
-            
+            $ids = $this->uow->getDocumentIdentifier($propValue);
         } else if ($assocMapping['type'] & ClassMetadata::TO_MANY) {
             // Optimize when not initialized yet! In ManyToMany case we can keep track of ALL ids
+            // If the PC isn't changed, we copy the originally loaded assocations array
             if ($propValue instanceof PersistentCollection && !$propValue->changed()) {
-                $this->addAssociationIdentifer($this->actualMetadata,
-                                               $fieldName,
-                                               $this->metadata['doctrine_metadata']['associations'][$fieldName]);
+                $ids = $this->metadata['doctrine_metadata']['associations'][$fieldName];
+            
             } else if (is_array($propValue) || $propValue instanceof \Doctrine\Common\Collections\Collection) {
+                $ids = array();
                 foreach($propValue as $relatedObject) {
-                    $this->addAssociationIdentifer($this->actualMetadata,
-                                                   $fieldName,
-                                                   $this->uow->getDocumentIdentifier($relatedObject));
+                    $ids[] = $this->uow->getDocumentIdentifier($relatedObject);
                 }
             }
             if ($propValue instanceof \Doctrine\ODM\CouchDB\PersistentCollection && $propValue->changed()) {
                 $this->visitedCollections[] = $propValue;
             }
+        }
+        if ($ids !== null) {
+            $this->actualMetadata = $this->metadataResolver->storeAssociationField(
+                $this->actualMetadata,
+                $this->classMetadata,
+                $this->uow->getDocumentManager(),
+                $fieldName,
+                $ids
+            );
         }
     }
 
@@ -523,31 +542,6 @@ class Converter
             // MANAGED associated entities are already taken into account
             // during changeset calculation anyway, since they are in the identity map.
 
-        }
-    }
-
-    // TODO associationmapping should be associative array?
-    private function addAssociationIdentifer(&$metadata, $fieldName, $ids)
-    {
-        if (!is_array($ids)) {
-            $ids = array($ids);
-        }
-
-        if (!isset($metadata['doctrine_metadata']['associations'])) {
-            $metadata['doctrine_metadata']['associations'] = array();
-        }
-        $assocs =& $metadata['doctrine_metadata']['associations'];
-
-        $mapping = $this->classMetadata->associationsMappings[$fieldName];
-        if ($mapping['type'] & ClassMetadata::TO_ONE) {
-            $assocs[$fieldName] = array_pop($ids);
-        } else if ($mapping['type'] & ClassMetadata::TO_MANY) {
-            if (!isset($assocs[$fieldName])) {
-                $assocs[$fieldName] = array();
-            }
-            foreach ($ids as $id) {
-                $assocs[$fieldName][] = $id;
-            }
         }
     }
 
@@ -645,12 +639,12 @@ class Converter
      */
     public function isChanged()
     {
-        if (empty($this->originalData)) {
-            return true;
-        }
-        if ($this->instance instanceof Proxy && !$this->instance->__isInitialized__)
+        if ($this->instance instanceof Proxy && !$this->instance->__isInitialized__) {
             return false;
+        }
 
+        // Assuming that originalData always contains '_id' when loaded from the database
+        // otherwise this is a new document, thus always changed.
         if (empty($this->originalData) ||
             $this->originalData != $this->actualData ||
             $this->metadata != $this->actualMetadata) {

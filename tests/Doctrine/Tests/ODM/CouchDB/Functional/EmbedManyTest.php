@@ -18,14 +18,14 @@ class EmbedManyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
                 'embeds'=> array(
                     array(
                         'name' => 'embedded 1',
-                        'doctrine_metadata' => array('type' => $this->embeddedType)
+                        'doctrine_metadata' => array('type' => str_replace('\\', '.', $this->embeddedType))
                         ),
                     array(
                         'name' => 'embedded 2',
-                        'doctrine_metadata' => array('type' => $this->embeddedType)
+                        'doctrine_metadata' => array('type' => str_replace('\\', '.', $this->embeddedType))
                         )
                     ),
-                'doctrine_metadata' => array('type' => $this->type)
+                'doctrine_metadata' => array('type' => str_replace('\\', '.', $this->type))
                 ));
         $resp = $httpClient->request('PUT', '/' . $this->dm->getConfiguration()->getDatabase() . '/1', $data);
         $this->assertEquals(201, $resp->status);

@@ -89,7 +89,7 @@ class ConverterAssociationsTest extends AbstractConverterTest
         $article->attachments['456'] = Attachment::createFromBinaryData('456');
 
         $converter = new Converter($article, 'Doctrine\Tests\Models\CMS\CmsArticle', $this->uow);
-        $converter->updateActualState();
+        $converter->updateActualState(new SerializationContextMock);
         $meta = $converter->getActualMetadata();
         $this->assertArrayHasKey('_attachments', $meta);
         $this->assertArrayHasKey('123', $meta['_attachments']);
@@ -139,7 +139,7 @@ class ConverterAssociationsTest extends AbstractConverterTest
         
         $className = 'Doctrine\Tests\Models\CMS\CmsUser';
         $converter = new Converter($user1, $className, $this->uow);
-        $converter->updateActualState();
+        $converter->updateActualState(new SerializationContextMock);
         $this->assertEquals(array(
                          '_id' =>'user1',
                          'status'=>'active',
@@ -211,4 +211,26 @@ class ConverterAssociationsTest extends AbstractConverterTest
         $this->assertNull($userOneTwo->rights);
     }
     
+}
+
+
+class SerializationContextMock
+{
+
+    /**
+     * @return The id of the persisted document
+     */
+    public function cascadePersistNew($class, $document)
+    {
+        return '1';
+    }
+
+    /**
+     * Refreshes the document with the given id.
+     */
+    public function cascadeRefresh($documentId)
+    {
+    }
+
+
 }
