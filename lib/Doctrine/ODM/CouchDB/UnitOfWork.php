@@ -85,6 +85,13 @@ class UnitOfWork
     private $originalData = array();
 
     /**
+     * The original data of embedded document handled separetly from simple property mapping data.
+     * 
+     * @var array
+     */
+    private $originalEmbeddedData = array();
+
+    /**
      * Contrary to the ORM, CouchDB only knows "updates". The question is wheater a revion exists (Real update vs insert).
      *
      * @var array
@@ -124,6 +131,9 @@ class UnitOfWork
         $this->dm = $dm;
         $this->evm = $dm->getEventManager();
         $this->metadataResolver = $dm->getConfiguration()->getMetadataResolverImpl();
+
+        $this->embeddedSerializer = new Mapping\EmbeddedDocumentSerializer($this->dm->getMetadataFactory(), 
+                                                                           $this->metadataResolver);
     }
 
     /**
@@ -145,6 +155,9 @@ class UnitOfWork
 
         $documentState = array();
         $nonMappedData = array();
+        $embeddedDocumentState = array();
+        $embeddedNonMappedData = array();
+
         $id = $data['_id'];
         $rev = $data['_rev'];
         $conflict = false;
@@ -154,6 +167,18 @@ class UnitOfWork
                 if (isset($class->fieldMappings[$fieldName])) {
                     if ($jsonValue === null) {
                         $documentState[$class->fieldMappings[$fieldName]['fieldName']] = null;
+                    } else if (isset($class->fieldMappings[$fieldName]['embedded'])) {
+
+                        list($embeddedInstance, $nonMapped) = 
+                            $this->embeddedSerializer->createEmbeddedDocument($jsonValue, $class->fieldMappings[$fieldName]);
+
+                        $documentState[$jsonName] = $embeddedInstance;
+                        if (!empty($nonMapped)) {
+                            $embeddedNonMappedData[$jsonName] = $nonMapped;
+                        }
+                        
+                        // storing the jsonValue for embedded docs for now
+                        $embeddedDocumentState[$jsonName] = $jsonValue;
                     } else {
                         $documentState[$class->fieldMappings[$fieldName]['fieldName']] =
                             Type::getType($class->fieldMappings[$fieldName]['type'])
@@ -214,13 +239,17 @@ class UnitOfWork
         if ($documentName && !($document instanceof $documentName)) {
             throw new InvalidDocumentTypeException($type, $documentName);
         }
-
+        
         if ($overrideLocalValues) {
             $this->nonMappedData[$oid] = $nonMappedData;
             foreach ($class->reflFields as $prop => $reflFields) {
                 $value = isset($documentState[$prop]) ? $documentState[$prop] : null;
+                if (isset($embeddedDocumentState[$prop])) {
+                    $this->originalEmbeddedData[$oid][$prop] = $embeddedDocumentState[$prop];
+                } else {
+                    $this->originalData[$oid][$prop] = $value;
+                }
                 $reflFields->setValue($document, $value);
-                $this->originalData[$oid][$prop] = $value;
             }
         }
 
@@ -464,9 +493,9 @@ class UnitOfWork
         if ($document instanceof Proxy\Proxy && !$document->__isInitialized__) {
             return;
         }
-
         $oid = \spl_object_hash($document);
         $actualData = array();
+        $embeddedActualData = array();
         // 1. compute the actual values of the current document
         foreach ($class->reflFields AS $fieldName => $reflProperty) {
             $value = $reflProperty->getValue($document);
@@ -498,6 +527,11 @@ class UnitOfWork
                 $actualData[$fieldName] = $coll;
             } else {
                 $actualData[$fieldName] = $value;
+                if (isset($class->fieldMappings[$fieldName]['embedded']) && $value !== null) {
+                    // serializing embedded value right here, to be able to detect changes for later invocations
+                    $embeddedActualData[$fieldName] = 
+                        $this->embeddedSerializer->serializeEmbeddedDocument($value, $class->fieldMappings[$fieldName]);
+                } 
             }
             // TODO: ORM transforms arrays and collections into persistent collections
         }
@@ -511,13 +545,18 @@ class UnitOfWork
             // Entity is New and should be inserted
             $this->originalData[$oid] = $actualData;
             $this->scheduledUpdates[$oid] = $document;
+            $this->originalEmbeddedData[$oid] = $embeddedActualData;
         } else {
             // Entity is "fully" MANAGED: it was already fully persisted before
             // and we have a copy of the original data
 
             $changed = false;
             foreach ($actualData AS $fieldName => $fieldValue) {
-                if (isset($class->fieldMappings[$fieldName]) && $this->originalData[$oid][$fieldName] !== $fieldValue) {
+                // Important to not check embeded values here, because those are objects, equality check isn't enough
+                // 
+                if (isset($class->fieldMappings[$fieldName]) 
+                    && !isset($class->fieldMappings[$fieldName]['embedded'])
+                    && $this->originalData[$oid][$fieldName] !== $fieldValue) {
                     $changed = true;
                     break;
                 } else if(isset($class->associationsMappings[$fieldName])) {
@@ -548,9 +587,25 @@ class UnitOfWork
                 }
             }
 
+            // Check embedded documents here, only if there is no change yet
+            if (!$changed) {
+                foreach ($embeddedActualData as $fieldName => $fieldValue) {
+                    if (!isset($this->originalEmbeddedData[$oid][$fieldName])
+                        || $this->embeddedSerializer->isChanged(
+                            $actualData[$fieldName],                        /* actual value */
+                            $this->originalEmbeddedData[$oid][$fieldName],  /* original state  */
+                            $class->fieldMappings[$fieldName]
+                            )) {
+                        $changed = true;
+                        break;
+                    }                    
+                }
+            }
+
             if ($changed) {
                 $this->originalData[$oid] = $actualData;
                 $this->scheduledUpdates[$oid] = $document;
+                $this->originalEmbeddedData[$oid] = $embeddedActualData;
             }
         }
 
@@ -666,11 +721,15 @@ class UnitOfWork
             }
 
             $data = $this->metadataResolver->createDefaultDocumentStruct($class);
-
+            
             // Convert field values to json values.
             foreach ($this->originalData[$oid] AS $fieldName => $fieldValue) {
                 if (isset($class->fieldMappings[$fieldName])) {
-                    if ($fieldValue !== null) {
+                    if ($fieldValue !== null && isset($class->fieldMappings[$fieldName]['embedded'])) {
+                        // As we store the serialized value in originalEmbeddedData, we can simply copy here.
+                        $fieldValue = $this->originalEmbeddedData[$oid][$class->fieldMappings[$fieldName]['jsonName']];
+
+                    } else if ($fieldValue !== null) {
                         $fieldValue = Type::getType($class->fieldMappings[$fieldName]['type'])
                             ->convertToCouchDBValue($fieldValue);
                     }
