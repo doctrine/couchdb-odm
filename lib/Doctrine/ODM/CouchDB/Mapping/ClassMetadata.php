@@ -210,6 +210,9 @@ class ClassMetadata
      */
     public function setIdentifier($identifier)
     {
+        if ($this->isEmbeddedDocument) {
+            throw new MappingException('EmbeddedDocument should not have id field');
+        }
         $this->identifier = $identifier;
     }
 
@@ -321,7 +324,7 @@ class ClassMetadata
         if (isset($mapping['id']) && $mapping['id'] === true) {
             $mapping['type'] = 'string';
             $mapping['jsonName'] = '_id';
-            $this->identifier = $mapping['fieldName'];
+            $this->setIdentifier($mapping['fieldName']);
             if (isset($mapping['strategy'])) {
                 $this->idGenerator = constant('Doctrine\ODM\CouchDB\Mapping\ClassMetadata::IDGENERATOR_' . strtoupper($mapping['strategy']));
             }
