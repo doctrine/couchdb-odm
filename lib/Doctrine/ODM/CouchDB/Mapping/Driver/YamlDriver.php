@@ -105,8 +105,8 @@ class YamlDriver extends AbstractFileDriver
     private function addMappingFromEmbed(ClassMetadata $class, $fieldName, $embed, $type)
     {
         $mapping = array(
-            'type'           => $type,
-            'embedded'       => true,
+//            'type'           => $type,
+            'embedded'       => $type,
             'targetDocument' => isset($embed['targetDocument']) ? $embed['targetDocument'] : null,
             'fieldName'      => $fieldName,
             'strategy'       => isset($embed['strategy']) ? (string) $embed['strategy'] : 'pushPull',
