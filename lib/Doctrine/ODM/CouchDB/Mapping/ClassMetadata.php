@@ -35,7 +35,7 @@ class ClassMetadata
     /**
      * READ-ONLY: The field name of the document identifier.
      */
-    private $identifier;
+    public $identifier;
 
     /**
      * READ-ONLY: The name of the document class.
@@ -214,11 +214,6 @@ class ClassMetadata
             throw new MappingException('EmbeddedDocument should not have id field');
         }
         $this->identifier = $identifier;
-    }
-
-    public function getIdentifier()
-    {
-        return $this->identifier;
     }
 
     /**
