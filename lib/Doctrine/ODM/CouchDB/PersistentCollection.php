@@ -37,6 +37,13 @@ abstract class PersistentCollection implements Collection
 
     abstract protected function load();
 
+    /**
+     * INTERNAL. Gets all referenced entities, which are already loaded by
+     * the document manager, regardless of the isInitialized state of this
+     * collection. 
+     */
+    abstract public function tryGetAll(&$skip);
+
     public function changed()
     {
         return $this->changed;

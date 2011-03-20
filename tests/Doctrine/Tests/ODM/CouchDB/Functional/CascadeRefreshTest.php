@@ -17,6 +17,7 @@ class CascadeRefreshTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTe
 
         $class = $this->dm->getClassMetadata('Doctrine\Tests\Models\CMS\CmsUser');
         $class->associationsMappings['groups']['cascade'] = ClassMetadata::CASCADE_REFRESH;
+        $class->associationsMappings['articles']['cascade'] = ClassMetadata::CASCADE_REFRESH;
 
         $class = $this->dm->getClassMetadata('Doctrine\Tests\Models\CMS\CmsGroup');
         $class->associationsMappings['users']['cascade'] = ClassMetadata::CASCADE_REFRESH;
@@ -35,18 +36,26 @@ class CascadeRefreshTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTe
         $user->name = "Benjamin";
         $user->addGroup($group1);
 
+        $article = new \Doctrine\Tests\Models\CMS\CMSArticle();
+        $article->topic = 'Test article';
+        $user->addArticle($article);
+        
         $this->dm->persist($user);
         $this->dm->persist($group1);
+        $this->dm->persist($article);
 
         $this->dm->flush();
 
         $this->assertEquals(1, count($user->groups));
 
         $group1->name = "Test2";
+        $article->topic = 'Test article2';
         $user->username = "beberlei2";
 
         $this->dm->refresh($user);
 
+        $this->assertEquals("Test article", $article->topic);
+        $this->assertEquals("beberlei", $article->user->username);
         $this->assertEquals("beberlei", $user->username);
         $this->assertEquals("Test!", $group1->name);
     }

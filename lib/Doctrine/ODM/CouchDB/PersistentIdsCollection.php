@@ -54,4 +54,23 @@ class PersistentIdsCollection extends PersistentCollection
             }
         }
     }
+
+    public function tryGetAll(&$skip)
+    {
+        if (!$this->isInitialized) {
+            $uow = $this->dm->getUnitOfWork();
+            $result = array();
+            foreach ($this->ids AS $id) {
+                if ($object = $uow->tryGetById($id)) {
+                    if (!array_key_exists(\spl_object_hash($object), $skip)) {
+                        $result[] = $object;
+                    }
+                }
+            }
+            return $result;
+        } else {
+            return $this->unwrap();
+        }
+    }
+
 }

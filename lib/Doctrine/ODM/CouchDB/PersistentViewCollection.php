@@ -60,4 +60,29 @@ class PersistentViewCollection extends PersistentCollection
             }
         }
     }
+
+    public function tryGetAll(&$skip)
+    {
+        if (!$this->isInitialized) {
+            $relatedIds = $this->dm->createNativeQuery('doctrine_associations', 'inverse_associations')
+                ->setStartKey(array($this->owningDocumentId, $this->assocFieldName))
+                ->setEndKey(array($this->owningDocumentId, $this->assocFieldName, 'z'))
+                ->setIncludeDocs(false)
+                ->execute();
+            
+            $result = array();
+            $uow = $this->dm->getUnitOfWork();
+            foreach ($relatedIds AS $relatedRow) {
+                if ($object = $uow->tryGetById($relatedRow['id'])) {
+                    if (!array_key_exists(\spl_object_hash($object), $skip)) {
+                        $result[] = $object;
+                    }
+                }
+            }
+            return $result;
+        } else {
+            return $this->unwrap();
+        }
+    }
+
 }
