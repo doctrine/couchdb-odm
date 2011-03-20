@@ -2,15 +2,19 @@
 
 namespace Doctrine\Tests\ODM\CouchDB\Functional;
 
-class EmbedNested extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
+use Doctrine\Tests\Models\Embedded\Embedded;
+use Doctrine\Tests\Models\Embedded\Embedder;
+use Doctrine\Tests\Models\Embedded\Nested;
+
+class EmbedNestedTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 {
     private $dm;
 
     public function setUp() 
     {
-        $this->type = 'Doctrine\Tests\ODM\CouchDB\Functional\Embedder';
-        $this->embeddedType = 'Doctrine\Tests\ODM\CouchDB\Functional\Embedded';
-        $this->nestedType = 'Doctrine\Tests\ODM\CouchDB\Functional\Nested';
+        $this->type = 'Doctrine\Tests\Models\Embedded\Embedder';
+        $this->embeddedType = 'Doctrine\Tests\Models\Embedded\Embedded';
+        $this->nestedType = 'Doctrine\Tests\Models\Embedded\Nested';
         $this->dm = $this->createDocumentManager();
 
         $httpClient = $this->dm->getConfiguration()->getHttpClient();
@@ -48,6 +52,7 @@ class EmbedNested extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 
         $nesteds = $embedded->embeds;
         $this->assertEquals(2, count($nesteds));
+
         $nested = $nesteds[0];
         $this->assertType($this->nestedType, $nested);
         $this->assertEquals('nested one', $nested->nestedName);
@@ -57,46 +62,6 @@ class EmbedNested extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 
     }
 
-}
-
-/**
- * @Document
- */
-class Embedder {
-    /**
-     * @Id(strategy="ASSIGNED")
-     */
-    public $id;
-
-    /**
-     * @EmbedOne(targetDocument="Doctrine\Tests\ODM\CouchDB\Functional\Embedded")
-     */
-    public $embedded;
-}
-
-/**
- * @EmbeddedDocument
- */
-class Embedded {
-    /**
-     * @Field
-     */
-    public $name;
-
-    /**
-     * @EmbedMany(targetDocument="Doctrine\Tests\ODM\CouchDB\Functional\Nested")
-     */
-    public $embeds = array();    
-}
-
-/**
- * @EmbeddedDocument
- */
-class Nested {
-    /**
-     * @Field
-     */
-    public $nestedName;
 }
 
 

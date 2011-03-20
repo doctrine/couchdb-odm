@@ -1,14 +1,18 @@
 <?php
 namespace Doctrine\Tests\ODM\CouchDB\Functional;
 
+use Doctrine\Tests\Models\Embedded\Embedded;
+use Doctrine\Tests\Models\Embedded\Embedder;
+use Doctrine\Tests\Models\Embedded\Nested;
+
 class EmbedManyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 {
     private $dm;
 
     public function setUp() 
     {
-        $this->type = 'Doctrine\Tests\ODM\CouchDB\Functional\Embedder';
-        $this->embeddedType = 'Doctrine\Tests\ODM\CouchDB\Functional\Embedded';
+        $this->type = 'Doctrine\Tests\Models\Embedded\Embedder';
+        $this->embeddedType = 'Doctrine\Tests\Models\Embedded\Embedded';
         $this->dm = $this->createDocumentManager();
 
         $httpClient = $this->dm->getConfiguration()->getHttpClient();
@@ -147,45 +151,6 @@ class EmbedManyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
     // TODO testEmbeddedWithNonMappedData
 }
 
-/**
- * @Document
- */
-class Embedder {
-    /**
-     * @Id(strategy="ASSIGNED")
-     */
-    public $id;
-
-    /**
-     * @Field
-     */
-    public $name;
-
-    /**
-     * @EmbedMany(targetDocument="Doctrine\Tests\ODM\CouchDB\Functional\Embedded")
-     */
-    public $embeds = array();
-    
-    /**
-     * @EmbedOne(targetDocument="Doctrine\Tests\ODM\CouchDB\Functional\Embedded")
-     */
-    public $embedded;
-}
-
-/**
- * @EmbeddedDocument
- */
-class Embedded {
-    /**
-     * @Field
-     */
-    public $name;
-    
-    /**
-     * @Field
-     */
-    public $arrayField = array();
-}
 
 
 class PreUpdateSubscriber implements \Doctrine\Common\EventSubscriber
