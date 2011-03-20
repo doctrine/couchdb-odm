@@ -106,6 +106,7 @@ class EmbeddedDocumentSerializer
             foreach ($data as $jsonName => $jsonValue) {
                 $result[$jsonName] = $this->doCreateEmbeddedDocument($jsonValue, $embeddedFieldMapping);
             }
+            ksort($result);
             return $result;
         } else {
             return $this->doCreateEmbeddedDocument($data, $embeddedFieldMapping);
