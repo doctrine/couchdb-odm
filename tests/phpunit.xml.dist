@@ -1,6 +1,23 @@
-<phpunit bootstrap="./TestInit.php">
+<?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit backupGlobals="false"
+         backupStaticAttributes="false"
+         colors="false"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         stopOnFailure="false"
+         syntaxCheck="false"
+         bootstrap="./TestInit.php"
+>
     <php>
         <var name="DOCTRINE_COUCHDB_DATABASE" value="doctrine_test_database" />
         <var name="DOCTRINE_COUCHDB_CLIENT" value="Doctrine\ODM\CouchDB\HTTP\SocketClient" />
     </php>
+
+    <testsuites>
+        <testsuite name="Doctrine ODM CouchDB Test Suite">
+            <directory>./Doctrine/</directory>
+        </testsuite>
+    </testsuites>
 </phpunit>

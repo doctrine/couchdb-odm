@@ -22,8 +22,9 @@ namespace Doctrine\ODM\CouchDB;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\CouchDB\HTTP\Client;
 use Doctrine\Common\EventManager;
+use Doctrine\Common\Persistence\ObjectManager;
 
-class DocumentManager
+class DocumentManager implements ObjectManager
 {
     /**
      * @var Configuration
