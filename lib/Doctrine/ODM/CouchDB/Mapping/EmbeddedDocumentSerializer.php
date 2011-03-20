@@ -50,7 +50,6 @@ class EmbeddedDocumentSerializer
      * @param array $embeddedFieldMapping
      * @return array
      *
-     * TODO nonMappedData handling
      */
     public function serializeEmbeddedDocument($embeddedValue, $embeddedFieldMapping)
     {
@@ -104,17 +103,10 @@ class EmbeddedDocumentSerializer
     {
         if ('many' == $embeddedFieldMapping['embedded']) {
             $result = array();
-            $nonMapped = array();
             foreach ($data as $jsonName => $jsonValue) {
-
-                list($instance, $nonMappedData) = $this->doCreateEmbeddedDocument($jsonValue, $embeddedFieldMapping);
-
-                $result[$jsonName] = $instance;
-                if (!empty($nonMappedData)) {
-                    $nonMapped[$jsonName] = $nonMappedData;
-                }
+                $result[$jsonName] = $this->doCreateEmbeddedDocument($jsonValue, $embeddedFieldMapping);
             }
-            return array($result, $nonMapped);
+            return $result;
         } else {
             return $this->doCreateEmbeddedDocument($data, $embeddedFieldMapping);
         }
@@ -135,7 +127,6 @@ class EmbeddedDocumentSerializer
         $instance = $class->newInstance();
 
         $documentState = array();
-        $nonMappedData = array();
         foreach ($data as $jsonName => $jsonValue) {
             if ($this->metadataResolver->canResolveJsonField($jsonName)) {
                 continue;
@@ -146,13 +137,7 @@ class EmbeddedDocumentSerializer
                     if ($jsonValue == null) {
                         $fieldValue = null;
                     } else if (isset($class->fieldMappings[$fieldName]['embedded'])) {
-
-                        list($fieldValue, $embeddedNonMapped) = 
-                            $this->createEmbeddedDocument($jsonValue, $class->fieldMappings[$fieldName]);
-                        
-                        if (!empty($embeddedNonMapped)) {
-                            $nonMappedData[$jsonName] = $embeddedNonMapped;
-                        }
+                        $fieldValue = $this->createEmbeddedDocument($jsonValue, $class->fieldMappings[$fieldName]);
                     } else {
                         $fieldValue =
                             Type::getType($class->fieldMappings[$fieldName]['type'])
@@ -166,10 +151,10 @@ class EmbeddedDocumentSerializer
                     
                 }
             } else {
-                $nonMappedData[$jsonName] = $jsonValue;
+                //$nonMappedData[$jsonName] = $jsonValue;
             }
         }
-        return array($instance, $nonMappedData);
+        return $instance;
     }
 
 
