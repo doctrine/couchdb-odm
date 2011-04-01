@@ -66,10 +66,16 @@ class EmbeddedDocumentSerializer
             $embeddedClass = null;
             if (isset($embeddedFieldMapping['targetDocument'])) {
                 // TODO proper exception type and message here?
+                if ($this->metadataFactory->hasMetadataFor(\get_class($embeddedValue))) {
+                    $embeddedClass = $this->metadataFactory->getMetadataFor(\get_class($embeddedValue));
+                } else {
+                    $embeddedClass = $this->metadataFactory->getMetadataFor($embeddedFieldMapping['targetDocument']);
+                }
+                
+                
                 if (!is_a($embeddedValue, $embeddedFieldMapping['targetDocument'])) {
                     throw new \InvalidArgumentException('Mismatching metadata description in the EmbeddedDocument');
                 }
-                $embeddedClass = $this->metadataFactory->getMetadataFor($embeddedFieldMapping['targetDocument']);
             } else {
                 $embeddedClass = $this->metadataFactory->getMetadataFor(get_class($embeddedValue));
             }
