@@ -6,7 +6,7 @@ use Doctrine\ODM\CouchDB\Mapping\ClassMetadata,
     Doctrine\ODM\CouchDB\Mapping\Driver\XmlDriver,
     Doctrine\ODM\CouchDB\Mapping\Driver\YamlDriver;
 
-abstract class AbstractMappingDriverTest extends \PHPUnit_Framework_Testcase
+abstract class AbstractMappingDriverTest extends \PHPUnit_Framework_TestCase
 {
     abstract protected function loadDriver();
 
