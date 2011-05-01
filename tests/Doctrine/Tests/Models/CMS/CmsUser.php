@@ -15,7 +15,7 @@ class CmsUser
     public $status;
     /** @String(indexed=true) */
     public $username;
-    /** @String */
+    /** @String(indexed=true) */
     public $name;
 
     /** @EmbedOne */

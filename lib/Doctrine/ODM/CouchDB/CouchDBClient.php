@@ -102,9 +102,16 @@ class CouchDBClient
      * @param array $ids
      * @return array
      */
-    public function findDocuments(array $ids)
+    public function findDocuments(array $ids, $limit = null, $offset = null)
     {
         $allDocsPath = '/' . $this->databaseName . '/_all_docs?include_docs=true';
+        if ($limit) {
+            $allDocsPath .= '&limit=' . (int)$limit;
+        }
+        if ($offset) {
+            $allDocsPath .= '&skip=' . (int)$offset;
+        }
+
         return $this->httpClient->request('POST', $allDocsPath, json_encode(array('keys' => $ids)));
     }
 

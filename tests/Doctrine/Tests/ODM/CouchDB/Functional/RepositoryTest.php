@@ -17,7 +17,7 @@ class RepositoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
         $this->dm = $this->createDocumentManager();
     }
 
-    public function testLoadMany()
+    public function testFindMany()
     {
         $this->dm = $this->createDocumentManager();
 
@@ -37,8 +37,17 @@ class RepositoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
         $this->dm->flush();
 
         $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findMany(array($user1->id, $user2->id));
+        $this->assertEquals(2, count($users));
         $this->assertSame($user1, $users[0]);
         $this->assertSame($user2, $users[1]);
+
+        $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findMany(array($user1->id, $user2->id), 1, 0);
+        $this->assertEquals(1, count($users));
+        $this->assertSame($user1, $users[0]);
+
+        $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findMany(array($user1->id, $user2->id), 1, 1);
+        $this->assertEquals(1, count($users));
+        $this->assertSame($user2, $users[0]);
 
         $this->dm->clear();
 
@@ -78,7 +87,7 @@ class RepositoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
             $user = new \Doctrine\Tests\Models\CMS\CmsUser();
             $user->username = "beberlei" . $i;
             $user->status = ($i % 2 == 0) ? "active" : "inactive";
-            $user->name = "Benjamin" . $i;
+            $user->name = "Benjamin";
 
             $this->dm->persist($user);
         }
@@ -89,6 +98,9 @@ class RepositoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
         $this->assertEquals(5, count($users));
         $this->assertContainsOnly('Doctrine\Tests\Models\CMS\CmsUser', $users);
 
+        $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findBy(array('status' => 'active'), null, 2);
+        $this->assertEquals(2, count($users));
+
         $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findBy(array('status' => 'inactive'));
 
         $this->assertEquals(5, count($users));
@@ -96,6 +108,9 @@ class RepositoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
 
         $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findBy(array('status' => 'active', 'username' => 'beberlei0'));
         $this->assertEquals(1, count($users));
+
+        $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findBy(array('status' => 'active', 'name' => 'Benjamin'), null, 2);
+        $this->assertEquals(2, count($users));
     }
 
     public function testFindByManyConstraints()

@@ -19,6 +19,8 @@
 
 namespace Doctrine\ODM\CouchDB;
 
+use Doctrine\Common\Persistence\ObjectRepository;
+
 /**
  * An DocumentRepository serves as a repository for documents with generic as well as
  * business specific methods for retrieving documents.
@@ -32,7 +34,7 @@ namespace Doctrine\ODM\CouchDB;
  * @author      Jonathan H. Wage <jonwage@gmail.com>
  * @author      Roman Borschel <roman@code-factory.org>
  */
-class DocumentRepository
+class DocumentRepository implements ObjectRepository
 {
     /**
      * @var string
@@ -93,7 +95,7 @@ class DocumentRepository
      * @param  object $document
      * @return void
      */
-    public function refresh($document)
+    final public function refresh($document)
     {
         $uow = $this->dm->getUnitOfWork();
         $uow->refresh($document);
@@ -102,13 +104,15 @@ class DocumentRepository
     /**
      * Find Many documents of the given repositories type by id.
      *
+     * Used for grabbing collections aswell, marked as final because of this.
+     *
      * @param array $ids
      * @return array
      */
-    public function findMany(array $ids)
+    final public function findMany(array $ids, $limit = null, $offset = null)
     {
         $uow = $this->dm->getUnitOfWork();
-        $response = $this->dm->getCouchDBClient()->findDocuments($ids);
+        $response = $this->dm->getCouchDBClient()->findDocuments($ids, $limit, $offset);
 
         if ($response->status != 200) {
             throw new \Exception("loadMany error code " . $response->status);
@@ -136,14 +140,21 @@ class DocumentRepository
         return $docs;
     }
 
-    public function findBy(array $criteria)
+    public function findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
     {
         if (count($criteria) == 1) {
             foreach ($criteria AS $field => $value) {
-                $result = $this->dm->createQuery('doctrine_repositories', 'equal_constraint')
-                                   ->setKey(array($this->documentType, $field, $value))
-                                   ->setIncludeDocs(true)
-                                   ->execute();
+                $query = $this->dm->createQuery('doctrine_repositories', 'equal_constraint')
+                                  ->setKey(array($this->documentType, $field, $value))
+                                  ->setIncludeDocs(true);
+                if ($limit) {
+                   $query->setLimit($limit);
+                }
+                if ($offset) {
+                   $query->setSkip($offset);
+                }
+                $result = $query->execute();
+                
                 $docs = array();
                 foreach ($result AS $doc) {
                     $docs[] = $doc['doc'];
@@ -154,6 +165,7 @@ class DocumentRepository
             $ids = array();
             $num = 0;
             foreach ($criteria AS $field => $value) {
+                $ids[$num] = array();
                 $result = $this->dm->createNativeQuery('doctrine_repositories', 'equal_constraint')
                                    ->setKey(array($this->documentType, $field, $value))
                                    ->execute();
@@ -167,7 +179,7 @@ class DocumentRepository
                 $mergeIds = array_intersect($mergeIds, $ids[$i]);
             }
 
-            return $this->findMany(array_values($mergeIds));
+            return $this->findMany(array_values($mergeIds), $limit, $offset);
         }
     }
 
