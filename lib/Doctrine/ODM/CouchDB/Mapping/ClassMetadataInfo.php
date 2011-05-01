@@ -69,13 +69,6 @@ class ClassMetadataInfo
     public $reflFields = array();
 
     /**
-     * The prototype from which new instances of the mapped class are created.
-     *
-     * @var object
-     */
-    private $prototype;
-
-    /**
      * READ-ONLY: The field mappings of the class.
      * Keys are field names and values are mapping definitions.
      *
