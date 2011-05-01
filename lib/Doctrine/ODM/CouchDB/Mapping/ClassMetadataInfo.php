@@ -314,9 +314,6 @@ class ClassMetadataInfo
         if (isset($this->fieldMappings[$mapping['fieldName']]) || isset($this->associationsMappings[$mapping['fieldName']])) {
             throw MappingException::duplicateFieldMapping($this->name, $mapping['fieldName']);
         }
-        $reflProp = $this->reflClass->getProperty($mapping['fieldName']);
-        $reflProp->setAccessible(true);
-        $this->reflFields[$mapping['fieldName']] = $reflProp;
 
         return $mapping;
     }
