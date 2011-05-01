@@ -3,7 +3,6 @@
 namespace Doctrine\ODM\CouchDB\Mapping;
 
 use Doctrine\Common\Persistence\Mapping\ClassMetadata;
-use ReflectionClass;
 
 /**
  * Metadata class
@@ -105,13 +104,6 @@ class ClassMetadataInfo
      * @var array
      */
     public $alsoLoadMethods = array();
-
-    /**
-     * The ReflectionClass instance of the mapped class.
-     *
-     * @var ReflectionClass
-     */
-    public $reflClass;
 
     /**
      * READ-ONLY: Whether this class describes the mapping of a mapped superclass.
@@ -239,40 +231,6 @@ class ClassMetadataInfo
     }
 
     /**
-     * Gets the ReflectionClass instance of the mapped class.
-     *
-     * @return ReflectionClass
-     */
-    public function getReflectionClass()
-    {
-        if ( ! $this->reflClass) {
-            $this->reflClass = new ReflectionClass($this->name);
-        }
-        return $this->reflClass;
-    }
-
-    /**
-     * Gets the ReflectionPropertys of the mapped class.
-     *
-     * @return array An array of ReflectionProperty instances.
-     */
-    public function getReflectionProperties()
-    {
-        return $this->reflFields;
-    }
-
-    /**
-     * Gets a ReflectionProperty for a specific field of the mapped class.
-     *
-     * @param string $name
-     * @return ReflectionProperty
-     */
-    public function getReflectionProperty($name)
-    {
-        return $this->reflFields[$name];
-    }
-
-    /**
      * The name of this Document class.
      *
      * @return string $name The Document class name.
@@ -305,7 +263,6 @@ class ClassMetadataInfo
 
         $this->hasAttachments = true;
         $this->attachmentField = $fieldName;
-        $this->reflFields[$fieldName] = $this->reflClass->getProperty($fieldName);
     }
 
     /**
@@ -406,51 +363,6 @@ class ClassMetadataInfo
     {
         $this->associationsMappings[$mapping['fieldName']] = $mapping;
         $this->jsonNames[$mapping['jsonName']] = $mapping['fieldName'];
-    }
-
-    /**
-     * Sets the document identifier of a document.
-     *
-     * @param object $document
-     * @param mixed $id
-     */
-    public function setIdentifierValue($document, $id)
-    {
-        $this->reflFields[$this->identifier]->setValue($document, $id);
-    }
-
-    /**
-     * Gets the document identifier.
-     *
-     * @param object $document
-     * @return string $id
-     */
-    public function getIdentifierValue($document)
-    {
-        return (string) $this->reflFields[$this->identifier]->getValue($document);
-    }
-
-    /**
-     * Sets the specified field to the specified value on the given document.
-     *
-     * @param object $document
-     * @param string $field
-     * @param mixed $value
-     */
-    public function setFieldValue($document, $field, $value)
-    {
-        $this->reflFields[$field]->setValue($document, $value);
-    }
-
-    /**
-     * Gets the specified field's value off the given document.
-     *
-     * @param object $document
-     * @param string $field
-     */
-    public function getFieldValue($document, $field)
-    {
-        return $this->reflFields[$field]->getValue($document);
     }
 
     /**

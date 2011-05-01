@@ -14,6 +14,13 @@ namespace Doctrine\ODM\CouchDB\Mapping;
 class ClassMetadata extends ClassMetadataInfo
 {
     /**
+     * The ReflectionClass instance of the mapped class.
+     *
+     * @var ReflectionClass
+     */
+    public $reflClass;
+
+    /**
      * The ReflectionProperty instances of the mapped class.
      *
      * @var array
@@ -40,20 +47,22 @@ class ClassMetadata extends ClassMetadataInfo
         $this->namespace = $this->reflClass->getNamespaceName();
     }
 
-    /**
-     * Map a field.
-     *
-     * @param array $mapping The mapping information.
-     */
-    public function mapField(array $mapping)
+    protected function validateAndCompleteFieldMapping($mapping)
     {
-        $mapping = parent::mapField($mapping);
+        $mapping = parent::validateAndCompleteFieldMapping($mapping);
 
-        if ($this->reflClass->hasProperty($mapping['fieldName'])) {
-            $reflProp = $this->reflClass->getProperty($mapping['fieldName']);
-            $reflProp->setAccessible(true);
-            $this->reflFields[$mapping['fieldName']] = $reflProp;
-        }
+        $reflProp = $this->reflClass->getProperty($mapping['fieldName']);
+        $reflProp->setAccessible(true);
+        $this->reflFields[$mapping['fieldName']] = $reflProp;
+
+        return $mapping;
+    }
+
+    public function mapAttachments($fieldName)
+    {
+        parent::mapAttachments($fieldName);
+
+        $this->reflFields[$fieldName] = $this->reflClass->getProperty($fieldName);
     }
 
     /**
@@ -172,5 +181,85 @@ class ClassMetadata extends ClassMetadataInfo
             );
         }
         return clone $this->prototype;
+    }
+
+    /**
+     * Gets the ReflectionClass instance of the mapped class.
+     *
+     * @return ReflectionClass
+     */
+    public function getReflectionClass()
+    {
+        if ( ! $this->reflClass) {
+            $this->reflClass = new ReflectionClass($this->name);
+        }
+        return $this->reflClass;
+    }
+
+    /**
+     * Gets the ReflectionPropertys of the mapped class.
+     *
+     * @return array An array of ReflectionProperty instances.
+     */
+    public function getReflectionProperties()
+    {
+        return $this->reflFields;
+    }
+
+    /**
+     * Gets a ReflectionProperty for a specific field of the mapped class.
+     *
+     * @param string $name
+     * @return ReflectionProperty
+     */
+    public function getReflectionProperty($name)
+    {
+        return $this->reflFields[$name];
+    }
+
+
+    /**
+     * Sets the document identifier of a document.
+     *
+     * @param object $document
+     * @param mixed $id
+     */
+    public function setIdentifierValue($document, $id)
+    {
+        $this->reflFields[$this->identifier]->setValue($document, $id);
+    }
+
+    /**
+     * Gets the document identifier.
+     *
+     * @param object $document
+     * @return string $id
+     */
+    public function getIdentifierValue($document)
+    {
+        return (string) $this->reflFields[$this->identifier]->getValue($document);
+    }
+
+    /**
+     * Sets the specified field to the specified value on the given document.
+     *
+     * @param object $document
+     * @param string $field
+     * @param mixed $value
+     */
+    public function setFieldValue($document, $field, $value)
+    {
+        $this->reflFields[$field]->setValue($document, $value);
+    }
+
+    /**
+     * Gets the specified field's value off the given document.
+     *
+     * @param object $document
+     * @param string $field
+     */
+    public function getFieldValue($document, $field)
+    {
+        return $this->reflFields[$field]->getValue($document);
     }
 }
