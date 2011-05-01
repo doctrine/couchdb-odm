@@ -50,7 +50,6 @@ class EmbeddedDocumentSerializer
      * @param array $embeddedFieldMapping
      * @return array
      *
-     * TODO nonMappedData handling
      */
     public function serializeEmbeddedDocument($embeddedValue, $embeddedFieldMapping)
     {
@@ -67,10 +66,16 @@ class EmbeddedDocumentSerializer
             $embeddedClass = null;
             if (isset($embeddedFieldMapping['targetDocument'])) {
                 // TODO proper exception type and message here?
+                if ($this->metadataFactory->hasMetadataFor(\get_class($embeddedValue))) {
+                    $embeddedClass = $this->metadataFactory->getMetadataFor(\get_class($embeddedValue));
+                } else {
+                    $embeddedClass = $this->metadataFactory->getMetadataFor($embeddedFieldMapping['targetDocument']);
+                }
+                
+                
                 if (!is_a($embeddedValue, $embeddedFieldMapping['targetDocument'])) {
                     throw new \InvalidArgumentException('Mismatching metadata description in the EmbeddedDocument');
                 }
-                $embeddedClass = $this->metadataFactory->getMetadataFor($embeddedFieldMapping['targetDocument']);
             } else {
                 $embeddedClass = $this->metadataFactory->getMetadataFor(get_class($embeddedValue));
             }
@@ -104,17 +109,11 @@ class EmbeddedDocumentSerializer
     {
         if ('many' == $embeddedFieldMapping['embedded']) {
             $result = array();
-            $nonMapped = array();
             foreach ($data as $jsonName => $jsonValue) {
-
-                list($instance, $nonMappedData) = $this->doCreateEmbeddedDocument($jsonValue, $embeddedFieldMapping);
-
-                $result[$jsonName] = $instance;
-                if (!empty($nonMappedData)) {
-                    $nonMapped[$jsonName] = $nonMappedData;
-                }
+                $result[$jsonName] = $this->doCreateEmbeddedDocument($jsonValue, $embeddedFieldMapping);
             }
-            return array($result, $nonMapped);
+            ksort($result);
+            return $result;
         } else {
             return $this->doCreateEmbeddedDocument($data, $embeddedFieldMapping);
         }
@@ -135,7 +134,6 @@ class EmbeddedDocumentSerializer
         $instance = $class->newInstance();
 
         $documentState = array();
-        $nonMappedData = array();
         foreach ($data as $jsonName => $jsonValue) {
             if ($this->metadataResolver->canResolveJsonField($jsonName)) {
                 continue;
@@ -146,13 +144,7 @@ class EmbeddedDocumentSerializer
                     if ($jsonValue == null) {
                         $fieldValue = null;
                     } else if (isset($class->fieldMappings[$fieldName]['embedded'])) {
-
-                        list($fieldValue, $embeddedNonMapped) = 
-                            $this->createEmbeddedDocument($jsonValue, $class->fieldMappings[$fieldName]);
-                        
-                        if (!empty($embeddedNonMapped)) {
-                            $nonMappedData[$jsonName] = $embeddedNonMapped;
-                        }
+                        $fieldValue = $this->createEmbeddedDocument($jsonValue, $class->fieldMappings[$fieldName]);
                     } else {
                         $fieldValue =
                             Type::getType($class->fieldMappings[$fieldName]['type'])
@@ -166,10 +158,10 @@ class EmbeddedDocumentSerializer
                     
                 }
             } else {
-                $nonMappedData[$jsonName] = $jsonValue;
+                //$nonMappedData[$jsonName] = $jsonValue;
             }
         }
-        return array($instance, $nonMappedData);
+        return $instance;
     }
 
 

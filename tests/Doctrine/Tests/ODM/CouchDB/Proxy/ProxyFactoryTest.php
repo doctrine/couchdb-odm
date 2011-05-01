@@ -49,13 +49,13 @@ class ProxyFactoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCase
 
         $query = array('documentName' => '\\'.$modelClass, 'id' => 'SomeUUID');
 
-        $repositoryMock = $this->getMock('Doctrine\ODM\CouchDB\DocumentRepository', array('refresh'), array(), '', false);
-        $repositoryMock->expects($this->atLeastOnce())
+        $uowMock = $this->getMock('Doctrine\ODM\CouchDB\UnitOfWork', array('refresh'), array(), '', false);
+        $uowMock->expects($this->atLeastOnce())
                       ->method('refresh')
                       ->with($this->isInstanceOf($proxyClass));
 
         $dmMock = new DocumentManagerMock();
-        $dmMock->setRepositoryMock($repositoryMock);
+        $dmMock->setUnitOfWorkMock($uowMock);
 
         $this->proxyFactory = new ProxyFactory($dmMock, __DIR__ . '/generated', 'Proxies', true);
 
@@ -69,17 +69,7 @@ class ProxyFactoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCase
 
 class DocumentManagerMock extends \Doctrine\ODM\CouchDB\DocumentManager
 {
-    private $repository;
-
-    public function setRepositoryMock($mock)
-    {
-        $this->repository = $mock;
-    }
-
-    public function getRepository($documentName)
-    {
-        return $this->repository;
-    }
+    private $uowMock;
 
     public function getClassMetadata($class)
     {
@@ -92,8 +82,14 @@ class DocumentManagerMock extends \Doctrine\ODM\CouchDB\DocumentManager
         return new \Doctrine\ODM\CouchDB\Mapping\ClassMetadataFactory($dm);
     }
 
+    public function setUnitOfWorkMock($mock)
+    {
+        $this->uowMock = $mock;
+    }
+
     public function getUnitOfWork()
     {
         return $this->uowMock;
     }
+
 }

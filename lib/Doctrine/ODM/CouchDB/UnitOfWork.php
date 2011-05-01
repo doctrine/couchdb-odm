@@ -156,7 +156,6 @@ class UnitOfWork
         $documentState = array();
         $nonMappedData = array();
         $embeddedDocumentState = array();
-        $embeddedNonMappedData = array();
 
         $id = $data['_id'];
         $rev = $data['_rev'];
@@ -169,14 +168,10 @@ class UnitOfWork
                         $documentState[$class->fieldMappings[$fieldName]['fieldName']] = null;
                     } else if (isset($class->fieldMappings[$fieldName]['embedded'])) {
 
-                        list($embeddedInstance, $nonMapped) = 
+                        $embeddedInstance = 
                             $this->embeddedSerializer->createEmbeddedDocument($jsonValue, $class->fieldMappings[$fieldName]);
 
                         $documentState[$jsonName] = $embeddedInstance;
-                        if (!empty($nonMapped)) {
-                            $embeddedNonMappedData[$jsonName] = $nonMapped;
-                        }
-                        
                         // storing the jsonValue for embedded docs for now
                         $embeddedDocumentState[$jsonName] = $jsonValue;
                     } else {
