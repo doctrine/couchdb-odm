@@ -57,7 +57,7 @@ class EmbeddedDocumentSerializer
             return null;
         }
 
-        if ('many' == $embeddedFieldMapping['embedded'] && is_array($embeddedValue)) {
+        if ('many' == $embeddedFieldMapping['embedded'] && (is_array($embeddedValue) || $embeddedValue instanceof \Traversable)) {
             $data = array();
             foreach ($embeddedValue as $key => $val) {
                 $data[$key] = $this->serializeEmbeddedDocument($val, $embeddedFieldMapping);
@@ -71,7 +71,6 @@ class EmbeddedDocumentSerializer
                 } else {
                     $embeddedClass = $this->metadataFactory->getMetadataFor($embeddedFieldMapping['targetDocument']);
                 }
-                
                 
                 if (!is_a($embeddedValue, $embeddedFieldMapping['targetDocument'])) {
                     throw new \InvalidArgumentException('Mismatching metadata description in the EmbeddedDocument');
