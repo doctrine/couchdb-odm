@@ -85,6 +85,11 @@ class ClassMetadataInfo
      */
     public $indexes = array();
 
+    /**
+     * Is this class indexed? If yes, then a findAll() query can be executed for this type.
+     * 
+     * @var bool
+     */
     public $indexed = false;
 
     /**

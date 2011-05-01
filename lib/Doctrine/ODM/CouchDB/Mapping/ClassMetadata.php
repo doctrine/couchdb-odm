@@ -105,6 +105,13 @@ class ClassMetadata extends ClassMetadataInfo
             $serialized[] = 'isMappedSuperclass';
         }
 
+        if ($this->indexed) {
+            $serialized[] = 'indexed';
+        }
+        if ($this->indexes) {
+            $serialized[] = 'indexes';
+        }
+
         return $serialized;
     }
 

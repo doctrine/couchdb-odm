@@ -146,6 +146,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
     public function testSerializeUnserialize()
     {
         $cm = new ClassMetadata("Doctrine\Tests\ODM\CouchDB\Mapping\Person");
+        $cm->indexed = true;
 
         $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $cm->name);
         $this->assertInstanceOf('ReflectionClass', $cm->reflClass);
@@ -154,7 +155,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($cm, unserialize(serialize($cm)));
 
         $cm->mapField(array('fieldName' => 'id', 'id' => true));
-        $cm->mapField(array('fieldName' => 'username', 'type' => 'string'));
+        $cm->mapField(array('fieldName' => 'username', 'type' => 'string', 'indexed' => true));
         $cm->mapField(array('fieldName' => 'created', 'type' => 'datetime'));
         $cm->mapField(array('fieldName' => 'version', 'jsonName' => '_rev', 'isVersionField' => true));
         $cm->mapManyToOne(array('fieldName' => 'address', 'targetDocument' => 'Doctrine\Tests\ODM\CouchDB\Mapping\Address'));
