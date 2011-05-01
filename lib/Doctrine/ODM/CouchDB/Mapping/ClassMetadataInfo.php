@@ -62,13 +62,6 @@ class ClassMetadataInfo
     public $customRepositoryClassName;
 
     /**
-     * The ReflectionProperty instances of the mapped class.
-     *
-     * @var array
-     */
-    public $reflFields = array();
-
-    /**
      * READ-ONLY: The field mappings of the class.
      * Keys are field names and values are mapping definitions.
      *
