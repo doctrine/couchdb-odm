@@ -36,7 +36,7 @@ JSO;
 
         $client->expects($this->at(0))
                ->method('request')
-               ->with($this->equalTo('GET'), $this->equalTo('/test/_fti/_design/test/_view/test?'))
+               ->with($this->equalTo('GET'), $this->equalTo('/test/_fti/_design/test/test?'))
                ->will($this->returnValue(new \Doctrine\ODM\CouchDB\HTTP\ErrorResponse(404, array(), "", false)));
 
         $client->expects($this->at(1))
@@ -46,7 +46,7 @@ JSO;
 
         $client->expects($this->at(2))
                ->method('request')
-               ->with($this->equalTo('GET'), $this->equalTo('/test/_fti/_design/test/_view/test?'))
+               ->with($this->equalTo('GET'), $this->equalTo('/test/_fti/_design/test/test?'))
                ->will($this->returnValue(new \Doctrine\ODM\CouchDB\HTTP\Response(200, array(), $jsonResult, false)));
 
         $query = new \Doctrine\ODM\CouchDB\View\LuceneQuery($client, 'test', '_fti', 'test', 'test', $doc);

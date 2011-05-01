@@ -39,6 +39,10 @@ class HTTPException extends \Doctrine\ODM\CouchDB\CouchDBException
      */
     public static function fromResponse($path, Response $response)
     {
+        if (!isset($response->body['error'])) {
+            $response->body['error'] = '';
+        }
+
         return new self("HTTP Error with status " . $response->status . " occoured while ".
             "requesting " . $path . ". Error: " . $response->body['error'] . " " . $response->body['reason']);
     }

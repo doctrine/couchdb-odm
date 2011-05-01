@@ -4,6 +4,7 @@ namespace Doctrine\ODM\CouchDB\View;
 
 use Doctrine\ODM\CouchDB\HTTP\Client;
 use Doctrine\ODM\CouchDB\HTTP\ErrorResponse;
+use Doctrine\ODM\CouchDB\HTTP\HTTPException;
 use Doctrine\ODM\CouchDB\DocumentManager;
 
 abstract class AbstractQuery
@@ -89,7 +90,7 @@ abstract class AbstractQuery
         }
 
         if ($response->status >= 400) {
-            throw new \Exception("Error [" . $response->status . "]: " . $response->body['error'] . " " . $response->body['reason']);
+            throw HTTPException::fromResponse($path, $response);
         }
         return $response;
     }
@@ -104,7 +105,7 @@ abstract class AbstractQuery
      *
      * @return void
      */
-    private function createDesignDocument()
+    public function createDesignDocument()
     {
         if (!$this->doc) {
             throw new \Exception("No DesignDocument Class is connected to this view query, cannot create the design document with its corresponding view automatically!");

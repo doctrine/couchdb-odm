@@ -27,15 +27,15 @@ class LuceneQuery extends AbstractQuery
         $this->handlerName = $handlerName;
     }
 
-    protected function  getHttpQuery()
+    protected function getHttpQuery()
     {
         return sprintf(
-            "/%s/%s/_design/%s/_view/%s?%s",
+            "/%s/%s/_design/%s/%s?%s",
             $this->databaseName,
             $this->handlerName,
             $this->designDocumentName,
             $this->viewName,
-            http_build_query( array_map( "json_encode", $this->params ) )
+            http_build_query( $this->params )
         );
     }
 

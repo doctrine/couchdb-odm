@@ -214,7 +214,7 @@ class DocumentManager implements ObjectManager
     public function createLuceneQuery($designDocName, $viewName)
     {
         $luceneHandlerName = $this->config->getLuceneHandlerName();
-        $$designDoc = $this->config->getDesignDocument($designDocName);
+        $designDoc = $this->config->getDesignDocument($designDocName);
         if ($designDoc) {
             $designDoc = new $designDoc['className']($designDoc['options']);
         }
