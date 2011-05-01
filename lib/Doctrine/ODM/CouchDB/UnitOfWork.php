@@ -809,6 +809,8 @@ class UnitOfWork
                     $this->evm->dispatchEvent(Event::postUpdate, new Events\LifecycleEventArgs($document, $this->dm));
                 }
             }
+        } else if ($response->status >= 400) {
+            throw HTTP\HTTPException::fromResponse($bulkUpdater->getPath(), $response);
         }
 
         foreach ($this->visitedCollections AS $col) {

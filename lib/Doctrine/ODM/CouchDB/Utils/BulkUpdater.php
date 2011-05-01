@@ -61,6 +61,11 @@ class BulkUpdater
 
     public function execute()
     {
-        return $this->httpClient->request('POST', '/' . $this->databaseName . '/_bulk_docs', json_encode($this->data));
+        return $this->httpClient->request('POST', $this->getPath(), json_encode($this->data));
+    }
+
+    public function getPath()
+    {
+        return '/' . $this->databaseName . '/_bulk_docs';
     }
 }
