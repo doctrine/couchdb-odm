@@ -1239,8 +1239,8 @@ class UnitOfWork
         }
 
         $docs = array();
-        if ($response->body['total_rows'] > 0) {
-            foreach ($response->body['rows'] AS $responseData) {
+        foreach ($response->body['rows'] AS $responseData) {
+            if (isset($responseData['doc'])) {
                 $docs[$keys[$responseData['id']]] = $this->createDocument($documentName, $responseData['doc']);
             }
         }
