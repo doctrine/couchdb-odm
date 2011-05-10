@@ -33,4 +33,23 @@ class DocumentRepositoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunction
         $this->assertEquals($user1->id, $users[0]->id);
         $this->assertEquals($user2->id, $users[1]->id);
     }
+
+    public function testLoadManyWithMissingIds()
+    {
+        $this->dm = $this->createDocumentManager();
+        $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findMany(array('missing-id-1', 'missing-id-2'));
+        $this->assertEmpty($users);
+
+        $user1 = new \Doctrine\Tests\Models\CMS\CmsUser();
+        $user1->username = "beberlei";
+        $user1->status = "active";
+        $user1->name = "Benjamin";
+        $this->dm = $this->createDocumentManager();
+        $this->dm->persist($user1);
+        $this->dm->flush();
+        $this->dm->clear();
+
+        $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findMany(array($user1->id, 'missing-id-2'));
+        $this->assertEquals(1, count($users));
+    }
 }
