@@ -13,7 +13,7 @@ use Doctrine\Common\Persistence\Mapping\ClassMetadata;
  * @author      Benjamin Eberlei <kontakt@beberlei.de>
  * @author      Lukas Kahwe Smith <smith@pooteeweet.org>
  */
-class ClassMetadataInfo
+class ClassMetadataInfo implements ClassMetadata
 {
     const IDGENERATOR_UUID = 1;
     const IDGENERATOR_ASSIGNED = 2;
@@ -172,6 +172,19 @@ class ClassMetadataInfo
     {
         $this->name = $documentName;
         $this->rootDocumentName = $documentName;
+    }
+
+    /**
+     * Gets the ReflectionClass instance of the mapped class.
+     *
+     * @return ReflectionClass
+     */
+    public function getReflectionClass()
+    {
+        if ( ! $this->reflClass) {
+            $this->reflClass = new ReflectionClass($this->name);
+        }
+        return $this->reflClass;
     }
 
     /**
@@ -391,6 +404,18 @@ class ClassMetadataInfo
     }
 
     /**
+     * A numerically indexed list of field names of this persistent class.
+     *
+     * This array includes identifier fields if present on this class.
+     *
+     * @return array
+     */
+    public function getFieldNames()
+    {
+        return array_keys($this->fieldMappings);
+    }
+
+    /**
      * Gets the mapping of a field.
      *
      * @param string $fieldName  The field name.
@@ -402,6 +427,18 @@ class ClassMetadataInfo
             throw MappingException::mappingNotFound($this->name, $fieldName);
         }
         return $this->fieldMappings[$fieldName];
+    }
+
+    /**
+     * Gets the type of a field.
+     *
+     * @param string $fieldName
+     * @return Doctrine\DBAL\Types\Type
+     */
+    public function getTypeOfField($fieldName)
+    {
+        return isset($this->fieldMappings[$fieldName]) ?
+                $this->fieldMappings[$fieldName]['type'] : null;
     }
 
     public function isCollectionValuedAssociation($name)
