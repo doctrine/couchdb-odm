@@ -58,7 +58,6 @@ class CascadePersistTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTe
         $user->name = "Benjamin";
         $this->dm->persist($user);
         $this->dm->flush();
-        $this->dm->clear();
         
         $group1 = new \Doctrine\Tests\Models\CMS\CmsGroup();
         $group1->name = "Test!";

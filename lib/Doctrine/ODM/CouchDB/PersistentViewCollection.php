@@ -26,7 +26,6 @@ class PersistentViewCollection extends PersistentCollection
     private $dm;
     private $owningDocumentId;
     private $assocFieldName;
-    public $isInitialized = false;
 
     public function __construct(Collection $collection, DocumentManager $dm, $owningDocumentId, $assocFieldName)
     {
@@ -37,7 +36,7 @@ class PersistentViewCollection extends PersistentCollection
         $this->isInitialized = false;
     }
 
-    protected function load()
+    public function initialize()
     {
         if (!$this->isInitialized) {
             $this->isInitialized = true;

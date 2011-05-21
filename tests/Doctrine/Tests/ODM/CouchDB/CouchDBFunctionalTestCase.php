@@ -43,6 +43,7 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
         $config->setDatabase($database);
         $config->setProxyDir(\sys_get_temp_dir());
         $config->setMetadataDriverImpl($metaDriver);
+        $config->setMetadataCacheImpl(new \Doctrine\Common\Cache\ArrayCache);
         $config->setHttpClient($httpClient);
         $config->setLuceneHandlerName('_fti');
 
