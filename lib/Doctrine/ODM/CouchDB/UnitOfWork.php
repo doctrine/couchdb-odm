@@ -439,8 +439,188 @@ class UnitOfWork
 
     public function merge($document)
     {
-        throw new \BadMethodCallException("Not yet implemented.");
+        $visited = array();
+        return $this->doMerge($document, $visited);
     }
+    
+    private function doMerge($document, array &$visited, $prevManagedCopy = null, $assoc = null)
+    {
+        $oid = spl_object_hash($document);
+        if (isset($visited[$oid])) {
+            return; // Prevent infinite recursion
+        }
+
+        $visited[$oid] = $document; // mark visited
+        
+        $class = $this->dm->getClassMetadata(get_class($document));
+        
+        // First we assume DETACHED, although it can still be NEW but we can avoid
+        // an extra db-roundtrip this way. If it is not MANAGED but has an identity,
+        // we need to fetch it from the db anyway in order to merge.
+        // MANAGED entities are ignored by the merge operation.
+        if ($this->getDocumentState($document) == self::STATE_MANAGED) {
+            $managedCopy = $document;
+        } else {
+            $id = $class->getIdentifierValue($document);
+            
+            if (!$id) {
+                // document is new
+                // TODO: prePersist will be fired on the empty object?!
+                $managedCopy = $class->newInstance();
+                $this->persistNew($class, $managedCopy);
+            } else {
+                $managedCopy = $this->tryGetById($id);
+                if ($managedCopy) {
+                    // We have the entity in-memory already, just make sure its not removed.
+                    if ($this->getDocumentState($managedCopy) == self::STATE_REMOVED) {
+                        throw new InvalidArgumentException('Removed document detected during merge.'
+                                . ' Can not merge with a removed document.');
+                    }
+                } else {
+                    // We need to fetch the managed copy in order to merge.
+                    $managedCopy = $this->dm->find($class->name, $id);
+                }
+                
+                if ($managedCopy === null) {
+                    // If the identifier is ASSIGNED, it is NEW, otherwise an error
+                    // since the managed entity was not found.
+                    if ($class->idGenerator == ClassMetadata::IDGENERATOR_ASSIGNED) {
+                        $managedCopy = $class->newInstance();
+                        $class->setIdentifierValue($managedCopy, $id);
+                        $this->persistNew($class, $managedCopy);
+                    } else {
+                        throw new DocumentNotFoundException();
+                    }
+                }
+            }
+                
+            if ($class->isVersioned) {
+                $managedCopyVersion = $class->reflFields[$class->versionField]->getValue($managedCopy);
+                $documentVersion = $class->reflFields[$class->versionField]->getValue($document);
+                // Throw exception if versions dont match.
+                if ($managedCopyVersion != $documentVersion) {
+                    throw OptimisticLockException::lockFailedVersionMissmatch($document, $documentVersion, $managedCopyVersion);
+                }
+            }
+
+            // Merge state of $entity into existing (managed) entity
+            foreach ($class->reflFields as $name => $prop) {
+                if ( ! isset($class->associationMappings[$name])) {
+                    if ( ! $class->isIdentifier($name)) {
+                        $prop->setValue($managedCopy, $prop->getValue($document));
+                    }
+                } else {
+                    $assoc2 = $class->associationMappings[$name];
+                    if ($assoc2['type'] & ClassMetadata::TO_ONE) {
+                        $other = $prop->getValue($document);
+                        if ($other === null) {
+                            $prop->setValue($managedCopy, null);
+                        } else if ($other instanceof Proxy && !$other->__isInitialized__) {
+                            // do not merge fields marked lazy that have not been fetched.
+                            continue;
+                        } else if ( $assoc2['cascade'] & ClassMetadata::CASCADE_MERGE == 0) {
+                            if ($this->getDocumentState($other) == self::STATE_MANAGED) {
+                                $prop->setValue($managedCopy, $other);
+                            } else {
+                                $targetClass = $this->dm->getClassMetadata($assoc2['targetDocument']);
+                                $id = $targetClass->getIdentifierValues($other);
+                                $proxy = $this->dm->getProxyFactory()->getProxy($assoc2['targetDocument'], $id);
+                                $prop->setValue($managedCopy, $proxy);
+                                $this->registerManaged($proxy, $id, null);
+                            }
+                        }
+                    } else {
+                        $mergeCol = $prop->getValue($document);
+                        if ($mergeCol instanceof PersistentCollection && !$mergeCol->isInitialized) {
+                            // do not merge fields marked lazy that have not been fetched.
+                            // keep the lazy persistent collection of the managed copy.
+                            continue;
+                        }
+
+                        $managedCol = $prop->getValue($managedCopy);
+                        if (!$managedCol) {
+                            if ($assoc2['isOwning']) {
+                                $managedCol = new PersistentIdsCollection(
+                                    new ArrayCollection,
+                                    $assoc2['targetDocument'],
+                                    $this->dm,
+                                    array()
+                                );
+                            } else {
+                                $managedCol = new PersistentViewCollection(
+                                    new ArrayCollection,
+                                    $this->dm,
+                                    $this->documentIdentifiers[$oid],
+                                    $assoc2['mappedBy']
+                                );
+                            }
+                            $managedCol->setOwner($managedCopy, $assoc2);
+                            $prop->setValue($managedCopy, $managedCol);
+                            $this->originalData[$oid][$name] = $managedCol;
+                        }
+                        if ($assoc2['cascade'] & ClassMetadata::CASCADE_MERGE > 0) {
+                            $managedCol->initialize();
+                            if (!$managedCol->isEmpty()) {
+                                // clear managed collection, in casacadeMerge() the collection is filled again.
+                                $managedCol->unwrap()->clear();
+                                $managedCol->setDirty(true);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        if ($prevManagedCopy !== null) {
+            $assocField = $assoc['fieldName'];
+            $prevClass = $this->em->getClassMetadata(get_class($prevManagedCopy));
+            if ($assoc['type'] & ClassMetadata::TO_ONE) {
+                $prevClass->reflFields[$assocField]->setValue($prevManagedCopy, $managedCopy);
+            } else {
+                $prevClass->reflFields[$assocField]->getValue($prevManagedCopy)->add($managedCopy);
+                if ($assoc['type'] == ClassMetadata::ONE_TO_MANY) {
+                    $class->reflFields[$assoc['mappedBy']]->setValue($managedCopy, $prevManagedCopy);
+                }
+            }
+        }
+        
+        // Mark the managed copy visited as well
+        $visited[spl_object_hash($managedCopy)] = true;
+
+        $this->cascadeMerge($document, $managedCopy, $visited);
+
+        return $managedCopy;
+    }
+    
+    /**
+     * Cascades a merge operation to associated entities.
+     *
+     * @param object $document
+     * @param object $managedCopy
+     * @param array $visited
+     */
+    private function cascadeMerge($document, $managedCopy, array &$visited)
+    {
+        $class = $this->dm->getClassMetadata(get_class($document));
+        foreach ($class->associationMappings as $assoc) {
+            if ( ! $assoc['isCascadeMerge']) {
+                continue;
+            }
+            $relatedDocuments = $class->reflFields[$assoc['fieldName']]->getValue($document);
+            if ($relatedDocuments instanceof Collection) {
+                if ($relatedDocuments instanceof PersistentCollection) {
+                    // Unwrap so that foreach() does not initialize
+                    $relatedDocuments = $relatedDocuments->unwrap();
+                }
+                foreach ($relatedDocuments as $relatedDocument) {
+                    $this->doMerge($relatedDocument, $visited, $managedCopy, $assoc);
+                }
+            } else if ($relatedDocuments !== null) {
+                $this->doMerge($relatedDocuments, $visited, $managedCopy, $assoc);
+            }
+        }
+    }
+    
 
     public function detach($document)
     {

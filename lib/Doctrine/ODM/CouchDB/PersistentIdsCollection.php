@@ -26,7 +26,6 @@ class PersistentIdsCollection extends PersistentCollection
     private $documentName;
     private $dm;
     private $ids;
-    public $isInitialized = false;
 
     public function __construct(Collection $collection, $documentName, DocumentManager $dm, $ids)
     {
@@ -37,7 +36,7 @@ class PersistentIdsCollection extends PersistentCollection
         $this->isInitialized = (count($ids) == 0);
     }
 
-    protected function load()
+    public function initialize()
     {
         if (!$this->isInitialized) {
             $this->isInitialized = true;
