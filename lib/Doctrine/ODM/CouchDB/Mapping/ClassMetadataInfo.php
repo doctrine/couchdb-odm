@@ -441,9 +441,58 @@ class ClassMetadataInfo implements ClassMetadata
                 $this->fieldMappings[$fieldName]['type'] : null;
     }
 
+    /**
+     * Checks if the given field is a mapped association for this class.
+     *
+     * @param string $fieldName
+     * @return boolean
+     */
+    public function hasAssociation($fieldName)
+    {
+        return isset($this->associationMappings[$fieldName]);
+    }
+
     public function isCollectionValuedAssociation($name)
     {
         // TODO: included @EmbedMany here also?
         return isset($this->associationsMappings[$name]) && ($this->associationsMappings[$name]['type'] & self::TO_MANY);
+    }
+
+    /**
+     * Checks if the given field is a mapped single valued association for this class.
+     *
+     * @param string $fieldName
+     * @return boolean
+     */
+    public function isSingleValuedAssociation($fieldName)
+    {
+        return isset($this->associationMappings[$fieldName]) &&
+                ($this->associationMappings[$fieldName]['type'] & self::TO_ONE);
+    }
+
+    /**
+     * A numerically indexed list of association names of this persistent class.
+     *
+     * This array includes identifier associations if present on this class.
+     *
+     * @return array
+     */
+    public function getAssociationNames()
+    {
+        return array_keys($this->associationMappings);
+    }
+
+    /**
+     * Returns the target class name of the given association.
+     *
+     * @param string $assocName
+     * @return string
+     */
+    public function getAssociationTargetClass($assocName)
+    {
+        if (!isset($this->associationMappings[$assocName])) {
+            throw new \InvalidArgumentException("Association name expected, '" . $assocName ."' is not an association.");
+        }
+        return $this->associationMappings[$assocName]['targetDocument'];
     }
 }
