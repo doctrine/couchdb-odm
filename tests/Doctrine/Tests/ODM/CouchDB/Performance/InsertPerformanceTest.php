@@ -4,13 +4,20 @@ namespace Doctrine\Tests\ODM\CouchDB\Performance;
 
 class InsertPerformanceTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 {
+    protected $count = 3000;
+
+    public function setup()
+    {
+        $this->count = isset($GLOBALS['DOCTRINE_COUCHDB_PERFORMANCE_COUNT']) ? $GLOBALS['DOCTRINE_COUCHDB_PERFORMANCE_COUNT'] : $this->count;
+    }
+
     public function testInsert2000Documents()
     {
         if (\extension_loaded('xdebug')) {
             $this->markTestSkipped('Performance-Testing with xdebug enabled makes no sense.');
         }
 
-        $n = 3000;
+        $n = $this->count;
         $dm = $this->createDocumentManager();
         $dm->getConfiguration()->setUUIDGenerationBufferSize($n);
 

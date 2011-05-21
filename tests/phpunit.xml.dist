@@ -13,6 +13,7 @@
     <php>
         <var name="DOCTRINE_COUCHDB_DATABASE" value="doctrine_test_database" />
         <var name="DOCTRINE_COUCHDB_CLIENT" value="Doctrine\ODM\CouchDB\HTTP\SocketClient" />
+        <var name="DOCTRINE_COUCHDB_PERFORMANCE_COUNT" value="3000" />
     </php>
 
     <testsuites>
