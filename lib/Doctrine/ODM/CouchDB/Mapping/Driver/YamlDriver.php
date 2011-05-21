@@ -19,7 +19,8 @@
 
 namespace Doctrine\ODM\CouchDB\Mapping\Driver;
 
-use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
+use Doctrine\ODM\CouchDB\Mapping\ClassMetadata,
+    Doctrine\ODM\CouchDB\Mapping\MappingException;
 
 /**
  * The YamlDriver reads the mapping metadata from yaml schema files.
@@ -46,6 +47,92 @@ class YamlDriver extends AbstractFileDriver
     {
         $element = $this->getElement($className);
 
+        if ($element['type'] == 'document') {
+            $class->setCustomRepositoryClass(
+                (isset($element['repositoryClass'])) ? $element['repositoryClass'] : null
+            );
+            if (isset($element['indexed']) && $element['indexed'] == true) {
+                $class->indexed = true;
+            }
+        } else if ($element['type'] == 'embedded') {
+            $class->isEmbeddedDocument = true;
+        } else {
+            throw MappingException::classIsNotAValidDocument($className);
+        }
+        
+        if (isset($element['id'])) {
+            foreach ($element['id'] AS $fieldName => $idElement) {
+                $class->mapField(array(
+                    'fieldName' => $fieldName,
+                    'indexed'   => (isset($idElement['indexed'])) ? (bool)$idElement['indexed'] : false,
+                    'type'      => (isset($idElement['type'])) ? $idElement['type'] : null,
+                    'id'        => true,
+                    'strategy'  => (isset($idElement['strategy'])) ? $idElement['strategy'] :  null,
+                ));
+            }
+        }
+        
+        if (isset($element['fields'])) {
+            foreach ($element['fields'] AS $fieldName => $fieldElement) {
+                $class->mapField(array(
+                    'fieldName' => $fieldName,
+                    'jsonName'  => (isset($fieldElement['jsonName'])) ? $fieldElement['jsonName'] : null,
+                    'indexed'   => (isset($fieldElement['indexed'])) ? (bool)$fieldElement['indexed'] : false,
+                    'type'      => (isset($fieldElement['type'])) ? $fieldElement['type'] : null,
+                    'isVersionField' => (isset($fieldElement['version'])) ? true : null,
+                ));
+            }
+        }
+        
+        
+        if (isset($element['referenceOne'])) {
+            foreach ($element['referenceOne'] AS $field => $referenceOneElement) {
+                $class->mapManyToOne(array(
+                    'cascade'           => (isset($referenceManyElement->cascade)) ? $this->getCascadeMode($referenceManyElement->cascade) : 0,
+                    'targetDocument'    => (string)$referenceOneElement['targetDocument'],
+                    'fieldName'         => $field,
+                    'jsonName'          => (isset($referenceOneElement['jsonName'])) ? (string)$referenceOneElement['jsonName'] : null,
+                ));
+            }
+        }
+        
+        if (isset($element['referenceMany'])) {
+            foreach ($element['referenceMany'] AS $field => $referenceManyElement) {
+                $class->mapManyToMany(array(
+                    'cascade'           => (isset($referenceManyElement->cascade)) ? $this->getCascadeMode($referenceManyElement->cascade) : 0,
+                    'targetDocument'    => (string)$referenceManyElement['targetDocument'],
+                    'fieldName'         => $field,
+                    'jsonName'          => (isset($referenceManyElement['jsonName'])) ? (string)$referenceManyElement['jsonName'] : null,
+                    'mappedBy'          => (isset($referenceManyElement['mappedBy'])) ? (string)$referenceManyElement['mappedBy'] : null,
+                ));
+            }
+        }
+        
+        if (isset($element['attachments'])) {
+            $class->mapAttachments($element['attachments']);
+        }
+        
+        if (isset($element['embedOne'])) {
+            foreach ($element['embedOne'] AS $field => $embedOneElement) {
+                $class->mapEmbedded(array(
+                    'targetDocument'    => (string)$embedOneElement['targetDocument'],
+                    'fieldName'         => $field,
+                    'jsonName'          => (isset($embedOneElement['jsonName'])) ? (string)$embedOneElement['jsonName'] : null,
+                    'embedded'          => 'one',
+                ));
+            }
+        }
+        
+        if (isset($element['embedMany'])) {
+            foreach ($element['embedMany'] AS $field => $embedManyElement) {
+                $class->mapEmbedded(array(
+                    'targetDocument'    => (string)$embedManyElement['targetDocument'],
+                    'fieldName'         => $field,
+                    'jsonName'          => (isset($embedManyElement['jsonName'])) ? (string)$embedManyElement['jsonName'] : null,
+                    'embedded'          => 'many',
+                ));
+            }
+        }
     }
 
     protected function loadMappingFile($file)

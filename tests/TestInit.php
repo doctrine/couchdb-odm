@@ -15,3 +15,6 @@ $classLoader->register();
 
 $classLoader = new ClassLoader('Documents', __DIR__);
 $classLoader->register();
+
+$classLoader = new ClassLoader('Symfony\Component', __DIR__ . '/../lib/vendor');
+$classLoader->register();

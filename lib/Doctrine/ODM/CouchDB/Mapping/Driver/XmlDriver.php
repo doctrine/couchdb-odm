@@ -20,7 +20,8 @@
 namespace Doctrine\ODM\CouchDB\Mapping\Driver;
 
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata,
-    SimpleXmlElement;
+    SimpleXmlElement,
+    Doctrine\ODM\CouchDB\Mapping\MappingException;
 
 /**
  * XmlDriver is a metadata driver that enables mapping through XML files.
@@ -69,7 +70,7 @@ class XmlDriver extends AbstractFileDriver
                     'jsonName'  => (isset($fieldMapping['json-name'])) ? (string)$fieldMapping['json-name'] : null,
                     'indexed'   => (isset($fieldMapping['indexed'])) ? (bool)$fieldMapping['indexed'] : false,
                     'type'      => (isset($fieldMapping['type'])) ? (string)$fieldMapping['type'] : null,
-                    'version'   => (isset($fieldMapping['version'])) ? (bool)$fieldMapping['version'] : null,
+                    'isVersionField'   => (isset($fieldMapping['version'])) ? true : null,
                 ));
             }
         }
@@ -78,7 +79,6 @@ class XmlDriver extends AbstractFileDriver
         foreach ($xmlRoot->id as $idElement) {
             $class->mapField(array(
                 'fieldName' => (string)$idElement['name'],
-                'jsonName'  => (isset($idElement['json-name'])) ? (string)$idElement['json-name'] : null,
                 'indexed'   => (isset($idElement['indexed'])) ? (bool)$idElement['indexed'] : false,
                 'type'      => (isset($idElement['type'])) ? (string)$idElement['type'] : null,
                 'id'        => true,
