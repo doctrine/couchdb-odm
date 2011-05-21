@@ -132,6 +132,7 @@ class AnnotationDriver implements Driver
                     }
 
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
+                    unset($mapping['value']);
                     $class->mapField($mapping);
                 } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\ReferenceOne) {
                     $cascade = 0;
@@ -141,6 +142,7 @@ class AnnotationDriver implements Driver
                     $fieldAnnot->cascade = $cascade;
 
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
+                    unset($mapping['value']);
                     $class->mapManyToOne($mapping);
                 } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\ReferenceMany) {
                     $cascade = 0;
@@ -150,12 +152,14 @@ class AnnotationDriver implements Driver
                     $fieldAnnot->cascade = $cascade;
 
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
+                    unset($mapping['value']);
                     $class->mapManyToMany($mapping);
                 } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Attachments) {
                     $class->mapAttachments($mapping['fieldName']);
                 } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\EmbedOne || $fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\EmbedMany) {
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
-                    $class->mapField($mapping);
+                    unset($mapping['value']);
+                    $class->mapEmbedded($mapping);
                 }
             }
         }

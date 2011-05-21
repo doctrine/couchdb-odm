@@ -55,6 +55,7 @@ abstract class AbstractMappingDriverTest extends \PHPUnit_Framework_TestCase
     public function testIdentifier($class)
     {
         $this->assertEquals('id', $class->identifier);
+        $this->assertEquals(ClassMetadata::IDGENERATOR_UUID, $class->idGenerator);
 
         return $class;
     }
@@ -72,7 +73,6 @@ abstract class AbstractMappingDriverTest extends \PHPUnit_Framework_TestCase
             'cascade' => 0,
             'jsonName' => 'rights',
             'targetDocument' => 'Doctrine\Tests\Models\CMS\CmsUserRights',
-            'value' => null,
             'sourceDocument' => 'Doctrine\Tests\Models\CMS\CmsUser',
             'isOwning' => true,
             'type' => ClassMetadata::MANY_TO_ONE,
@@ -94,7 +94,6 @@ abstract class AbstractMappingDriverTest extends \PHPUnit_Framework_TestCase
             'cascade' => 0,
             'mappedBy' => null,
             'targetDocument' => 'Doctrine\Tests\Models\CMS\CmsGroup',
-            'value' => null,
             'jsonName' => 'groups',
             'sourceDocument' => 'Doctrine\Tests\Models\CMS\CmsUser',
             'isOwning' => true,
@@ -114,5 +113,21 @@ abstract class AbstractMappingDriverTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('attachments', $class->attachmentField);
 
         return $class;
+    }
+    
+    /**
+     * @depends testManyToManyAssociationMapping
+     * @param ClassMetadata $class
+     */
+    public function testEmbeddedMapping($class)
+    {
+        $this->assertArrayHasKey('address', $class->fieldMappings);
+        $this->assertEquals(array(
+            'fieldName' => 'address',
+            'jsonName' => 'address',
+            'embedded' => 'one',
+            'targetDocument' => '',
+            'type' => 'mixed',
+        ), $class->fieldMappings['address']);
     }
 }

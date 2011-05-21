@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping>
+    <document name="Doctrine\Tests\Models\CMS\CmsUser">
+        <id name="id" />
+        <field name="status" type="string" indexed="true" />
+        <field name="username" type="string" indexed="true" />
+        <field name="name" type="string" indexed="true" />
+        
+        <embed-one field="address" />
+        
+        <reference-one field="rights" target-document="CmsUserRights" />
+        <reference-many field="articles" target-document="CmsArticle" mapped-by="user" />
+        <reference-many field="groups" target-document="CmsGroup" />
+        
+        <attachments field="attachments" />
+    </document>
+</doctrine-mapping>
