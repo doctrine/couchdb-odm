@@ -323,7 +323,7 @@ class UnitOfWork
                 $this->documentState[$oid] = self::STATE_MANAGED;
                 break;
             case self::STATE_DETACHED:
-                throw new \InvalidArgumentException("Detached entity passed to persist().");
+                throw new \InvalidArgumentException("Detached document passed to persist().");
                 break;
         }
 
@@ -471,7 +471,7 @@ class UnitOfWork
             } else {
                 $managedCopy = $this->tryGetById($id);
                 if ($managedCopy) {
-                    // We have the entity in-memory already, just make sure its not removed.
+                    // We have the document in-memory already, just make sure its not removed.
                     if ($this->getDocumentState($managedCopy) == self::STATE_REMOVED) {
                         throw new \InvalidArgumentException('Removed document detected during merge.'
                                 . ' Can not merge with a removed document.');
@@ -483,7 +483,7 @@ class UnitOfWork
                 
                 if ($managedCopy === null) {
                     // If the identifier is ASSIGNED, it is NEW, otherwise an error
-                    // since the managed entity was not found.
+                    // since the managed document was not found.
                     if ($class->idGenerator == ClassMetadata::IDGENERATOR_ASSIGNED) {
                         $managedCopy = $class->newInstance();
                         $class->setIdentifierValue($managedCopy, $id);
@@ -824,14 +824,14 @@ class UnitOfWork
             unset($actualData[$class->versionField]);
         }
 
-        // 2. Compare to the original, or find out that this entity is new.
+        // 2. Compare to the original, or find out that this document is new.
         if (!isset($this->originalData[$oid])) {
-            // Entity is New and should be inserted
+            // document is New and should be inserted
             $this->originalData[$oid] = $actualData;
             $this->scheduledUpdates[$oid] = $document;
             $this->originalEmbeddedData[$oid] = $embeddedActualData;
         } else {
-            // Entity is "fully" MANAGED: it was already fully persisted before
+            // document is "fully" MANAGED: it was already fully persisted before
             // and we have a copy of the original data
 
             $changed = false;
@@ -927,20 +927,20 @@ class UnitOfWork
             $oid = spl_object_hash($entry);
             if ($state == self::STATE_NEW) {
                 if ( !($assoc['cascade'] & ClassMetadata::CASCADE_PERSIST) ) {
-                    throw new \InvalidArgumentException("A new entity was found through a relationship that was not"
+                    throw new \InvalidArgumentException("A new document was found through a relationship that was not"
                             . " configured to cascade persist operations: " . self::objToStr($entry) . "."
-                            . " Explicitly persist the new entity or configure cascading persist operations"
+                            . " Explicitly persist the new document or configure cascading persist operations"
                             . " on the relationship.");
                 }
                 $this->persistNew($targetClass, $entry);
                 $this->computeChangeSet($targetClass, $entry);
             } else if ($state == self::STATE_REMOVED) {
-                return new \InvalidArgumentException("Removed entity detected during flush: "
-                        . self::objToStr($entry).". Remove deleted entities from associations.");
+                return new \InvalidArgumentException("Removed document detected during flush: "
+                        . self::objToStr($entry).". Remove deleted documents from associations.");
             } else if ($state == self::STATE_DETACHED) {
                 // Can actually not happen right now as we assume STATE_NEW,
                 // so the exception will be raised from the DBAL layer (constraint violation).
-                throw new \InvalidArgumentException("A detached entity was found through a "
+                throw new \InvalidArgumentException("A detached document was found through a "
                         . "relationship during cascading a persist operation.");
             }
             // MANAGED associated entities are already taken into account
@@ -1149,12 +1149,12 @@ class UnitOfWork
     }
 
     /**
-     * Tries to find an entity with the given identifier in the identity map of
+     * Tries to find an document with the given identifier in the identity map of
      * this UnitOfWork.
      *
-     * @param mixed $id The entity identifier to look for.
-     * @param string $rootClassName The name of the root class of the mapped entity hierarchy.
-     * @return mixed Returns the entity with the specified identifier if it exists in
+     * @param mixed $id The document identifier to look for.
+     * @param string $rootClassName The name of the root class of the mapped document hierarchy.
+     * @return mixed Returns the document with the specified identifier if it exists in
      *               this UnitOfWork, FALSE otherwise.
      */
     public function tryGetById($id)
