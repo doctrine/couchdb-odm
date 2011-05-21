@@ -59,6 +59,10 @@ class UnitOfWorkTest extends CouchDBTestCase
 
     public function testScheduleInsertion()
     {
+        $httpClient = $this->getMock('Doctrine\ODM\CouchDB\HTTP\Client', array(), array(), '', false);
+        $httpClient->expects($this->once())->method('request')->will($this->returnValue(new \Doctrine\ODM\CouchDB\HTTP\Response(404, array(), "{}")));
+        $this->dm->getConfiguration()->setHttpClient($httpClient);
+        
         $object = new UoWUser();
         $object->id = "1";
         $object->username = "bar";
