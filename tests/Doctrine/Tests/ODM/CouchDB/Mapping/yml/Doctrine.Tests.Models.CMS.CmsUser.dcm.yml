@@ -1,0 +1,23 @@
+Doctrine\Tests\Models\CMS\CmsUser:
+  type: document
+  id:
+    id: ~
+  fields:
+    status:
+      type: string
+    username:
+      type: string
+    name:
+      type: string
+  referenceOne:
+    rights:
+      targetDocument: CmsUserRights
+  referenceMany:
+    articles:
+      targetDocument: CmsArticle
+      mappedBy: user
+    groups:
+      targetDocument: CmsGroup
+  embedOne:
+    address: ~
+  attachments: attachments

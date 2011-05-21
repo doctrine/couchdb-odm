@@ -80,7 +80,7 @@ class PHPDriver implements Driver
      */
     public function loadMetadataForClass($className, ClassMetadata $metadata)
     {
-        call_user_func_array(array($className, 'loadMetadata'), array($metadata));
+        $className::loadMetadata($metadata);
     }
     
     /**

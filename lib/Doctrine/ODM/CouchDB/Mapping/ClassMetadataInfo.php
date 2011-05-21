@@ -264,14 +264,35 @@ class ClassMetadataInfo
         $this->hasAttachments = true;
         $this->attachmentField = $fieldName;
     }
+    
+    /**
+     * Map an embedded object
+     * 
+     * - fieldName - The name of the property/field on the mapped php class
+     * - jsonName - JSON key name of this field in CouchDB.
+     * - targetDocument - Name of the target document
+     * - embedded - one or many embedded objects?
+     * 
+     * @param array $mapping 
+     */
+    public function mapEmbedded(array $mapping)
+    {
+        //$mapping = $this->validateAndCompleteReferenceMapping($mapping);
+        
+        $this->mapField($mapping);
+    }
 
     /**
      * Map a field.
      *
      * - type - The Doctrine Type of this field.
      * - fieldName - The name of the property/field on the mapped php class
+     * - jsonName - JSON key name of this field in CouchDB.
      * - name - The JSON key of this field in the CouchDB document
      * - id - True for an ID field.
+     * - strategy - ID Generator strategy when the field is an id-field.
+     * - indexed - Is this field indexed for the Doctrine CouchDB repository view
+     * - isVersionField - Is this field containing the revision number of this document?
      *
      * @param array $mapping The mapping information.
      */
@@ -289,6 +310,7 @@ class ClassMetadataInfo
             $this->setIdentifier($mapping['fieldName']);
             if (isset($mapping['strategy'])) {
                 $this->idGenerator = constant('Doctrine\ODM\CouchDB\Mapping\ClassMetadata::IDGENERATOR_' . strtoupper($mapping['strategy']));
+                unset($mapping['strategy']);
             }
         } else if (isset($mapping['isVersionField'])) {
             $this->isVersioned = true;
@@ -305,7 +327,7 @@ class ClassMetadataInfo
 
     protected function validateAndCompleteFieldMapping($mapping)
     {
-        if ( ! isset($mapping['fieldName'])) {
+        if ( ! isset($mapping['fieldName']) || !$mapping['fieldName']) {
             throw new MappingException("Mapping a property requires to specify the name.");
         }
         if ( ! isset($mapping['jsonName'])) {
@@ -317,18 +339,24 @@ class ClassMetadataInfo
 
         return $mapping;
     }
-
-    protected function validateAndCompleteAssociationMapping($mapping)
+    
+    protected function validateAndCompleteReferenceMapping($mapping)
     {
-        $mapping = $this->validateAndCompleteFieldMapping($mapping);
-
-        $mapping['sourceDocument'] = $this->name;
         if (!isset($mapping['targetDocument'])) {
             throw new MappingException("You have to specify a 'targetDocument' class for the '" . $this->name . "#". $mapping['jsonName']."' association.");
         }
         if (isset($mapping['targetDocument']) && strpos($mapping['targetDocument'], '\\') === false && strlen($this->namespace)) {
             $mapping['targetDocument'] = $this->namespace . '\\' . $mapping['targetDocument'];
         }
+        return $mapping;
+    }
+
+    protected function validateAndCompleteAssociationMapping($mapping)
+    {
+        $mapping = $this->validateAndCompleteFieldMapping($mapping);
+
+        $mapping['sourceDocument'] = $this->name;
+        $mapping = $this->validateAndCompleteReferenceMapping($mapping);
         return $mapping;
     }
 

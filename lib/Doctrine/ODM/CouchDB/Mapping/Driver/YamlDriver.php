@@ -19,7 +19,8 @@
 
 namespace Doctrine\ODM\CouchDB\Mapping\Driver;
 
-use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
+use Doctrine\ODM\CouchDB\Mapping\ClassMetadata,
+    Doctrine\ODM\CouchDB\Mapping\MappingException;
 
 /**
  * The YamlDriver reads the mapping metadata from yaml schema files.
@@ -45,86 +46,93 @@ class YamlDriver extends AbstractFileDriver
     public function loadMetadataForClass($className, ClassMetadata $class)
     {
         $element = $this->getElement($className);
-        if ( ! $element) {
-            return;
-        }
-        $element['type'] = isset($element['type']) ? $element['type'] : 'document';
 
-        if (isset($element['db'])) {
-            $class->setDB($element['db']);
-        }
         if ($element['type'] == 'document') {
-            if (isset($element['repositoryClass'])) {
-                $class->setCustomRepositoryClass($element['repositoryClass']);
+            $class->setCustomRepositoryClass(
+                (isset($element['repositoryClass'])) ? $element['repositoryClass'] : null
+            );
+            if (isset($element['indexed']) && $element['indexed'] == true) {
+                $class->indexed = true;
             }
-        } elseif ($element['type'] === 'mappedSuperclass') {
-            $class->isMappedSuperclass = true;
-        } elseif ($element['type'] === 'embeddedDocument') {
+        } else if ($element['type'] == 'embedded') {
             $class->isEmbeddedDocument = true;
+        } else {
+            throw MappingException::classIsNotAValidDocument($className);
         }
+        
+        if (isset($element['id'])) {
+            foreach ($element['id'] AS $fieldName => $idElement) {
+                $class->mapField(array(
+                    'fieldName' => $fieldName,
+                    'indexed'   => (isset($idElement['indexed'])) ? (bool)$idElement['indexed'] : false,
+                    'type'      => (isset($idElement['type'])) ? $idElement['type'] : null,
+                    'id'        => true,
+                    'strategy'  => (isset($idElement['strategy'])) ? $idElement['strategy'] :  null,
+                ));
+            }
+        }
+        
         if (isset($element['fields'])) {
-            foreach ($element['fields'] as $fieldName => $mapping) {
-                if (is_string($mapping)) {
-                    $type = $mapping;
-                    $mapping = array();
-                    $mapping['type'] = $type;
-                }
-                if ( ! isset($mapping['fieldName'])) {
-                    $mapping['fieldName'] = $fieldName;
-                }
-                $this->addFieldMapping($class, $mapping);
+            foreach ($element['fields'] AS $fieldName => $fieldElement) {
+                $class->mapField(array(
+                    'fieldName' => $fieldName,
+                    'jsonName'  => (isset($fieldElement['jsonName'])) ? $fieldElement['jsonName'] : null,
+                    'indexed'   => (isset($fieldElement['indexed'])) ? (bool)$fieldElement['indexed'] : false,
+                    'type'      => (isset($fieldElement['type'])) ? $fieldElement['type'] : null,
+                    'isVersionField' => (isset($fieldElement['version'])) ? true : null,
+                ));
             }
         }
-        if (isset($element['embedOne'])) {
-            foreach ($element['embedOne'] as $fieldName => $embed) {
-                $this->addMappingFromEmbed($class, $fieldName, $embed, 'one');
-            }
-        }
-        if (isset($element['embedMany'])) {
-            foreach ($element['embedMany'] as $fieldName => $embed) {
-                $this->addMappingFromEmbed($class, $fieldName, $embed, 'many');
-            }
-        }
+        
+        
         if (isset($element['referenceOne'])) {
-            foreach ($element['referenceOne'] as $fieldName => $reference) {
-                $this->addMappingFromReference($class, $fieldName, $reference, 'one');
+            foreach ($element['referenceOne'] AS $field => $referenceOneElement) {
+                $class->mapManyToOne(array(
+                    'cascade'           => (isset($referenceManyElement->cascade)) ? $this->getCascadeMode($referenceManyElement->cascade) : 0,
+                    'targetDocument'    => (string)$referenceOneElement['targetDocument'],
+                    'fieldName'         => $field,
+                    'jsonName'          => (isset($referenceOneElement['jsonName'])) ? (string)$referenceOneElement['jsonName'] : null,
+                ));
             }
         }
+        
         if (isset($element['referenceMany'])) {
-            foreach ($element['referenceMany'] as $fieldName => $reference) {
-                $this->addMappingFromReference($class, $fieldName, $reference, 'many');
+            foreach ($element['referenceMany'] AS $field => $referenceManyElement) {
+                $class->mapManyToMany(array(
+                    'cascade'           => (isset($referenceManyElement->cascade)) ? $this->getCascadeMode($referenceManyElement->cascade) : 0,
+                    'targetDocument'    => (string)$referenceManyElement['targetDocument'],
+                    'fieldName'         => $field,
+                    'jsonName'          => (isset($referenceManyElement['jsonName'])) ? (string)$referenceManyElement['jsonName'] : null,
+                    'mappedBy'          => (isset($referenceManyElement['mappedBy'])) ? (string)$referenceManyElement['mappedBy'] : null,
+                ));
             }
         }
-    }
-
-    private function addFieldMapping(ClassMetadata $class, $mapping)
-    {
-        $class->mapField($mapping);
-    }
-
-    private function addMappingFromEmbed(ClassMetadata $class, $fieldName, $embed, $type)
-    {
-        $mapping = array(
-//            'type'           => $type,
-            'embedded'       => $type,
-            'targetDocument' => isset($embed['targetDocument']) ? $embed['targetDocument'] : null,
-            'fieldName'      => $fieldName,
-            'strategy'       => isset($embed['strategy']) ? (string) $embed['strategy'] : 'pushPull',
-        );
-        $this->addFieldMapping($class, $mapping);
-    }
-
-    private function addMappingFromReference(ClassMetadata $class, $fieldName, $reference, $type)
-    {
-        $mapping = array(
-            'cascade'        => isset($reference['cascade']) ? $reference['cascade'] : null,
-            'type'           => $type,
-            'reference'      => true,
-            'targetDocument' => isset($reference['targetDocument']) ? $reference['targetDocument'] : null,
-            'fieldName'      => $fieldName,
-            'strategy'       => isset($reference['strategy']) ? (string) $reference['strategy'] : 'pushPull',
-        );
-        $this->addFieldMapping($class, $mapping);
+        
+        if (isset($element['attachments'])) {
+            $class->mapAttachments($element['attachments']);
+        }
+        
+        if (isset($element['embedOne'])) {
+            foreach ($element['embedOne'] AS $field => $embedOneElement) {
+                $class->mapEmbedded(array(
+                    'targetDocument'    => (string)$embedOneElement['targetDocument'],
+                    'fieldName'         => $field,
+                    'jsonName'          => (isset($embedOneElement['jsonName'])) ? (string)$embedOneElement['jsonName'] : null,
+                    'embedded'          => 'one',
+                ));
+            }
+        }
+        
+        if (isset($element['embedMany'])) {
+            foreach ($element['embedMany'] AS $field => $embedManyElement) {
+                $class->mapEmbedded(array(
+                    'targetDocument'    => (string)$embedManyElement['targetDocument'],
+                    'fieldName'         => $field,
+                    'jsonName'          => (isset($embedManyElement['jsonName'])) ? (string)$embedManyElement['jsonName'] : null,
+                    'embedded'          => 'many',
+                ));
+            }
+        }
     }
 
     protected function loadMappingFile($file)
