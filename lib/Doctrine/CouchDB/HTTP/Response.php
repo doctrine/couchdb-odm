@@ -17,39 +17,51 @@
  * <http://www.doctrine-project.org>.
  */
 
-namespace Doctrine\ODM\CouchDB\View;
-
-use Doctrine\ODM\CouchDB\DocumentManager;
-use Doctrine\ODM\CouchDB\HTTP\ErrorResponse;
-use Doctrine\ODM\CouchDB\HTTP\Client;
+namespace Doctrine\CouchDB\HTTP;
 
 /**
- * Abstract Design Document
+ * HTTP response
  *
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @link        www.doctrine-project.com
  * @since       1.0
- * @author      Benjamin Eberlei <kontakt@beberlei.de>
+ * @author      Kore Nordmann <kore@arbitracker.org>
  */
-interface DesignDocument
+class Response
 {
     /**
-     * Get design doc code
+     * HTTP repsonse status
      *
-     * Return the view (or general design doc) code, which should be
-     * committed to the database, which should be structured like:
-     *
-     * <code>
-     *  array(
-     *    "views" => array(
-     *      "name" => array(
-     *          "map"     => "code",
-     *          ["reduce" => "code"],
-     *      ),
-     *      ...
-     *    )
-     *  )
-     * </code>
+     * @var int
      */
-    public function getData();
+    public $status;
+
+    /**
+     * HTTP repsonse headers
+     *
+     * @var array
+     */
+    public $headers;
+
+    /**
+     * Decoded JSON response body
+     *
+     * @var array
+     */
+    public $body;
+
+    /**
+     * Construct response
+     *
+     * @param array $headers
+     * @param string $body
+     * @return void
+     */
+    public function __construct( $status, array $headers, $body, $raw = false )
+    {
+        $this->status  = (int) $status;
+        $this->headers = $headers;
+        $this->body    = $raw ? $body : json_decode( $body, true );
+    }
 }
+

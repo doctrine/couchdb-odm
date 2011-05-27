@@ -2,7 +2,7 @@
 
 namespace Doctrine\Tests\ODM\CouchDB\View;
 
-use Doctrine\ODM\CouchDB\View\LuceneResult;
+use Doctrine\CouchDB\View\LuceneResult;
 
 class LuceneResultTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCase
 {

@@ -17,9 +17,7 @@
  * <http://www.doctrine-project.org>.
  */
 
-namespace Doctrine\ODM\CouchDB\View;
-
-use Doctrine\ODM\CouchDB\DocumentManager;
+namespace Doctrine\CouchDB\View;
 
 /**
  * Query class

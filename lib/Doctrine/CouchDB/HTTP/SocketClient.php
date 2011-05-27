@@ -17,7 +17,7 @@
  * <http://www.doctrine-project.org>.
  */
 
-namespace Doctrine\ODM\CouchDB\HTTP;
+namespace Doctrine\CouchDB\HTTP;
 
 /**
  * This class uses a custom HTTP client, which may have more bugs then the

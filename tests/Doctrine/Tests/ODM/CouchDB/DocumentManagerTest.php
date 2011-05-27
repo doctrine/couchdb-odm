@@ -7,7 +7,7 @@ class DocumentManagerTest extends CouchDBTestCase
     public function testNewInstanceFromConfiguration()
     {
         $config = new \Doctrine\ODM\CouchDB\Configuration();
-        $httpClient = new \Doctrine\ODM\CouchDB\HTTP\SocketClient();
+        $httpClient = new \Doctrine\CouchDB\HTTP\SocketClient();
         $config->setHttpClient($httpClient);
         
         $dm = \Doctrine\ODM\CouchDB\DocumentManager::create($config);
@@ -38,6 +38,6 @@ class DocumentManagerTest extends CouchDBTestCase
     {
         $dm = \Doctrine\ODM\CouchDB\DocumentManager::create();
 
-        $this->assertInstanceOf('Doctrine\ODM\CouchDB\HTTP\SocketClient', $dm->getConfiguration()->getHttpClient());
+        $this->assertInstanceOf('Doctrine\CouchDB\HTTP\SocketClient', $dm->getConfiguration()->getHttpClient());
     }
 }

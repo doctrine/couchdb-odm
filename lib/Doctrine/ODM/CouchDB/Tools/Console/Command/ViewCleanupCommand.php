@@ -36,7 +36,7 @@ class ViewCleanupCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $couchClient = $this->getHelper('couchdb')->getCouchDBClient();
-        /* @var $couchClient \Doctrine\ODM\CouchDB\CouchDBClient */
+        /* @var $couchClient \Doctrine\CouchDB\CouchDBClient */
 
         $data = $couchClient->viewCleanup();
         $output->writeln("View cleanup started.");

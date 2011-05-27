@@ -10,6 +10,9 @@ $classLoader->register();
 $classLoader = new ClassLoader('Doctrine\ODM', __DIR__ . '/../lib');
 $classLoader->register();
 
+$classLoader = new ClassLoader('Doctrine\CouchDB', __DIR__ . '/../lib');
+$classLoader->register();
+
 $classLoader = new ClassLoader('Doctrine', __DIR__ . '/../lib/vendor/doctrine-common/lib');
 $classLoader->register();
 

@@ -19,6 +19,7 @@
 
 namespace Doctrine\ODM\CouchDB;
 
+use Doctrine\CouchDB\Attachment;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 use Doctrine\ODM\CouchDB\Types\Type;
 use Doctrine\Common\Collections\Collection;
@@ -1044,7 +1045,7 @@ class UnitOfWork
                     if (is_array($fieldValue) && $fieldValue) {
                         $data['_attachments'] = array();
                         foreach ($fieldValue AS $filename => $attachment) {
-                            if (!($attachment instanceof \Doctrine\ODM\CouchDB\Attachment)) {
+                            if (!($attachment instanceof \Doctrine\CouchDB\Attachment)) {
                                 throw CouchDBException::invalidAttachment($class->name, $this->documentIdentifiers[$oid], $filename);
                             }
                             $data['_attachments'][$filename] = $attachment->toArray();

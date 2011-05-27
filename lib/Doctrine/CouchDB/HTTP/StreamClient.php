@@ -17,7 +17,7 @@
  * <http://www.doctrine-project.org>.
  */
 
-namespace Doctrine\ODM\CouchDB\HTTP;
+namespace Doctrine\CouchDB\HTTP;
 
 /**
  * Connection handler using PHPs stream wrappers.

@@ -59,8 +59,10 @@ class UnitOfWorkTest extends CouchDBTestCase
 
     public function testScheduleInsertion()
     {
-        $httpClient = $this->getMock('Doctrine\ODM\CouchDB\HTTP\Client', array(), array(), '', false);
-        $httpClient->expects($this->once())->method('request')->will($this->returnValue(new \Doctrine\ODM\CouchDB\HTTP\Response(404, array(), "{}")));
+        $httpClient = $this->getMock('Doctrine\CouchDB\HTTP\Client', array(), array(), '', false);
+        $httpClient->expects($this->once())
+                   ->method('request')
+                   ->will($this->returnValue(new \Doctrine\CouchDB\HTTP\Response(404, array(), "{}")));
         $this->dm->getConfiguration()->setHttpClient($httpClient);
         
         $object = new UoWUser();
@@ -88,9 +90,9 @@ class UnitOfWorkTest extends CouchDBTestCase
             "691f868266b6b45a867bfcb4b41a694e",
             "e2c4783e9ff922eefe869998a01828b2"
         );
-        $uuidResponse = new \Doctrine\ODM\CouchDB\HTTP\Response(200, array(), json_encode(array('uuids' => $uuids)));
+        $uuidResponse = new \Doctrine\CouchDB\HTTP\Response(200, array(), json_encode(array('uuids' => $uuids)));
         
-        $client = $this->getMock('Doctrine\ODM\CouchDB\HTTP\Client', array('request'));
+        $client = $this->getMock('Doctrine\CouchDB\HTTP\Client', array('request'));
         $client->expects($this->once())
                ->method('request')
                ->with($this->equalTo('GET'), $this->equalTo('/_uuids?count=20'))

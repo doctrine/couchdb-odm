@@ -20,7 +20,8 @@
 namespace Doctrine\ODM\CouchDB;
 
 use Doctrine\Common\Cache\Cache;
-use Doctrine\ODM\CouchDB\HTTP\Client;
+use Doctrine\CouchDB\HTTP\Client;
+use Doctrine\CouchDB\HTTP\SocketClient;
 use Doctrine\ODM\CouchDB\Mapping\Driver\Driver;
 use Doctrine\ODM\CouchDB\Mapping\MetadataResolver\MetadataResolver;
 use Doctrine\ODM\CouchDB\Mapping\MetadataResolver\DoctrineResolver;
@@ -118,7 +119,7 @@ class Configuration
     public function getHttpClient()
     {
         if (!isset($this->attributes['httpclient'])) {
-            $this->attributes['httpclient'] = new HTTP\SocketClient();
+            $this->attributes['httpclient'] = new SocketClient();
         }
 
         return $this->attributes['httpclient'];

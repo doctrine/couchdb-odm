@@ -19,6 +19,8 @@
 
 namespace Doctrine\ODM\CouchDB\View;
 
+use Doctrine\CouchDB\View\DesignDocument;
+
 /**
  * Associations class
  *

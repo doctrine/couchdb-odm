@@ -20,6 +20,7 @@
 
 namespace Doctrine\ODM\CouchDB\View;
 
+use Doctrine\CouchDB\View\LuceneQuery;
 use Doctrine\ODM\CouchDB\DocumentManager;
 
 class ODMLuceneQuery extends LuceneQuery

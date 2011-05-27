@@ -6,7 +6,7 @@ class FolderDesignDocumentTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCa
 {
     public function testGetViewsBasedOnFileStructure()
     {
-        $designDoc = new \Doctrine\ODM\CouchDB\View\FolderDesignDocument(__DIR__ . "/../../../Models/CMS/_files/");
+        $designDoc = new \Doctrine\CouchDB\View\FolderDesignDocument(__DIR__ . "/../../../Models/CMS/_files/");
 
         $this->assertEquals(array(
             "views" => array("username" => array("map" => "function(doc) {

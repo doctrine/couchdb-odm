@@ -20,6 +20,7 @@
 
 namespace Doctrine\ODM\CouchDB\View;
 
+use Doctrine\CouchDB\View\Query;
 use Doctrine\ODM\CouchDB\DocumentManager;
 
 class ODMQuery extends Query

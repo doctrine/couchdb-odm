@@ -17,51 +17,55 @@
  * <http://www.doctrine-project.org>.
  */
 
-namespace Doctrine\ODM\CouchDB\HTTP;
+
+namespace Doctrine\CouchDB\Utils;
+
+use Doctrine\CouchDB\HTTP\Client;
 
 /**
- * HTTP response
+ * Bulk updater class
  *
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @link        www.doctrine-project.com
  * @since       1.0
- * @author      Kore Nordmann <kore@arbitracker.org>
+ * @author      Benjamin Eberlei <kontakt@beberlei.de>
  */
-class Response
+class BulkUpdater
 {
-    /**
-     * HTTP repsonse status
-     *
-     * @var int
-     */
-    public $status;
+    private $data = array('docs' => array());
 
-    /**
-     * HTTP repsonse headers
-     *
-     * @var array
-     */
-    public $headers;
+    private $httpClient;
 
-    /**
-     * Decoded JSON response body
-     *
-     * @var array
-     */
-    public $body;
+    private $databaseName;
 
-    /**
-     * Construct response
-     *
-     * @param array $headers
-     * @param string $body
-     * @return void
-     */
-    public function __construct( $status, array $headers, $body, $raw = false )
+    public function __construct(Client $httpClient, $databaseName)
     {
-        $this->status  = (int) $status;
-        $this->headers = $headers;
-        $this->body    = $raw ? $body : json_decode( $body, true );
+        $this->httpClient = $httpClient;
+        $this->databaseName = $databaseName;
+    }
+
+    public function setAllOrNothing($allOrNothing)
+    {
+        $this->data['all_or_nothing'] = (bool)$allOrNothing;
+    }
+
+    public function updateDocument($data)
+    {
+        $this->data['docs'][] = $data;
+    }
+
+    public function deleteDocument($id, $rev)
+    {
+        $this->data['docs'][] = array('_id' => $id, '_rev' => $rev, '_deleted' => true);
+    }
+
+    public function execute()
+    {
+        return $this->httpClient->request('POST', $this->getPath(), json_encode($this->data));
+    }
+
+    public function getPath()
+    {
+        return '/' . $this->databaseName . '/_bulk_docs';
     }
 }
-

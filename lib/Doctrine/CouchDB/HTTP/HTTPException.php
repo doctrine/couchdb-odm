@@ -1,6 +1,6 @@
 <?php
 
-namespace Doctrine\ODM\CouchDB\HTTP;
+namespace Doctrine\CouchDB\HTTP;
 
 /**
  * Base exception class for package Doctrine\ODM\CouchDB\HTTP
@@ -10,7 +10,7 @@ namespace Doctrine\ODM\CouchDB\HTTP;
  * @since       1.0
  * @author      Kore Nordmann <kore@arbitracker.org>
  */
-class HTTPException extends \Doctrine\ODM\CouchDB\CouchDBException
+class HTTPException extends \Doctrine\CouchDB\CouchDBException
 {
     public static function connectionFailure( $ip, $port, $errstr, $errno )
     {

@@ -20,6 +20,8 @@
 
 namespace Doctrine\ODM\CouchDB\View;
 
+use Doctrine\CouchDB\View\DesignDocument;
+
 /**
  * Repository queries
  *

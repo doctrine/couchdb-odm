@@ -2,7 +2,7 @@
 
 namespace Doctrine\Tests\ODM\CouchDB\Functional;
 
-use Doctrine\ODM\CouchDB\View\DesignDocument;
+use Doctrine\CouchDB\View\DesignDocument;
 
 class LuceneQueryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 {

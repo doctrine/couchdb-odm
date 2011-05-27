@@ -17,55 +17,35 @@
  * <http://www.doctrine-project.org>.
  */
 
-
-namespace Doctrine\ODM\CouchDB\Utils;
-
-use Doctrine\ODM\CouchDB\HTTP\Client;
+namespace Doctrine\CouchDB\View;
 
 /**
- * Bulk updater class
+ * Abstract Design Document
  *
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @link        www.doctrine-project.com
  * @since       1.0
  * @author      Benjamin Eberlei <kontakt@beberlei.de>
  */
-class BulkUpdater
+interface DesignDocument
 {
-    private $data = array('docs' => array());
-
-    private $httpClient;
-
-    private $databaseName;
-
-    public function __construct(Client $httpClient, $databaseName)
-    {
-        $this->httpClient = $httpClient;
-        $this->databaseName = $databaseName;
-    }
-
-    public function setAllOrNothing($allOrNothing)
-    {
-        $this->data['all_or_nothing'] = (bool)$allOrNothing;
-    }
-
-    public function updateDocument($data)
-    {
-        $this->data['docs'][] = $data;
-    }
-
-    public function deleteDocument($id, $rev)
-    {
-        $this->data['docs'][] = array('_id' => $id, '_rev' => $rev, '_deleted' => true);
-    }
-
-    public function execute()
-    {
-        return $this->httpClient->request('POST', $this->getPath(), json_encode($this->data));
-    }
-
-    public function getPath()
-    {
-        return '/' . $this->databaseName . '/_bulk_docs';
-    }
+    /**
+     * Get design doc code
+     *
+     * Return the view (or general design doc) code, which should be
+     * committed to the database, which should be structured like:
+     *
+     * <code>
+     *  array(
+     *    "views" => array(
+     *      "name" => array(
+     *          "map"     => "code",
+     *          ["reduce" => "code"],
+     *      ),
+     *      ...
+     *    )
+     *  )
+     * </code>
+     */
+    public function getData();
 }

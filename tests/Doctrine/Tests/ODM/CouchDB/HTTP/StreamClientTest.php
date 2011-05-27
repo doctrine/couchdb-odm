@@ -1,8 +1,8 @@
 <?php
 
-namespace Doctrine\Tests\ODM\CouchDB\HTTP;
+namespace Doctrine\Tests\CouchDB\HTTP;
 
-use Doctrine\ODM\CouchDB\HTTP;
+use Doctrine\CouchDB\HTTP;
 
 class StreamClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 {

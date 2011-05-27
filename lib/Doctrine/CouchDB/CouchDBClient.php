@@ -17,12 +17,12 @@
  * <http://www.doctrine-project.org>.
  */
 
-namespace Doctrine\ODM\CouchDB;
+namespace Doctrine\CouchDB;
 
-use Doctrine\ODM\CouchDB\HTTP\Client;
-use Doctrine\ODM\CouchDB\HTTP\HTTPException;
-use Doctrine\ODM\CouchDB\Utils\BulkUpdater;
-use Doctrine\ODM\CouchDB\View\DesignDocument;
+use Doctrine\CouchDB\HTTP\Client;
+use Doctrine\CouchDB\HTTP\HTTPException;
+use Doctrine\CouchDB\Utils\BulkUpdater;
+use Doctrine\CouchDB\View\DesignDocument;
 
 /**
  * CouchDB client class
@@ -78,7 +78,7 @@ class CouchDBClient
         $response = $this->httpClient->request('GET', '/_uuids?count=' . $count);
 
         if ($response->status != 200) {
-            throw new \Doctrine\ODM\CouchDB\CouchDBException("Could not retrieve UUIDs from CouchDB.");
+            throw new CouchDBException("Could not retrieve UUIDs from CouchDB.");
         }
 
         return $response->body['uuids'];

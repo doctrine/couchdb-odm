@@ -11,7 +11,7 @@ class QueryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
         $designDocPath = __DIR__ . "/../../../Models/CMS/_files";
         $this->dm = $this->createDocumentManager();
         $this->dm->getConfiguration()
-                 ->addDesignDocument('cms', 'Doctrine\ODM\CouchDB\View\FolderDesignDocument', $designDocPath);
+                 ->addDesignDocument('cms', 'Doctrine\CouchDB\View\FolderDesignDocument', $designDocPath);
 
         $user1 = new \Doctrine\Tests\Models\CMS\CmsUser();
         $user1->username = "beberlei";

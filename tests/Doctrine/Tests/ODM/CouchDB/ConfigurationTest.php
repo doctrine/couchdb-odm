@@ -7,7 +7,7 @@ class ConfigurationTest extends CouchDBTestCase
     public function testHttpClient()
     {
         $config = new \Doctrine\ODM\CouchDB\Configuration();
-        $httpClient = new \Doctrine\ODM\CouchDB\HTTP\SocketClient();
+        $httpClient = new \Doctrine\CouchDB\HTTP\SocketClient();
 
         $config->setHttpClient($httpClient);
         $this->assertSame($httpClient, $config->getHttpClient());

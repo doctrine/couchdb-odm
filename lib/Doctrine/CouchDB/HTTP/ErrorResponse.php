@@ -3,7 +3,7 @@
  *
  */
 
-namespace Doctrine\ODM\CouchDB\HTTP;
+namespace Doctrine\CouchDB\HTTP;
 
 /**
  * HTTP response

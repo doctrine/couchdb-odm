@@ -2,6 +2,8 @@
 
 namespace Doctrine\Tests\ODM\CouchDB\Functional;
 
+use Doctrine\CouchDB\Attachment;
+
 class AttachmentTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 {
     /**
@@ -23,7 +25,7 @@ class AttachmentTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
         $this->assertInstanceOf('Doctrine\Tests\Models\CMS\CmsUser', $user, 'User not hydrated correctly!');
         $this->assertInternalType('array', $user->attachments, "Attachments are always an array.");
         $this->assertArrayHasKey('foo.txt', $user->attachments);
-        $this->assertInstanceOf('Doctrine\ODM\CouchDB\Attachment', $user->attachments['foo.txt']);
+        $this->assertInstanceOf('Doctrine\CouchDB\Attachment', $user->attachments['foo.txt']);
         $this->assertFalse($user->attachments['foo.txt']->isLoaded());
         $this->assertEquals('This is a base64 encoded text', $user->attachments['foo.txt']->getRawData());
     }
@@ -38,7 +40,7 @@ class AttachmentTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
 
         $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', 'user_with_attachment');
         $this->assertArrayHasKey('foo.txt', $user->attachments);
-        $this->assertInstanceOf('Doctrine\ODM\CouchDB\Attachment', $user->attachments['foo.txt']);
+        $this->assertInstanceOf('Doctrine\CouchDB\Attachment', $user->attachments['foo.txt']);
     }
 
     public function testRemoveAttachment()
@@ -58,7 +60,7 @@ class AttachmentTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
         $fh = fopen(__DIR__ . '/_files/logo.jpg', 'r');
 
         $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', 'user_with_attachment');
-        $user->attachments['logo.jpg'] = \Doctrine\ODM\CouchDB\Attachment::createFromBinaryData($fh, 'image/jpeg');
+        $user->attachments['logo.jpg'] = Attachment::createFromBinaryData($fh, 'image/jpeg');
 
         $this->dm->flush();
         $this->dm->clear(); // dont re-use identity map
@@ -67,7 +69,7 @@ class AttachmentTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
 
         $this->assertEquals(2, count($user->attachments));
         $this->assertArrayHasKey('logo.jpg', $user->attachments);
-        $this->assertInstanceOf('Doctrine\ODM\CouchDB\Attachment', $user->attachments['foo.txt']);
+        $this->assertInstanceOf('Doctrine\CouchDB\Attachment', $user->attachments['foo.txt']);
     }
 
     public function testUpdateAttachment()
@@ -75,7 +77,7 @@ class AttachmentTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
         $fh = fopen(__DIR__ . '/_files/foo.txt', 'r');
 
         $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', 'user_with_attachment');
-        $user->attachments['foo.txt'] = \Doctrine\ODM\CouchDB\Attachment::createFromBinaryData($fh, 'text/plain');
+        $user->attachments['foo.txt'] = Attachment::createFromBinaryData($fh, 'text/plain');
 
         $this->dm->flush();
         $this->dm->clear(); // dont re-use identity map
@@ -89,7 +91,7 @@ class AttachmentTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
         $fh = fopen(__DIR__ . '/_files/logo.jpg', 'r');
 
         $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', 'user_with_attachment');
-        $user->attachments['logo.jpg'] = \Doctrine\ODM\CouchDB\Attachment::createFromBinaryData($fh, 'image/jpeg');
+        $user->attachments['logo.jpg'] = Attachment::createFromBinaryData($fh, 'image/jpeg');
 
         $this->dm->flush();
         $this->dm->clear(); // dont re-use identity map

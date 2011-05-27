@@ -18,10 +18,10 @@
  */
 
 
-namespace Doctrine\ODM\CouchDB;
+namespace Doctrine\CouchDB;
 
-use Doctrine\ODM\CouchDB\HTTP\Client;
-use Doctrine\ODM\CouchDB\HTTP\HTTPException;
+use Doctrine\CouchDB\HTTP\Client;
+use Doctrine\CouchDB\HTTP\HTTPException;
 
 /**
  * An attachment is a special embedded document that exists inside CouchDB.

@@ -1,11 +1,10 @@
 <?php
 
-namespace Doctrine\ODM\CouchDB\View;
+namespace Doctrine\CouchDB\View;
 
-use Doctrine\ODM\CouchDB\HTTP\Client;
-use Doctrine\ODM\CouchDB\HTTP\ErrorResponse;
-use Doctrine\ODM\CouchDB\HTTP\HTTPException;
-use Doctrine\ODM\CouchDB\DocumentManager;
+use Doctrine\CouchDB\HTTP\Client;
+use Doctrine\CouchDB\HTTP\ErrorResponse;
+use Doctrine\CouchDB\HTTP\HTTPException;
 
 abstract class AbstractQuery
 {

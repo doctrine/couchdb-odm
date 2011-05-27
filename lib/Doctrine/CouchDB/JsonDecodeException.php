@@ -1,6 +1,6 @@
 <?php
 
-namespace Doctrine\ODM\CouchDB;
+namespace Doctrine\CouchDB;
 
 class JsonDecodeException extends \Exception
 {

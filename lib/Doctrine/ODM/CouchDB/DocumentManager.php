@@ -19,10 +19,15 @@
 
 namespace Doctrine\ODM\CouchDB;
 
-use Doctrine\ODM\CouchDB\Mapping\ClassMetadataFactory;
-use Doctrine\ODM\CouchDB\HTTP\Client;
 use Doctrine\Common\EventManager;
 use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\CouchDB\HTTP\Client;
+use Doctrine\CouchDB\CouchDBClient;
+use Doctrine\CouchDB\View;
+use Doctrine\CouchDB\View\Query;
+use Doctrine\ODM\CouchDB\Mapping\ClassMetadataFactory;
+use Doctrine\ODM\CouchDB\View\ODMQuery;
+use Doctrine\ODM\CouchDB\View\ODMLuceneQuery;
 
 class DocumentManager implements ObjectManager
 {
@@ -180,7 +185,7 @@ class DocumentManager implements ObjectManager
         if ($designDoc) {
             $designDoc = new $designDoc['className']($designDoc['options']);
         }
-        $query = new View\ODMQuery($this->config->getHttpClient(), $this->config->getDatabase(), $designDocName, $viewName, $designDoc);
+        $query = new ODMQuery($this->config->getHttpClient(), $this->config->getDatabase(), $designDocName, $viewName, $designDoc);
         $query->setDocumentManager($this);
         return $query;
     }
@@ -200,7 +205,7 @@ class DocumentManager implements ObjectManager
         if ($designDoc) {
             $designDoc = new $designDoc['className']($designDoc['options']);
         }
-        $query = new View\Query($this->config->getHttpClient(), $this->config->getDatabase(), $designDocName, $viewName, $designDoc);
+        $query = new Query($this->config->getHttpClient(), $this->config->getDatabase(), $designDocName, $viewName, $designDoc);
         return $query;
     }
 
@@ -218,7 +223,7 @@ class DocumentManager implements ObjectManager
         if ($designDoc) {
             $designDoc = new $designDoc['className']($designDoc['options']);
         }
-        $query = new View\ODMLuceneQuery($this->config->getHttpClient(),
+        $query = new ODMLuceneQuery($this->config->getHttpClient(),
             $this->config->getDatabase(), $luceneHandlerName, $designDocName,
             $viewName, $designDoc
         );

@@ -1,8 +1,8 @@
 <?php
 
-namespace Doctrine\ODM\CouchDB\View;
+namespace Doctrine\CouchDB\View;
 
-use Doctrine\ODM\CouchDB\HTTP\Client;
+use Doctrine\CouchDB\HTTP\Client;
 
 class LuceneQuery extends AbstractQuery
 {   

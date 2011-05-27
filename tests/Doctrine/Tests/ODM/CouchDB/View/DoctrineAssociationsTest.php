@@ -1,13 +1,14 @@
 <?php
 
-namespace Doctrine\Tests\ODM\CouchDB;
+namespace Doctrine\Tests\ODM\CouchDB\View;
 
-use Doctrine\ODM\CouchDB\HTTP\SocketClient;
+use Doctrine\CouchDB\HTTP\SocketClient;
+use Doctrine\CouchDB\View\Query;
 use Doctrine\ODM\CouchDB\View\DoctrineAssociations;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
-use Doctrine\ODM\CouchDB\View\Query;
+use Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase;
 
-class RelationsTest extends CouchDBFunctionalTestCase
+class DoctrineAssocationsTest extends CouchDBFunctionalTestCase
 {
     private $dm;
 

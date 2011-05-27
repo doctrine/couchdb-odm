@@ -49,7 +49,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $couchClient = $this->getHelper('couchdb')->getCouchDBClient();
-        /* @var $couchClient \Doctrine\ODM\CouchDB\CouchDBClient */
+        /* @var $couchClient \Doctrine\CouchDB\CouchDBClient */
         $data = $couchClient->replicate(
             $input->getArgument('source'),
             $input->getArgument('target'),

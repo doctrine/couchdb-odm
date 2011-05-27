@@ -1,6 +1,6 @@
 <?php
 
-namespace Doctrine\ODM\CouchDB\View;
+namespace Doctrine\CouchDB\View;
 
 class LuceneResult extends Result
 {
