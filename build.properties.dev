@@ -1,0 +1,9 @@
+version=1.0.0alpha1
+dependencies.common=2.0.1
+stability=alpha
+build.dir=build
+dist.dir=dist
+report.dir=reports
+log.archive.dir=logs
+project.pirum_dir=
+project.download_dir==

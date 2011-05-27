@@ -1,0 +1,240 @@
+<?xml version="1.0"?>
+
+<!--
+    Doctrine CouchDB build file.
+-->
+
+<project name="Doctrine CouchDB" default="build" basedir=".">
+    <taskdef classname="phing.tasks.ext.d51PearPkg2Task" name="d51pearpkg2" />
+
+    <property file="build.properties" />
+
+    <!--
+        Fileset for artifacts shared across all distributed packages.
+    -->
+    <fileset id="shared-artifacts" dir=".">
+        <include name="LICENSE"/>
+    </fileset>
+
+    <!--
+        Fileset for command line scripts
+    -->
+    <fileset id="bin-scripts" dir="./bin">
+        <include name="doctrine-couchdb.php"/>
+    </fileset>
+
+    <!--
+        Fileset for the sources of the Doctrine Common dependency.
+    -->
+    <fileset id="common-sources" dir="./lib/vendor/doctrine-common/lib">
+        <include name="Doctrine/Common/**"/>
+    </fileset>
+
+    <!--
+        Fileset for the sources of the Doctrine CouchDB Client
+    -->
+    <fileset id="couchdb-sources" dir="./lib">
+        <include name="Doctrine/CouchDB/**"/>
+    </fileset>
+    
+    <!--
+        Fileset for the sources of the Doctrine CouchDB ODM
+    -->
+    <fileset id="odm-sources" dir="./lib">
+        <include name="Doctrine/ODM/CouchDB/**"/>
+    </fileset>
+
+    <!--
+      Fileset for source of the Symfony YAML and Console components.
+    -->
+    <fileset id="symfony-sources" dir="./lib/vendor">
+        <include name="Symfony/Component/**"/>
+    </fileset>
+
+    <!--
+        Clean the directory for the next build.
+    -->
+    <target name="clean">
+        <available file="./build.properties" property="build_properties_exist" value="true"/>
+        <fail unless="build_properties_exist" message="The build.properties file is missing." />
+
+        <delete dir="${build.dir}" includeemptydirs="true" />
+        <delete dir="${dist.dir}" includeemptydirs="true" />
+        <delete dir="${report.dir}" includeemptydirs="true" />
+    </target>
+
+    <!--
+        Prepare the new build directories after cleaning
+    -->
+    <target name="prepare" depends="clean">
+        <echo msg="Creating build directory: ${build.dir}" />
+        <mkdir dir="${build.dir}" />
+        <echo msg="Creating distribution directory: ${dist.dir}" />
+        <mkdir dir="${dist.dir}" />
+        <echo msg="Creating report directory: ${report.dir}" />
+        <mkdir dir="${report.dir}" />
+        <mkdir dir="${build.dir}/logs"/>
+        <mkdir dir="${report.dir}/tests"/>
+    </target>
+
+    <!--
+        Builds CouchDB package, preparing it for distribution.
+    -->
+    <target name="build-couchdb" depends="prepare">
+        <exec command="grep '${version}' ${project.basedir}/lib/Doctrine/ODM/CouchDB/Version.php" checkreturn="true"/>
+        <copy todir="${build.dir}/doctrine-couchdb">
+            <fileset refid="shared-artifacts"/>
+        </copy>
+        <copy todir="${build.dir}/doctrine-couchdb">
+            <fileset refid="common-sources"/>
+            <fileset refid="couchdb-sources"/>
+        </copy>
+        <exec command="sed 's/${version}-DEV/${version}/' ${build.dir}/doctrine-couchdb/Doctrine/CouchDB/Version.php > ${build.dir}/doctrine-couchdb/Doctrine/CouchDB/Version2.php" passthru="true" />
+        <exec command="mv ${build.dir}/doctrine-couchdb/Doctrine/CouchDB/Version2.php ${build.dir}/doctrine-couchdb/Doctrine/CouchDB/Version.php" passthru="true" />
+    </target>
+    
+    <target name="build-odm" depends="prepare">
+        <exec command="grep '${version}' ${project.basedir}/lib/Doctrine/ODM/CouchDB/Version.php" checkreturn="true"/>
+        <copy todir="${build.dir}/doctrine-odm">
+            <fileset refid="shared-artifacts"/>
+        </copy>
+        <copy todir="${build.dir}/doctrine-odm">
+            <fileset refid="common-sources"/>
+            <fileset refid="couchdb-sources"/>
+            <fileset refid="odm-sources"/>
+        </copy>
+        <copy todir="${build.dir}/doctrine-odm/Doctrine">
+            <fileset refid="symfony-sources"/>
+        </copy>
+        <copy todir="${build.dir}/doctrine-odm/bin">
+            <fileset refid="bin-scripts"/>
+        </copy>
+        <exec command="sed 's/${version}-DEV/${version}/' ${build.dir}/doctrine-odm/Doctrine/ODM/CouchDB/Version.php > ${build.dir}/doctrine-odm/Doctrine/ODM/CouchDB/Version2.php" passthru="true" />
+        <exec command="mv ${build.dir}/doctrine-odm/Doctrine/ODM/CouchDB/Version2.php ${build.dir}/doctrine-odm/Doctrine/ODM/CouchDB/Version.php" passthru="true" />
+    </target>
+
+    <target name="build" depends="build-couchdb, build-odm"/>
+
+    <!--
+        Builds distributable PEAR packages.
+    -->
+    <target name="build-packages" depends="build">
+        <d51pearpkg2 baseinstalldir="/" dir="${build.dir}/doctrine-couchdb">
+           <name>CouchDB</name>
+           <summary>Doctrine CouchDB Abstraction</summary>
+           <channel>pear.doctrine-project.org</channel>
+           <description>The Doctrine CouchDB package contains a client for CouchDB, HTTP Client and View Abstraction.</description>
+           <lead user="beberlei" name="Benjamin Eberlei" email="kontakt@beberlei.de" />
+           <lead user="lsmith" name="Lukas Smith" email="smith@pooteeweet.org" />
+           <license>LGPL</license>
+           <version release="${version}" api="${version}" />
+           <stability release="${stability}" api="${stability}" />
+           <notes>-</notes>
+           <dependencies>
+               <php minimum_version="5.3.2" />
+               <pear minimum_version="1.6.0" recommended_version="1.6.1" />
+               <package name="DoctrineCommon" channel="pear.doctrine-project.org" minimum_version="${dependencies.common}" />
+               <package name="DoctrineSymfonyConsole" channel="pear.doctrine-project.org" minimum_version="2.0.0" />
+               <package name="DoctrineSymfonyYaml" channel="pear.doctrine-project.org" minimum_version="2.0.0" />
+           </dependencies>
+           <dirroles key="bin">script</dirroles>
+           <ignore>Doctrine/Common/</ignore>
+           <ignore>Symfony/Component/Yaml/</ignore>
+           <ignore>Symfony/Component/Console/</ignore>
+        </d51pearpkg2>
+        <exec command="pear package" dir="${build.dir}/doctrine-couchdb" passthru="true" />
+        <exec command="mv DoctrineCouchDB-${version}.tgz ../../dist" dir="${build.dir}/doctrine-couchdb" passthru="true" />
+        <tar destfile="dist/DoctrineCouchDB-${version}-full.tar.gz" compression="gzip" basedir="${build.dir}">
+            <fileset dir="${build.dir}">
+                <include name="**/**" />
+                <exclude name="logs/" />
+                <exclude name="doctrine-couchdb/package.xml" />
+            </fileset>
+        </tar>
+        
+        <d51pearpkg2 baseinstalldir="/" dir="${build.dir}/doctrine-odm">
+           <name>CouchDBODM</name>
+           <summary>Doctrine CouchDB Object Document Mapper</summary>
+           <channel>pear.doctrine-project.org</channel>
+           <description>The Doctrine CouchDB ODM package contains document mapper.</description>
+           <lead user="beberlei" name="Benjamin Eberlei" email="kontakt@beberlei.de" />
+           <lead user="lsmith" name="Lukas Smith" email="smith@pooteeweet.org" />
+           <license>LGPL</license>
+           <version release="${version}" api="${version}" />
+           <stability release="${stability}" api="${stability}" />
+           <notes>-</notes>
+           <dependencies>
+               <php minimum_version="5.3.2" />
+               <pear minimum_version="1.6.0" recommended_version="1.6.1" />
+               <package name="DoctrineCommon" channel="pear.doctrine-project.org" minimum_version="${dependencies.common}" />
+               <package name="DoctrineSymfonyConsole" channel="pear.doctrine-project.org" minimum_version="2.0.0" />
+               <package name="DoctrineSymfonyYaml" channel="pear.doctrine-project.org" minimum_version="2.0.0" />
+           </dependencies>
+           <dirroles key="bin">script</dirroles>
+           <ignore>Doctrine/Common/</ignore>
+           <ignore>Symfony/Component/Yaml/</ignore>
+           <ignore>Symfony/Component/Console/</ignore>
+           <release>
+                <install as="doctrine-couchdb.php" name="bin/doctrine-couchdb.php" />
+           </release>
+        </d51pearpkg2>
+        <exec command="pear package" dir="${build.dir}/doctrine-odm" passthru="true" />
+        <exec command="mv DoctrineCouchDB-ODM-${version}.tgz ../../dist" dir="${build.dir}/doctrine-odm" passthru="true" />
+        <tar destfile="dist/DoctrineCouchDB-ODM-${version}-full.tar.gz" compression="gzip" basedir="${build.dir}">
+            <fileset dir="${build.dir}">
+                <include name="**/**" />
+                <exclude name="logs/" />
+                <exclude name="doctrine-odm/package.xml" />
+            </fileset>
+        </tar>
+    </target>
+
+
+    <target name="git-tag">
+        <!-- COUCHDB -->
+        <exec command="grep '${version}-DEV' ${project.basedir}/lib/Doctrine/CouchDB/Version.php" checkreturn="true"/>
+        <exec command="sed 's/${version}-DEV/${version}/' ${project.basedir}/lib/Doctrine/CouchDB/Version.php > ${project.basedir}/lib/Doctrine/CouchDB/Version2.php" passthru="true" />
+        <exec command="mv ${project.basedir}/lib/Doctrine/CouchDB/Version2.php ${project.basedir}/lib/Doctrine/CouchDB/Version.php" passthru="true" />
+        <exec command="git add ${project.basedir}/lib/Doctrine/CouchDB/Version.php" passthru="true" />
+        <exec command="git commit -m 'Release ${version}'" />
+        <exec command="git tag -m 'Tag ${version}' -a ${version}" passthru="true" />
+        
+        <!-- ODM -->
+        <exec command="grep '${version}-DEV' ${project.basedir}/lib/Doctrine/CouchDB/Version.php" checkreturn="true"/>
+        <exec command="sed 's/${version}-DEV/${version}/' ${project.basedir}/lib/Doctrine/CouchDB/Version.php > ${project.basedir}/lib/Doctrine/CouchDB/Version2.php" passthru="true" />
+        <exec command="mv ${project.basedir}/lib/Doctrine/CouchDB/Version2.php ${project.basedir}/lib/Doctrine/CouchDB/Version.php" passthru="true" />
+        <exec command="git add ${project.basedir}/lib/Doctrine/CouchDB/Version.php" passthru="true" />
+        <exec command="git commit -m 'Release ${version}'" />
+        <exec command="git tag -m 'Tag ${version}' -a ${version}" passthru="true" />
+    </target>
+
+    <target name="pirum-release">
+        <exec command="sudo pirum add ${project.pirum_dir} ${project.basedir}/dist/DoctrineCouchDB-${version}.tgz" dir="."  passthru="true" />
+        <exec command="sudo pirum build ${project.pirum_dir}" passthru="true" />
+        
+        <exec command="sudo pirum add ${project.pirum_dir} ${project.basedir}/dist/DoctrineCouchDB-ODM-${version}.tgz" dir="."  passthru="true" />
+        <exec command="sudo pirum build ${project.pirum_dir}" passthru="true" />
+    </target>
+
+    <target name="distribute-download">
+        <copy file="dist/DoctrineCouchDB-${version}-full.tar.gz" todir="${project.download_dir}" />
+        <copy file="dist/DoctrineCouchDB-ODM-${version}-full.tar.gz" todir="${project.download_dir}" />
+    </target>
+
+    <target name="update-dev-version">
+        <exec command="grep '${version}' ${project.basedir}/lib/Doctrine/CouchDB/Version.php" checkreturn="true"/>
+        <exec command="grep '${version}' ${project.basedir}/lib/Doctrine/ODM/CouchDB/Version.php" checkreturn="true"/>
+        <propertyprompt propertyName="next_version" defaultValue="${version}" promptText="Enter next version string (without -DEV)" />
+        <exec command="sed 's/${version}-DEV/${next_version}-DEV/' ${project.basedir}/lib/Doctrine/CouchDB/Version.php > ${project.basedir}/lib/Doctrine/CouchDB/Version2.php" passthru="true" />
+        <exec command="sed 's/${version}-DEV/${next_version}-DEV/' ${project.basedir}/lib/Doctrine/ODM/CouchDB/Version.php > ${project.basedir}/lib/Doctrine/ODM/CouchDB/Version2.php" passthru="true" />
+        <exec command="mv ${project.basedir}/lib/Doctrine/CouchDB/Version2.php ${project.basedir}/lib/Doctrine/CouchDB/Version.php" passthru="true" />
+        <exec command="mv ${project.basedir}/lib/Doctrine/ODM/CouchDB/Version2.php ${project.basedir}/lib/Doctrine/ODM/CouchDB/Version.php" passthru="true" />
+        <exec command="git add ${project.basedir}/lib/Doctrine/CouchDB/Version.php" passthru="true" />
+        <exec command="git add ${project.basedir}/lib/Doctrine/ODM/CouchDB/Version.php" passthru="true" />
+        <exec command="git commit -m 'Bump Dev Version to ${next_version}-DEV'" passthru="true" />
+        <exec command="git push origin master" passthru="true" />
+    </target>
+
+    <target name="release" depends="git-tag,build-packages,distribute-download,pirum-release,update-dev-version" />
+
+</project>
