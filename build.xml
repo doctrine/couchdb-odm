@@ -200,10 +200,10 @@
         <exec command="git tag -m 'Tag ${version}' -a ${version}" passthru="true" />
         
         <!-- ODM -->
-        <exec command="grep '${version}-DEV' ${project.basedir}/lib/Doctrine/CouchDB/Version.php" checkreturn="true"/>
-        <exec command="sed 's/${version}-DEV/${version}/' ${project.basedir}/lib/Doctrine/CouchDB/Version.php > ${project.basedir}/lib/Doctrine/CouchDB/Version2.php" passthru="true" />
-        <exec command="mv ${project.basedir}/lib/Doctrine/CouchDB/Version2.php ${project.basedir}/lib/Doctrine/CouchDB/Version.php" passthru="true" />
-        <exec command="git add ${project.basedir}/lib/Doctrine/CouchDB/Version.php" passthru="true" />
+        <exec command="grep '${version}-DEV' ${project.basedir}/lib/Doctrine/ODM/CouchDB/Version.php" checkreturn="true"/>
+        <exec command="sed 's/${version}-DEV/${version}/' ${project.basedir}/lib/Doctrine/ODM/CouchDB/Version.php > ${project.basedir}/lib/Doctrine/ODM/CouchDB/Version2.php" passthru="true" />
+        <exec command="mv ${project.basedir}/lib/Doctrine/ODM/CouchDB/Version2.php ${project.basedir}/lib/Doctrine/ODM/CouchDB/Version.php" passthru="true" />
+        <exec command="git add ${project.basedir}/lib/Doctrine/ODM/CouchDB/Version.php" passthru="true" />
         <exec command="git commit -m 'Release ${version}'" />
         <exec command="git tag -m 'Tag ${version}' -a ${version}" passthru="true" />
     </target>
