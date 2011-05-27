@@ -143,7 +143,7 @@
            <ignore>Symfony/Component/Console/</ignore>
         </d51pearpkg2>
         <exec command="pear package" dir="${build.dir}/doctrine-couchdb" passthru="true" />
-        <exec command="mv DoctrineCouchDB-${version}.tgz ../../dist" dir="${build.dir}/doctrine-couchdb" passthru="true" />
+        <exec command="mv CouchDB-${version}.tgz ../../dist" dir="${build.dir}/doctrine-couchdb" passthru="true" />
         <tar destfile="dist/DoctrineCouchDB-${version}-full.tar.gz" compression="gzip" basedir="${build.dir}">
             <fileset dir="${build.dir}">
                 <include name="**/**" />
@@ -179,7 +179,7 @@
            </release>
         </d51pearpkg2>
         <exec command="pear package" dir="${build.dir}/doctrine-odm" passthru="true" />
-        <exec command="mv DoctrineCouchDB-ODM-${version}.tgz ../../dist" dir="${build.dir}/doctrine-odm" passthru="true" />
+        <exec command="mv CouchDBODM-${version}.tgz ../../dist" dir="${build.dir}/doctrine-odm" passthru="true" />
         <tar destfile="dist/DoctrineCouchDB-ODM-${version}-full.tar.gz" compression="gzip" basedir="${build.dir}">
             <fileset dir="${build.dir}">
                 <include name="**/**" />
