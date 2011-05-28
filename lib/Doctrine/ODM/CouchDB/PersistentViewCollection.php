@@ -42,6 +42,7 @@ class PersistentViewCollection extends PersistentCollection
             $this->isInitialized = true;
 
             $elements = $this->col->toArray();
+            $this->col->clear();
 
             $relatedObjects = $this->dm->createNativeQuery('doctrine_associations', 'inverse_associations')
                                   ->setStartKey(array($this->owningDocumentId, $this->assoc['mappedBy']))
@@ -54,6 +55,7 @@ class PersistentViewCollection extends PersistentCollection
                 $this->col->add($uow->createDocument($this->assoc['targetDocument'], $relatedRow['doc']));
             }
 
+            // append old elements
             foreach ($elements AS $object) {
                 $this->col->add($object);
             }
