@@ -45,8 +45,8 @@ class PersistentIdsCollection extends PersistentCollection
             $this->col->clear();
 
             $objects = $this->dm->getUnitOfWork()->findMany($this->ids, $this->documentName);
-            foreach ($objects AS $object) {
-                $this->col->add($object);
+            foreach ($objects AS $key => $object) {
+                $this->col->set($key, $object);
             }
             // append old elements
             foreach ($elements AS $object) {

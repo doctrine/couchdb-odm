@@ -170,6 +170,26 @@ class ManyToManyAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunct
           'Doctrine\\Tests\\Models\\CMS\\CmsUser',
         ), $classes);
     }
+
+    public function testPersistKeys()
+    {
+        $node = new CmsNode();
+        foreach ($this->groupIds AS $groupId) {
+            $node->references[$groupId] = $this->dm->find('Doctrine\Tests\Models\CMS\CmsGroup', $groupId);
+        }
+
+        $this->dm->persist($node);
+        $this->dm->flush();
+        $this->dm->clear();
+
+        $node = $this->dm->find('Doctrine\Tests\Models\CMS\CmsNode', $node->id);
+        $this->assertEquals(2, count($node->references));
+
+        foreach ($this->groupIds AS $groupId) {
+            $this->assertTrue(isset($node->references[$groupId]), "References array should be indexed by group id, but key does not exist");
+            $this->assertInstanceOf('Doctrine\Tests\Models\CMS\CmsGroup', $node->references[$groupId]);
+        }
+    }
 }
 
 class CountScheduledUpdatesListener

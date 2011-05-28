@@ -1034,8 +1034,8 @@ class UnitOfWork
                             // TODO: Optimize when not initialized yet! In ManyToMany case we can keep track of ALL ids
                             $ids = array();
                             if (is_array($fieldValue) || $fieldValue instanceof \Doctrine\Common\Collections\Collection) {
-                                foreach ($fieldValue AS $relatedObject) {
-                                    $ids[] = $this->getDocumentIdentifier($relatedObject);
+                                foreach ($fieldValue AS $key => $relatedObject) {
+                                    $ids[$key] = $this->getDocumentIdentifier($relatedObject);
                                 }
                             }
                             $data = $this->metadataResolver->storeAssociationField($data, $class, $this->dm, $fieldName, $ids);
