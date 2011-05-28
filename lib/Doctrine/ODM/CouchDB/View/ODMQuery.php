@@ -35,14 +35,19 @@ class ODMQuery extends Query
      */
     private $onlyDocs = false;
 
+    private $toArray = false;
+
     public function execute()
     {
         $response = $this->doExecute();
+        $data = array();
         if ($this->dm && $this->getParameter('include_docs') === true) {
             $uow = $this->dm->getUnitOfWork();
             foreach ($response->body['rows'] AS $k => $v) {
                 $doc = $uow->createDocument(null, $v['doc']);
-                if ($this->onlyDocs) {
+                if ($this->toArray) {
+                    $data[] = $doc;
+                } else if ($this->onlyDocs) {
                     $response->body['rows'][$k] = $doc;
                 } else {
                     $response->body['rows'][$k]['doc'] = $doc;
@@ -50,7 +55,7 @@ class ODMQuery extends Query
             }
         }
 
-        return $this->createResult($response);
+        return ($this->toArray) ? $data : $this->createResult($response);
     }
 
 
@@ -70,6 +75,12 @@ class ODMQuery extends Query
     {
         $this->setIncludeDocs(true);
         $this->onlyDocs = $flag;
+        return $this;
+    }
+
+    public function toArray($flag)
+    {
+        $this->toArray = $flag;
         return $this;
     }
 }

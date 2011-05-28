@@ -132,20 +132,15 @@ class DocumentRepository implements ObjectRepository
             foreach ($criteria AS $field => $value) {
                 $query = $this->dm->createQuery('doctrine_repositories', 'equal_constraint')
                                   ->setKey(array($this->documentType, $field, $value))
-                                  ->setIncludeDocs(true);
+                                  ->setIncludeDocs(true)
+                                  ->toArray(true);
                 if ($limit) {
                    $query->setLimit($limit);
                 }
                 if ($offset) {
                    $query->setSkip($offset);
                 }
-                $result = $query->execute();
-                
-                $docs = array();
-                foreach ($result AS $doc) {
-                    $docs[] = $doc['doc'];
-                }
-                return $docs;
+                return $query->execute();
             }
         } else {
             $ids = array();
