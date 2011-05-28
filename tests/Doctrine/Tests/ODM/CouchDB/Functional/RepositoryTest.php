@@ -47,7 +47,7 @@ class RepositoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
 
         $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findMany(array($user1->id, $user2->id), 1, 1);
         $this->assertEquals(1, count($users));
-        $this->assertSame($user2, $users[0]);
+        $this->assertSame($user2, $users[1]);
 
         $this->dm->clear();
 

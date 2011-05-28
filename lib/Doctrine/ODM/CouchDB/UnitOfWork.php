@@ -1197,9 +1197,21 @@ class UnitOfWork
         return method_exists($obj, '__toString') ? (string)$obj : get_class($obj).'@'.spl_object_hash($obj);
     }
 
+    /**
+     * Find many documents by id.
+     *
+     * Important: Each document is returned with the key it has in the $ids array!
+     *
+     * @param array $ids
+     * @param string $documentName
+     * @param int $limit
+     * @param int $offset
+     * @return array
+     */
     public function findMany(array $ids, $documentName = null, $limit = null, $offset = null)
     {
         $response = $this->dm->getCouchDBClient()->findDocuments($ids, $limit, $offset);
+        $keys = array_flip($ids);
 
         if ($response->status != 200) {
             throw new \Exception("loadMany error code " . $response->status);
@@ -1208,7 +1220,7 @@ class UnitOfWork
         $docs = array();
         if ($response->body['total_rows'] > 0) {
             foreach ($response->body['rows'] AS $responseData) {
-                $docs[] = $this->createDocument($documentName, $responseData['doc']);
+                $docs[$keys[$responseData['id']]] = $this->createDocument($documentName, $responseData['doc']);
             }
         }
         return $docs;

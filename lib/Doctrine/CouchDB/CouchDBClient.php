@@ -112,7 +112,9 @@ class CouchDBClient
             $allDocsPath .= '&skip=' . (int)$offset;
         }
 
-        return $this->httpClient->request('POST', $allDocsPath, json_encode(array('keys' => $ids)));
+        return $this->httpClient->request('POST', $allDocsPath, json_encode(
+            array('keys' => array_values($ids)))
+        );
     }
 
     /**
