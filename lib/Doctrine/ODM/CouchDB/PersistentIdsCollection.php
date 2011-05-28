@@ -43,8 +43,7 @@ class PersistentIdsCollection extends PersistentCollection
 
             $elements = $this->col->toArray();
 
-            $repository = $this->dm->getRepository($this->documentName);
-            $objects = $repository->findMany($this->ids);
+            $objects = $this->dm->getUnitOfWork()->findMany($this->ids, $this->documentName);
             foreach ($objects AS $object) {
                 $this->col->add($object);
             }

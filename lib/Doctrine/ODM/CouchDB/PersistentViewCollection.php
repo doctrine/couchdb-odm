@@ -25,14 +25,14 @@ class PersistentViewCollection extends PersistentCollection
 {
     private $dm;
     private $owningDocumentId;
-    private $assocFieldName;
+    private $assoc;
 
-    public function __construct(Collection $collection, DocumentManager $dm, $owningDocumentId, $assocFieldName)
+    public function __construct(Collection $collection, DocumentManager $dm, $owningDocumentId, $assoc)
     {
         $this->col = $collection;
         $this->dm = $dm;
         $this->owningDocumentId = $owningDocumentId;
-        $this->assocFieldName = $assocFieldName;
+        $this->assoc = $assoc;
         $this->isInitialized = false;
     }
 
@@ -44,14 +44,14 @@ class PersistentViewCollection extends PersistentCollection
             $elements = $this->col->toArray();
 
             $relatedObjects = $this->dm->createNativeQuery('doctrine_associations', 'inverse_associations')
-                                  ->setStartKey(array($this->owningDocumentId, $this->assocFieldName))
-                                  ->setEndKey(array($this->owningDocumentId, $this->assocFieldName, 'z'))
+                                  ->setStartKey(array($this->owningDocumentId, $this->assoc['mappedBy']))
+                                  ->setEndKey(array($this->owningDocumentId, $this->assoc['mappedBy'], 'z'))
                                   ->setIncludeDocs(true)
                                   ->execute();
 
             $uow = $this->dm->getUnitOfWork();
             foreach ($relatedObjects AS $relatedRow) {
-                $this->col->add($uow->createDocument(null, $relatedRow['doc']));
+                $this->col->add($uow->createDocument($this->assoc['targetDocument'], $relatedRow['doc']));
             }
 
             foreach ($elements AS $object) {

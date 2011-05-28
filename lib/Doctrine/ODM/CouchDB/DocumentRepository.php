@@ -104,27 +104,13 @@ class DocumentRepository implements ObjectRepository
     /**
      * Find Many documents of the given repositories type by id.
      *
-     * Used for grabbing collections aswell, marked as final because of this.
-     *
      * @param array $ids
      * @return array
      */
-    final public function findMany(array $ids, $limit = null, $offset = null)
+    public function findMany(array $ids, $limit = null, $offset = null)
     {
         $uow = $this->dm->getUnitOfWork();
-        $response = $this->dm->getCouchDBClient()->findDocuments($ids, $limit, $offset);
-
-        if ($response->status != 200) {
-            throw new \Exception("loadMany error code " . $response->status);
-        }
-
-        $docs = array();
-        if ($response->body['total_rows'] > 0) {
-            foreach ($response->body['rows'] AS $responseData) {
-                $docs[] = $uow->createDocument($this->documentName, $responseData['doc']);
-            }
-        }
-        return $docs;
+        return $uow->findMany($ids, $this->documentName, $limit, $offset);
     }
 
     public function findAll()

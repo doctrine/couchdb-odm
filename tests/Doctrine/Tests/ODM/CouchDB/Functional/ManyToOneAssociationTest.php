@@ -2,6 +2,8 @@
 
 namespace Doctrine\Tests\ODM\CouchDB\Functional;
 
+use Doctrine\Tests\Models\CMS\CmsNode;
+
 class ManyToOneAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 {
     private $articleId;
@@ -72,5 +74,18 @@ class ManyToOneAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFuncti
     public function testNullReference()
     {
         $this->markTestIncomplete('Test that persisting and hydrating null works smoothly.');
+    }
+
+    public function testNoTargetDocument()
+    {
+        $node = new CmsNode();
+        $node->content = $this->dm->find('Doctrine\Tests\Models\CMS\CmsArticle', $this->articleId);
+
+        $this->dm->persist($node);
+        $this->dm->flush();
+        $this->dm->clear();
+
+        $node = $this->dm->find('Doctrine\Tests\Models\CMS\CmsNode', $node->id);
+        $this->assertInstanceof('Doctrine\Tests\Models\CMS\CmsArticle', $node->content);
     }
 }

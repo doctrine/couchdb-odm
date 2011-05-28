@@ -208,7 +208,7 @@ class UnitOfWork
                     new \Doctrine\Common\Collections\ArrayCollection(),
                     $this->dm,
                     $id,
-                    $class->associationsMappings[$assocName]['mappedBy']
+                    $class->associationsMappings[$assocName]
                 );
             }
         }
@@ -553,7 +553,7 @@ class UnitOfWork
                                     new ArrayCollection,
                                     $this->dm,
                                     $this->documentIdentifiers[$managedOid],
-                                    $assoc2['mappedBy']
+                                    $assoc2
                                 );
                             }
                             $prop->setValue($managedCopy, $managedCol);
@@ -803,7 +803,7 @@ class UnitOfWork
                         $value,
                         $this->dm,
                         $this->documentIdentifiers[$oid],
-                        $class->associationsMappings[$fieldName]['mappedBy']
+                        $class->associationsMappings[$fieldName]
                     );
                 }
 
@@ -922,8 +922,8 @@ class UnitOfWork
             $value = $value->unwrap();
         }
 
-        $targetClass = $this->dm->getClassMetadata($assoc['targetDocument']);
         foreach ($value as $entry) {
+            $targetClass = $this->dm->getClassMetadata($assoc['targetDocument'] ?: get_class($entry));
             $state = $this->getDocumentState($entry);
             $oid = spl_object_hash($entry);
             if ($state == self::STATE_NEW) {
@@ -1195,5 +1195,22 @@ class UnitOfWork
     private static function objToStr($obj)
     {
         return method_exists($obj, '__toString') ? (string)$obj : get_class($obj).'@'.spl_object_hash($obj);
+    }
+
+    public function findMany(array $ids, $documentName = null, $limit = null, $offset = null)
+    {
+        $response = $this->dm->getCouchDBClient()->findDocuments($ids, $limit, $offset);
+
+        if ($response->status != 200) {
+            throw new \Exception("loadMany error code " . $response->status);
+        }
+
+        $docs = array();
+        if ($response->body['total_rows'] > 0) {
+            foreach ($response->body['rows'] AS $responseData) {
+                $docs[] = $this->createDocument($documentName, $responseData['doc']);
+            }
+        }
+        return $docs;
     }
 }

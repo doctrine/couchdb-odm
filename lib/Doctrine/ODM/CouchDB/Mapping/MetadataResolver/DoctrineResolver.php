@@ -51,12 +51,26 @@ class DoctrineResolver implements MetadataResolver
 
     public function resolveJsonField(ClassMetadata $class, DocumentManager $dm, $documentState, $jsonName, $jsonValue)
     {
+        $uow = $dm->getUnitOfWork();
+        $couchClient = $dm->getCouchDBClient();
+
         if ($jsonName == 'doctrine_metadata' && isset($jsonValue['associations'])) {
             foreach ($jsonValue['associations'] AS $assocName => $assocValue) {
                 if (isset($class->associationsMappings[$assocName])) {
                     if ($class->associationsMappings[$assocName]['type'] & ClassMetadata::TO_ONE) {
                         if ($assocValue) {
-                            $assocValue = $dm->getReference($class->associationsMappings[$assocName]['targetDocument'], $assocValue);
+                            if ($class->associationsMappings[$assocName]['targetDocument']) {
+                                $assocValue = $dm->getReference($class->associationsMappings[$assocName]['targetDocument'], $assocValue);
+                            } else {
+                                $response = $couchClient->findDocument($assocValue);
+
+                                if ($response->status == 404) {
+                                    $assocValue = null;
+                                } else {
+                                    $hints = array();
+                                    $assocValue = $uow->createDocument(null, $response->body, $hints);
+                                }
+                            }
                         }
                         $documentState[$class->associationsMappings[$assocName]['fieldName']] = $assocValue;
                     } else if ($class->associationsMappings[$assocName]['type'] & ClassMetadata::MANY_TO_MANY) {

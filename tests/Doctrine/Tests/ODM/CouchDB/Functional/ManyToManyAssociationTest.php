@@ -2,6 +2,9 @@
 
 namespace Doctrine\Tests\ODM\CouchDB\Functional;
 
+use Doctrine\Tests\Models\CMS\CmsArticle;
+use Doctrine\Tests\Models\CMS\CmsNode;
+
 class ManyToManyAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 {
     private $userId;
@@ -134,6 +137,38 @@ class ManyToManyAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunct
         
         $this->dm->flush();
         $this->assertEquals(2, $listener->preUpdates);
+    }
+
+    public function testNoTargetDocument()
+    {
+        $article = new CmsArticle();
+        $article->text = "Foo";
+        $article->headline = "Bar";
+        $node = new CmsNode();
+        $node->references[] = $article;
+        foreach ($this->groupIds AS $groupId) {
+            $node->references[] = $this->dm->find('Doctrine\Tests\Models\CMS\CmsGroup', $groupId);
+        }
+        $node->references[] = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $this->userId);
+
+        $this->dm->persist($article);
+        $this->dm->persist($node);
+
+        $this->dm->flush();
+        $this->dm->clear();
+
+        $node = $this->dm->find('Doctrine\Tests\Models\CMS\CmsNode', $node->id);
+        $this->assertEquals(4, count($node->references));
+        $classes = array();
+        foreach ($node->references AS $reference) {
+            $classes[] = get_class($reference);
+        }
+        $this->assertEquals(array(
+          'Doctrine\\Tests\\Models\\CMS\\CmsArticle',
+          'Doctrine\\Tests\\Models\\CMS\\CmsGroup',
+          'Doctrine\\Tests\\Models\\CMS\\CmsGroup',
+          'Doctrine\\Tests\\Models\\CMS\\CmsUser',
+        ), $classes);
     }
 }
 
