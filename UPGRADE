@@ -1,0 +1,15 @@
+Upgrade from Alpha 1 to Alpha2
+==============================
+
+Metadata Document representation changed
+----------------------------------------
+
+The Metadata representation of Doctrine mapped CouchDB documents changed significantly.
+To migrate your old data you have to call:
+
+    php doctrine-couchdb.php couchdb:migrate "Doctrine\ODM\CouchDB\Tools\Migrations\Alpha2Migration"
+
+To make this work you have to put your own doctrine-couchdb.php in your project. You can copy
+it from bin/ or sandbox/ folders of the CouchDB migration. Make sure to also ship a cli-config.php
+script like shown in the sandbox/cli-config.php
+

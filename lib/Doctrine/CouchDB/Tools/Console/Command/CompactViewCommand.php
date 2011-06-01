@@ -17,7 +17,7 @@
  * <http://www.doctrine-project.org>.
  */
 
-namespace Doctrine\ODM\CouchDB\Tools\Console\Command;
+namespace Doctrine\CouchDB\Tools\Console\Command;
 
 use Symfony\Component\Console\Input\InputArgument,
     Symfony\Component\Console\Input\InputOption,
@@ -25,20 +25,23 @@ use Symfony\Component\Console\Input\InputArgument,
     Symfony\Component\Console\Output\OutputInterface,
     Symfony\Component\Console\Command\Command;
 
-class CompactDatabaseCommand extends Command
+class CompactViewCommand extends Command
 {
     protected function configure()
     {
-        $this->setName('couchdb:maintenance:compact-database')
-             ->setDescription('Compact the database');
+        $this->setName('couchdb:maintenance:compact-view')
+             ->setDescription('Compat the given view')
+             ->setDefinition(array(
+                 new InputArgument('designdoc', InputArgument::REQUIRED, 'Design document name', null),
+             ));
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $couchClient = $this->getHelper('couchdb')->getCouchDBClient();
-        /* @var $couchClient \Doctrine\ODM\CouchDB\CouchDBClient */
+        /* @var $couchClient \Doctrine\CouchDB\CouchDBClient */
 
-        $data = $couchClient->compactDatabase();
-        $output->writeln("Database compact started.");
+        $data = $couchClient->compactView($input->getArgument('designdoc'));
+        $output->writeln("View compact started.");
     }
 }

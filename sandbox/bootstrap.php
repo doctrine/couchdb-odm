@@ -5,7 +5,7 @@ require_once __DIR__ . "/../lib/vendor/doctrine-common/lib/Doctrine/Common/Class
 $loader = new \Doctrine\Common\ClassLoader("Doctrine\Common", __DIR__ . "/../lib/vendor/doctrine-common/lib");
 $loader->register();
 
-$loader = new \Doctrine\Common\ClassLoader("Doctrine\ODM\CouchDB", __DIR__ . "/../lib");
+$loader = new \Doctrine\Common\ClassLoader("Doctrine", __DIR__ . "/../lib");
 $loader->register();
 
 $loader = new \Doctrine\Common\ClassLoader("Symfony", __DIR__ . "/../lib/vendor");
@@ -16,7 +16,7 @@ $loader->register();
 
 $database = "doctrine_sandbox";
 
-$httpClient = new \Doctrine\ODM\CouchDB\HTTP\SocketClient();
+$httpClient = new \Doctrine\CouchDB\HTTP\SocketClient();
 
 // create database if not existing
 $resp = $httpClient->request('PUT', '/' . $database);

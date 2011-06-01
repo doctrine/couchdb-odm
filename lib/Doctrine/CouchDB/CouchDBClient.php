@@ -118,6 +118,25 @@ class CouchDBClient
     }
 
     /**
+     * Get all documents
+     *
+     * @param int|null $limit
+     * @param string|null $startKey
+     * @return array
+     */
+    public function allDocs($limit = null, $startKey = null)
+    {
+        $allDocsPath = '/' . $this->databaseName . '/_all_docs?include_docs=true';
+        if ($limit) {
+            $allDocsPath .= '&limit=' . (int)$limit;
+        }
+        if ($startKey) {
+            $allDocsPath .= '&startkey="' . (string)$startKey.'"';
+        }
+        return $this->httpClient->request('GET', $allDocsPath);
+    }
+
+    /**
      * Get the current version of CouchDB.
      *
      * @throws HTTPException

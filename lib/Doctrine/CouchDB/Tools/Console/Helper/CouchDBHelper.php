@@ -17,12 +17,11 @@
  * <http://www.doctrine-project.org>.
  */
 
-namespace Doctrine\ODM\CouchDB\Tools\Console\Helper;
+namespace Doctrine\CouchDB\Tools\Console\Helper;
 
 use Symfony\Component\Console\Helper\Helper;
 use Doctrine\CouchDB\CouchDBClient;
 use Doctrine\ODM\CouchDB\DocumentManager;
-use Doctrine\ODM\CouchDB\CouchDBClient;
 
 /**
  * Doctrine CLI Connection Helper.
