@@ -29,7 +29,7 @@ class DoctrineResolver implements MetadataResolver
 {
     public function createDefaultDocumentStruct(ClassMetadata $class)
     {
-        $struct = array('doctrine_metadata' => array('type' => str_replace("\\", ".", $class->name)));
+        $struct = array('type' => str_replace("\\", ".", $class->name));
         if ($class->indexed) {
             $struct['doctrine_metadata']['indexed'] = true;
         }
@@ -46,16 +46,17 @@ class DoctrineResolver implements MetadataResolver
 
     public function getDocumentType(array $documentData)
     {
-        return (str_replace(".", "\\", $documentData['doctrine_metadata']['type']));
+        return (str_replace(".", "\\", $documentData['type']));
     }
 
-    public function resolveJsonField(ClassMetadata $class, DocumentManager $dm, $documentState, $jsonName, $jsonValue)
+    public function resolveJsonField(ClassMetadata $class, DocumentManager $dm, $documentState, $jsonName, $originalData)
     {
         $uow = $dm->getUnitOfWork();
         $couchClient = $dm->getCouchDBClient();
 
-        if ($jsonName == 'doctrine_metadata' && isset($jsonValue['associations'])) {
-            foreach ($jsonValue['associations'] AS $assocName => $assocValue) {
+        if ($jsonName == 'doctrine_metadata' && isset($originalData['doctrine_metadata']['associations'])) {
+            foreach ($originalData['doctrine_metadata']['associations'] AS $assocName) {
+                $assocValue = $originalData[$assocName];
                 if (isset($class->associationsMappings[$assocName])) {
                     if ($class->associationsMappings[$assocName]['type'] & ClassMetadata::TO_ONE) {
                         if ($assocValue) {
@@ -91,12 +92,13 @@ class DoctrineResolver implements MetadataResolver
 
     public function canMapDocument(array $documentData)
     {
-        return isset($documentData['doctrine_metadata']);
+        return isset($documentData['type']);
     }
 
     public function storeAssociationField($data, ClassMetadata $class, DocumentManager $dm, $fieldName, $fieldValue)
     {
-        $data['doctrine_metadata']['associations'][$fieldName] = $fieldValue;
+        $data['doctrine_metadata']['associations'][] = $fieldName;
+        $data[$fieldName] = $fieldValue;
         return $data;
     }
 }

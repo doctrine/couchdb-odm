@@ -8,7 +8,5 @@
             "data": "VGhpcyBpcyBhIGJhc2U2NCBlbmNvZGVkIHRleHQ="
         }
     },
-    "doctrine_metadata": {
-        "type": "Doctrine\Tests\Models\CMS\CmsUser"
-    }
+    "type": "Doctrine.Tests.Models.CMS.CmsUser"
 }

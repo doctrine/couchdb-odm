@@ -43,7 +43,7 @@ function (doc)
         var indexes = doc.doctrine_metadata.indexes;
         for ( idx in indexes ) {
             if (doc[indexes[idx]] != null) {
-                emit([doc.doctrine_metadata.type, indexes[idx], doc[indexes[idx]]], {"_id": doc._id} );
+                emit([doc.type, indexes[idx], doc[indexes[idx]]], {"_id": doc._id} );
             }
         }
     }
@@ -54,7 +54,7 @@ JS;
 function (doc)
 {
     if (doc.doctrine_metadata && doc.doctrine_metadata.indexed) {
-        emit(doc.doctrine_metadata.type, {"_id": doc._id} );
+        emit(doc.type, {"_id": doc._id} );
     }
 }
 JS;

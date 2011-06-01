@@ -23,8 +23,8 @@ class ProxyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
             '_id' => "1",
             'title' => 'foo',
             'body' => 'bar',
-            'doctrine_metadata' => array('type' => $this->type
-        )));
+            'type' => $this->type
+        ));
         $resp = $httpClient->request('PUT', '/' . $database . '/1', $data);
         $this->assertEquals(201, $resp->status);
 

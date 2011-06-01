@@ -22,7 +22,7 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
             array(
                 '_id' => "1",
                 'username' => 'lsmith',
-                'doctrine_metadata' => array('type' => $this->type)
+                'type' => $this->type,
             )
         );
         $resp = $httpClient->request('PUT', '/' . $this->dm->getConfiguration()->getDatabase() . '/1', $data);
@@ -167,7 +167,7 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
             'username' => 'beberlei',
             'email' => 'kontakt@beberlei.de',
             'address' => array('city' => 'Bonn', 'country' => 'DE'),
-            'doctrine_metadata' => array('type' => str_replace("\\", ".", $this->type))
+            'type' => str_replace("\\", ".", $this->type),
         );
         $resp = $httpClient->request('PUT', '/' . $this->dm->getConfiguration()->getDatabase() . '/2', json_encode($data));
         $this->assertEquals(201, $resp->status);

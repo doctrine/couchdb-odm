@@ -23,33 +23,32 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
         $resolver = new DoctrineResolver();
         $this->serializer = new EmbeddedDocumentSerializer($this->metadataFactory, $resolver);
 
-
         $this->arrayDataFixture = array(
-            'doctrine_metadata' => array('type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Embedded'),
+            'type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Embedded',
             'name' => 'embedded-1',
             'embeds' => array(
                 'one' => array(
-                    'doctrine_metadata' => array('type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Nested'),
+                    'type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Nested',
                     'nestedName' => 'a111'
                     ),
                 'two' => array(
-                    'doctrine_metadata' => array('type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Nested'),
+                    'type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Nested',
                     'nestedName' => 'a222'
                     )
                 ),
             );
         $this->embedOneFixture = array(
-                'doctrine_metadata' => array('type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Embedded'),
+                'type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Embedded',
                 'name' => 'embeddedAnyOne',
 
             );
         $this->embedAnyFixture = array(
             'any_1' => array(
-                'doctrine_metadata' => array('type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Embedded'),
+                'type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Embedded',
                 'name' => 'embedAny_1'
                 ),
             'any_2' => array(
-                'doctrine_metadata' => array('type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Nested'),
+                'type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Nested',
                 'nestedName' => 'embedAny_2'
                 )
             );
@@ -135,7 +134,7 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
         $embedderMetadata =
             $this->metadataFactory->getMetadataFor('Doctrine\Tests\ODM\CouchDB\Mapping\Embedder');
 
-        $this->arrayDataFixture['embeds']['two']['doctrine_metadata']['type'] = 'Doctrine.Tests.ODM.CouchDB.Mapping.Embedded';
+        $this->arrayDataFixture['embeds']['two']['type'] = 'Doctrine.Tests.ODM.CouchDB.Mapping.Embedded';
         $this->setExpectedException('InvalidArgumentException');
         $instance = $this->serializer->createEmbeddedDocument(
             $this->arrayDataFixture,
@@ -221,11 +220,11 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
         $this->assertEquals(
             array(
                 array(
-                    'doctrine_metadata' => array('type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Embedded'),
+                    'type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Embedded',
                     'name' => 'embeddedMany_1'
                     ),
                 array(
-                    'doctrine_metadata' => array('type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Nested'),
+                    'type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Nested',
                     'nestedName' => 'embeddedMany_2'
                     )
                 ),
@@ -236,7 +235,7 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
             $embedderMetadata->fieldMappings['embedAnyOne']);
         $this->assertEquals(
             array(
-                'doctrine_metadata' => array('type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Nested'),
+                'type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Nested',
                 'nestedName' => 'embedOne'
                 ),
             $arrayData);

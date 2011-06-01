@@ -36,7 +36,7 @@ interface MetadataResolver
 
     public function canResolveJsonField($jsonName);
 
-    public function resolveJsonField(ClassMetadata $class, DocumentManager $dm, $documentState, $jsonName, $jsonValue);
+    public function resolveJsonField(ClassMetadata $class, DocumentManager $dm, $documentState, $jsonName, $originalData);
 
     public function storeAssociationField($data, ClassMetadata $class, DocumentManager $dm, $fieldName, $fieldValue);
 }

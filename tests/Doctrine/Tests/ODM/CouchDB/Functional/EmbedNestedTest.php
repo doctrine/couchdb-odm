@@ -26,16 +26,16 @@ class EmbedNestedTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestC
                     'embeds' => array(
                         array(
                             'nestedName' => 'nested one',
-                            'doctrine_metadata' => array('type' => $this->nestedType)
+                            'type' => $this->nestedType
                             ),
                         array(
                             'nestedName' => 'nested two',
-                            'doctrine_metadata' => array('type' => $this->nestedType)
+                            'type' => $this->nestedType
                             )
                         ),
-                    'doctrine_metadata' => array('type' => $this->embeddedType)
+                    'type' => $this->embeddedType
                     ),
-                'doctrine_metadata' => array('type' => $this->type)
+                'type' => $this->type
                 ));
         $resp = $httpClient->request('PUT', '/' . $this->dm->getConfiguration()->getDatabase() . '/1', $data);
         $this->assertEquals(201, $resp->status);

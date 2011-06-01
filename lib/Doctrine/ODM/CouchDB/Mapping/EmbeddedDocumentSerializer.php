@@ -106,9 +106,20 @@ class EmbeddedDocumentSerializer
      */
     public function createEmbeddedDocument($data, $embeddedFieldMapping)
     {
+        if ($data === null) {
+            return null;
+        } else if (!is_array($data)) {
+            throw new \InvalidArgumentException("Cannot hydrate embedded if the data given is not an array");
+        }
+        
         if ('many' == $embeddedFieldMapping['embedded']) {
+
             $result = array();
             foreach ($data as $jsonName => $jsonValue) {
+                if (!is_array($jsonValue)) {
+                    throw new \InvalidArgumentException("Cannot hydrate many embedded if the data given is not an array");
+                }
+
                 $result[$jsonName] = $this->doCreateEmbeddedDocument($jsonValue, $embeddedFieldMapping);
             }
             ksort($result);

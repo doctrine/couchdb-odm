@@ -64,7 +64,7 @@ class LuceneQueryDesignDoc implements DesignDocument
                     "index" => "function(doc) {
                         var ret = new Document();
                         ret.add(doc.name);
-                        ret.add(doc.doctrine_metadata.type, {field: \"type\"});
+                        ret.add(doc.type, {field: \"type\"});
                         return ret;
                     }"
                 )

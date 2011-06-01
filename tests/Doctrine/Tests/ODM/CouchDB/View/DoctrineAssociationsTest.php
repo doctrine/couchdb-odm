@@ -8,7 +8,7 @@ use Doctrine\ODM\CouchDB\View\DoctrineAssociations;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 use Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase;
 
-class DoctrineAssocationsTest extends CouchDBFunctionalTestCase
+class DoctrineAssociationsTest extends CouchDBFunctionalTestCase
 {
     private $dm;
 
@@ -44,22 +44,20 @@ class DoctrineAssocationsTest extends CouchDBFunctionalTestCase
         // Create some "interesting" documents
         $db->request( 'PUT', '/' . $this->getTestDatabase() . '/doc_a', json_encode( array(
             "_id" => "doc_a",
+            "type" => "type_a",
             "doctrine_metadata" => array(
-                "type" => "type_a",
-                "associations" => array(
-                    "type_b" => array( "doc_b" ),
-                    "type_c" => array( "doc_d" ),
-                ),
+                "associations" => array("type_b", "type_c"),
             ),
+            "type_b" => array( "doc_b" ),
+            "type_c" => array( "doc_d" ),
         ) ) );
         $db->request( 'PUT', '/' . $this->getTestDatabase() . '/doc_b', json_encode( array(
             "_id" => "doc_b",
             "doctrine_metadata" => array(
                 "type" => "type_b",
-                "associations" => array(
-                    "type_c" => array( "doc_c", "doc_d" ),
-                ),
+                "associations" => array("type_c")
             ),
+            "type_c" => array( "doc_c", "doc_d" ),
         ) ) );
         $db->request( 'PUT', '/' . $this->getTestDatabase() . '/doc_c', json_encode( array(
             "_id" => "doc_c",
@@ -83,7 +81,7 @@ class DoctrineAssocationsTest extends CouchDBFunctionalTestCase
 
         $view = $this->createDoctrineViewQuery();
         $result = $view->setStartKey( array("doc_b", "type_b") )
-                       ->setEndKey(   array("doc_b", "type_b", "z") )
+                       ->setEndKey( array("doc_b", "type_b", "z") )
                        ->execute();
 
         $this->assertEquals(array("_id" => "doc_a"), $result[0]['value']);

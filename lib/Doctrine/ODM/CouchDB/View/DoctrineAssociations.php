@@ -55,15 +55,15 @@ function (doc)
     if (doc.doctrine_metadata
         && doc.doctrine_metadata.associations
     ) {
-        var associations = doc.doctrine_metadata.associations;
-        for ( type in associations ) {
-            if (associations[type] != null) {
-                if (typeof associations[type] == 'object') {
-                    for ( var i = 0; i < associations[type].length; ++i ) {
-                        emit([associations[type][i], type, doc._id], {"_id": doc._id} );
+        for ( var j= 0; j < doc.doctrine_metadata.associations.length; j++ ) {
+            var assocName = doc.doctrine_metadata.associations[j];
+            if (doc[assocName] != null) {
+                if (typeof doc[assocName] == 'object') {
+                    for ( var i = 0; i < doc[assocName].length; ++i ) {
+                        emit([doc[assocName][i], assocName, doc._id], {"_id": doc._id} );
                     }
                 } else {
-                    emit([associations[type], type, doc._id], {"_id": doc._id} );
+                    emit([doc[assocName], assocName, doc._id], {"_id": doc._id} );
                 }
             }
         }

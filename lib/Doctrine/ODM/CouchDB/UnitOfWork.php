@@ -181,14 +181,14 @@ class UnitOfWork
                                 ->convertToPHPValue($jsonValue);
                     }
                 }
-            } else if ($jsonName == '_rev') {
+            } else if ($jsonName == '_rev' || $jsonName == "type") {
                 continue;
             } else if ($jsonName == '_conflicts') {
                 $conflict = true;
             } else if ($class->hasAttachments && $jsonName == '_attachments') {
                 $documentState[$class->attachmentField] = $this->createDocumentAttachments($id, $jsonValue);
             } else if ($this->metadataResolver->canResolveJsonField($jsonName)) {
-                $documentState = $this->metadataResolver->resolveJsonField($class, $this->dm, $documentState, $jsonName, $jsonValue);
+                $documentState = $this->metadataResolver->resolveJsonField($class, $this->dm, $documentState, $jsonName, $data);
             } else {
                 $nonMappedData[$jsonName] = $jsonValue;
             }

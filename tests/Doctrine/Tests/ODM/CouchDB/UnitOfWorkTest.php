@@ -28,7 +28,12 @@ class UnitOfWorkTest extends CouchDBTestCase
 
     public function testCreateDocument()
     {
-        $user = $this->uow->createDocument($this->type, array('_id' => '1', '_rev' => 23, 'username' => 'foo', 'doctrine_metadata' => array('type' => $this->type)));
+        $user = $this->uow->createDocument($this->type, array(
+            '_id' => '1',
+            '_rev' => 23,
+            'username' => 'foo',
+            'type' => $this->type
+        ));
 
         $this->assertInstanceOf($this->type, $user);
         $this->assertEquals('1', $user->id);
@@ -42,15 +47,15 @@ class UnitOfWorkTest extends CouchDBTestCase
 
     public function testCreateDocument_UseIdentityMap()
     {
-        $user1 = $this->uow->createDocument($this->type, array('_id' => '1', '_rev' => 1, 'username' => 'foo', 'doctrine_metadata' => array('type' => $this->type)));
-        $user2 = $this->uow->createDocument($this->type, array('_id' => '1', '_rev' => 1, 'username' => 'foo', 'doctrine_metadata' => array('type' => $this->type)));
+        $user1 = $this->uow->createDocument($this->type, array('_id' => '1', '_rev' => 1, 'username' => 'foo', 'type' => $this->type));
+        $user2 = $this->uow->createDocument($this->type, array('_id' => '1', '_rev' => 1, 'username' => 'foo', 'type' => $this->type));
 
         $this->assertSame($user1, $user2);
     }
 
     public function testTryGetById()
     {
-        $user1 = $this->uow->createDocument($this->type, array('_id' => '1', '_rev' => 1, 'username' => 'foo', 'doctrine_metadata' => array('type' => $this->type)));
+        $user1 = $this->uow->createDocument($this->type, array('_id' => '1', '_rev' => 1, 'username' => 'foo', 'type' => $this->type));
 
         $user2 = $this->uow->tryGetById(1, $this->type);
 
@@ -111,7 +116,7 @@ class UnitOfWorkTest extends CouchDBTestCase
 
     public function testScheduleInsertCancelsScheduleRemove()
     {
-        $user1 = $this->uow->createDocument($this->type, array('_id' => '1', '_rev' => 1, 'username' => 'foo', 'doctrine_metadata' => array('type' => $this->type)));
+        $user1 = $this->uow->createDocument($this->type, array('_id' => '1', '_rev' => 1, 'username' => 'foo', 'type' => $this->type));
         $this->uow->scheduleRemove($user1);
 
         $this->assertEquals(UnitOfWork::STATE_REMOVED, $this->uow->getDocumentState($user1));
