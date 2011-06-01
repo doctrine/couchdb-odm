@@ -13,3 +13,8 @@ To make this work you have to put your own doctrine-couchdb.php in your project.
 it from bin/ or sandbox/ folders of the CouchDB migration. Make sure to also ship a cli-config.php
 script like shown in the sandbox/cli-config.php
 
+To migrate your doctrine associations and repositories, call:
+
+    php doctrine-couchdb.php couchdb:odm:update-design-doc doctrine_associations
+    php doctrine-couchdb.php couchdb:odm:update-design-doc doctrine_repositories
+
