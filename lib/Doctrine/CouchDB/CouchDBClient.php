@@ -320,7 +320,7 @@ class CouchDBClient
     }
 
     /**
-     * Create a design document from the definition at the named location.
+     * Create or update a design document from the given in memory definition.
      * 
      * @param string $designDocName
      * @param DesignDocument $designDoc
@@ -330,6 +330,12 @@ class CouchDBClient
     {
         $data = $designDoc->getData();
         $data['_id'] = '_design/' . $designDocName;
+
+        $response = $this->findDocument($data['_id']);
+        if ($response->status == 200) {
+            $docData = $response->body;
+            $data['_rev'] = $docData['_rev'];
+        }
 
         return $this->httpClient->request(
             "PUT",

@@ -11,5 +11,6 @@ $cli->addCommands(array(
     new \Doctrine\CouchDB\Tools\Console\Command\CompactDatabaseCommand(),
     new \Doctrine\CouchDB\Tools\Console\Command\CompactViewCommand(),
     new \Doctrine\CouchDB\Tools\Console\Command\MigrationCommand(),
+    new \Doctrine\ODM\CouchDB\Tools\Console\Command\UpdateDesignDocCommand(),
 ));
 $cli->run();
