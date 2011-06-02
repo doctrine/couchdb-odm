@@ -21,5 +21,5 @@ namespace Doctrine\CouchDB;
 
 class Version
 {
-    const VERSION = '1.0.0alpha1';
+    const VERSION = '1.0.0ALPHA2-DEV';
 }
