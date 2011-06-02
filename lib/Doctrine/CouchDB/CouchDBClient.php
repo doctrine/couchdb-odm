@@ -56,6 +56,39 @@ class CouchDBClient
      */
     private $version = null;
 
+    static private $clients = array(
+        'socket' => 'Doctrine\CouchDB\HTTP\SocketClient',
+        'stream' => 'Doctrine\CouchDB\HtTP\StreamClient',
+    );
+
+    /**
+     * Factory method for CouchDBClients
+     * 
+     * @param array $options
+     * @return CouchDBClient
+     */
+    static public function create(array $options)
+    {
+        if (!isset($options['dbname'])) {
+            throw new \InvalidArgumentException("'dbname' is a required option to create a CouchDBClient");
+        }
+
+        $defaults = array('type' => 'socket', 'host' => 'localhost', 'port' => 5984, 'user' => null, 'password' => null, 'ip' => null, 'logging' => false);
+        $options = array_merge($defaults, $options);
+
+        if (!isset(self::$clients[$options['type']])) {
+            throw new \InvalidArgumentException(sprintf('There is no client implementation registered for %s, valid options are %s',
+                $options['type'], array_keys(self::$clients)
+            ));
+        }
+        $connectionClass = self::$clients[$options['type']];
+        $connection = new $connectionClass($options['host'], $options['port'], $options['user'], $options['password'], $options['ip']);
+        if ($optinos['logging'] === true) {
+            $connection = new HTTP\LoggingClient($connection);
+        }
+        return new self($connection, $options['dbname']);
+    }
+
     /**
      * @param Client $client
      * @param string $databaseName
