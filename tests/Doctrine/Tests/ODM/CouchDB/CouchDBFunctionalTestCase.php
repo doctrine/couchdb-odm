@@ -41,8 +41,9 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
 
     public function createDocumentManager()
     {
-        $database = $this->getTestDatabase();
-        $httpClient = $this->getHttpClient();
+        $couchDBClient = $this->createCouchDBClient();
+        $httpClient = $couchDBClient->getHttpClient();
+        $database = $couchDBClient->getDatabase();
 
         $httpClient->request('DELETE', '/' . $database);
         $resp = $httpClient->request('PUT', '/' . $database);
@@ -53,13 +54,11 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
         $metaDriver = new AnnotationDriver($reader, $paths);
 
         $config = new Configuration();
-        $config->setDatabase($database);
         $config->setProxyDir(\sys_get_temp_dir());
         $config->setMetadataDriverImpl($metaDriver);
         $setMetadataCacheImpl = $config->setMetadataCacheImpl(new ArrayCache);
-        $config->setHttpClient($httpClient);
         $config->setLuceneHandlerName('_fti');
 
-        return DocumentManager::create($config);
+        return DocumentManager::create($couchDBClient, $config);
     }
 }

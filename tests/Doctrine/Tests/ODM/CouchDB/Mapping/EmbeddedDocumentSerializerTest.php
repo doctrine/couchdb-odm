@@ -320,21 +320,6 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
         $instance->embedOne->nestedName = 'so this is nested';
         $this->assertTrue($this->serializer->isChanged($instance, $fixture, $fieldMapping));
     }
-
-    public function createDocumentManager()
-    {
-        $reader = new \Doctrine\Common\Annotations\AnnotationReader();
-        $reader->setDefaultAnnotationNamespace('Doctrine\ODM\CouchDB\Mapping\\');
-        $paths = __DIR__ . "/../../Models";
-        $metaDriver = new \Doctrine\ODM\CouchDB\Mapping\Driver\AnnotationDriver($reader, $paths);
-
-        $config = new \Doctrine\ODM\CouchDB\Configuration();
-        $config->setProxyDir(\sys_get_temp_dir());
-        $config->setMetadataDriverImpl($metaDriver);
-
-        return \Doctrine\ODM\CouchDB\DocumentManager::create($config);
-    }
-
 }
 
 

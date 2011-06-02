@@ -14,7 +14,7 @@ class AttachmentTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
     public function setUp()
     {
         $this->dm = $this->createDocumentManager();
-        $client = $this->dm->getConfiguration()->getHttpClient();
+        $client = $this->dm->getHttpClient();
         $response = $client->request('PUT', '/' . $this->getTestDatabase() . '/user_with_attachment', \file_get_contents(__DIR__ . "/_files/user_with_attachment.json"));
     }
 

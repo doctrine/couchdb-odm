@@ -71,6 +71,11 @@ class DocumentManagerMock extends \Doctrine\ODM\CouchDB\DocumentManager
 {
     private $uowMock;
 
+    public function __construct()
+    {
+        
+    }
+
     public function getClassMetadata($class)
     {
         return new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata($class);
@@ -78,7 +83,7 @@ class DocumentManagerMock extends \Doctrine\ODM\CouchDB\DocumentManager
 
     public function getMetadataFactory()
     {
-        $dm = \Doctrine\ODM\CouchDB\DocumentManager::create();
+        $dm = \Doctrine\ODM\CouchDB\DocumentManager::create(array('dbname' => 'test'));
         return new \Doctrine\ODM\CouchDB\Mapping\ClassMetadataFactory($dm);
     }
 

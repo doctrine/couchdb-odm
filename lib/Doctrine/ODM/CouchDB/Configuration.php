@@ -61,7 +61,6 @@ class Configuration
         'allOrNothingFlush' => true,
         'luceneHandlerName' => false,
         'metadataResolver' => null,
-        'logging' => false,
     );
 
     /**
@@ -101,34 +100,6 @@ class Configuration
     public function getValidateDoctrineMetadata()
     {
         return $this->attributes['validateDoctrineMetadata'];
-    }
-
-    /**
-     * Sets the HTTP client instance to use for the CouchDB communication
-     *
-     * @param Client $client
-     */
-    public function setHttpClient(Client $client)
-    {
-        $this->attributes['httpclient'] = $client;
-    }
-
-    /**
-     * Gets the HTTP client instance to use for the CouchDB communication
-     *
-     * @return Client
-     */
-    public function getHttpClient()
-    {
-        if (!isset($this->attributes['httpclient'])) {
-            if ($this->attributes['logging']) {
-                $this->attributes['httpclient'] = new LoggingClient(new SocketClient());
-            } else {
-                $this->attributes['httpclient'] = new SocketClient();
-            }
-        }
-
-        return $this->attributes['httpclient'];
     }
 
     /**
@@ -285,28 +256,6 @@ class Configuration
     }
 
     /**
-     * Set the database name
-     *
-     * @param string $prefix The prefix for names of databases
-     */
-    public function setDatabase($databaseName)
-    {
-        $this->attributes['databaseName'] = $databaseName;
-    }
-
-    /**
-     * Get the database name
-     *
-     *
-     * @return string
-     */
-    public function getDatabase()
-    {
-        return isset($this->attributes['databaseName']) ?
-            $this->attributes['databaseName'] : null;
-    }
-
-    /**
      * @param string $name
      * @param string $className
      */
@@ -358,13 +307,5 @@ class Configuration
         }
 
         return $this->attributes['luceneHandlerName'];
-    }
-
-    public function enableLogging()
-    {
-        $this->attributes['logging'] = true;
-        if (isset($this->attributes['httpclient'])) {
-            $this->attributes['httpclient'] = new LoggingClient($this->attributes['httpclient']);
-        }
     }
 }

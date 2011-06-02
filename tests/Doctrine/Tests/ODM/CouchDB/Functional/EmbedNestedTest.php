@@ -17,7 +17,7 @@ class EmbedNestedTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestC
         $this->nestedType = 'Doctrine\Tests\Models\Embedded\Nested';
         $this->dm = $this->createDocumentManager();
 
-        $httpClient = $this->dm->getConfiguration()->getHttpClient();
+        $httpClient = $this->dm->getHttpClient();
         $data = json_encode(
             array(
                 '_id' => "1",
@@ -37,7 +37,7 @@ class EmbedNestedTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestC
                     ),
                 'type' => $this->type
                 ));
-        $resp = $httpClient->request('PUT', '/' . $this->dm->getConfiguration()->getDatabase() . '/1', $data);
+        $resp = $httpClient->request('PUT', '/' . $this->dm->getDatabase() . '/1', $data);
         $this->assertEquals(201, $resp->status);
     }
     

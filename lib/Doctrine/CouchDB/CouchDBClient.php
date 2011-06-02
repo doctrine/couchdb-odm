@@ -83,7 +83,7 @@ class CouchDBClient
         }
         $connectionClass = self::$clients[$options['type']];
         $connection = new $connectionClass($options['host'], $options['port'], $options['user'], $options['password'], $options['ip']);
-        if ($optinos['logging'] === true) {
+        if ($options['logging'] === true) {
             $connection = new HTTP\LoggingClient($connection);
         }
         return new self($connection, $options['dbname']);
@@ -97,6 +97,24 @@ class CouchDBClient
     {
         $this->httpClient = $client;
         $this->databaseName = $databaseName;
+    }
+
+    public function setHttpClient(Client $client)
+    {
+        $this->httpClient = $client;
+    }
+
+    /**
+     * @return HttpClient
+     */
+    public function getHttpClient()
+    {
+        return $this->httpClient;
+    }
+
+    public function getDatabase()
+    {
+        return $this->databaseName;
     }
 
     /**

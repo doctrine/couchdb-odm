@@ -15,7 +15,7 @@ class EmbedManyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $this->embeddedType = 'Doctrine\Tests\Models\Embedded\Embedded';
         $this->dm = $this->createDocumentManager();
 
-        $httpClient = $this->dm->getConfiguration()->getHttpClient();
+        $httpClient = $this->dm->getHttpClient();
         $data = json_encode(
             array(
                 '_id' => "1",
@@ -31,7 +31,7 @@ class EmbedManyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
                     ),
                 'type' => str_replace('\\', '.', $this->type)
                 ));
-        $resp = $httpClient->request('PUT', '/' . $this->dm->getConfiguration()->getDatabase() . '/1', $data);
+        $resp = $httpClient->request('PUT', '/' . $this->dm->getDatabase() . '/1', $data);
         $this->assertEquals(201, $resp->status);
     }
 

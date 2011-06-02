@@ -23,8 +23,8 @@ class DoctrineAssociationsTest extends CouchDBFunctionalTestCase
     protected function createDoctrineViewQuery()
     {
         return new Query(
-            $this->dm->getConfiguration()->getHttpClient(),
-            $this->dm->getConfiguration()->getDatabase(),
+            $this->dm->getHttpClient(),
+            $this->dm->getDatabase(),
             'doctrine',
             'inverse_associations',
             new DoctrineAssociations()
@@ -33,7 +33,7 @@ class DoctrineAssociationsTest extends CouchDBFunctionalTestCase
 
     protected function addTestData()
     {
-        $db = $this->dm->getConfiguration()->getHttpClient();
+        $db = $this->dm->getHttpClient();
 
         // Force empty test database
         try {

@@ -4,15 +4,6 @@ namespace Doctrine\Tests\ODM\CouchDB;
 
 class ConfigurationTest extends CouchDBTestCase
 {
-    public function testHttpClient()
-    {
-        $config = new \Doctrine\ODM\CouchDB\Configuration();
-        $httpClient = new \Doctrine\CouchDB\HTTP\SocketClient();
-
-        $config->setHttpClient($httpClient);
-        $this->assertSame($httpClient, $config->getHttpClient());
-    }
-
     public function testDocumentNamespace()
     {
         $config = new \Doctrine\ODM\CouchDB\Configuration();

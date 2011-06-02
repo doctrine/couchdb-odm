@@ -14,7 +14,7 @@ class UnitOfWorkTest extends CouchDBTestCase
     public function setUp()
     {
         $this->type = 'Doctrine\Tests\ODM\CouchDB\UoWUser';
-        $this->dm = \Doctrine\ODM\CouchDB\DocumentManager::create();
+        $this->dm = \Doctrine\ODM\CouchDB\DocumentManager::create(array('dbname' => 'test'));
         $this->uow = new UnitOfWork($this->dm);
 
         $metadata = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata($this->type);
@@ -68,7 +68,7 @@ class UnitOfWorkTest extends CouchDBTestCase
         $httpClient->expects($this->once())
                    ->method('request')
                    ->will($this->returnValue(new \Doctrine\CouchDB\HTTP\Response(404, array(), "{}")));
-        $this->dm->getConfiguration()->setHttpClient($httpClient);
+        $this->dm->getCouchDBClient()->setHttpClient($httpClient);
         
         $object = new UoWUser();
         $object->id = "1";
@@ -102,7 +102,7 @@ class UnitOfWorkTest extends CouchDBTestCase
                ->method('request')
                ->with($this->equalTo('GET'), $this->equalTo('/_uuids?count=20'))
                ->will($this->returnValue($uuidResponse));
-        $this->dm->getConfiguration()->setHttpClient($client);
+        $this->dm->getCouchDBClient()->setHttpClient($client);
 
         $object = new UoWUser();
         $object->username = "bar";

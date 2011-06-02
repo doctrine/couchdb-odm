@@ -12,8 +12,11 @@ class ProxyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
     public function setUp()
     {
         $this->type = 'Doctrine\Tests\ODM\CouchDB\Functional\Article';
-        $database = $this->getTestDatabase();
-        $httpClient = $this->getHttpClient();
+
+        $this->dm = $this->createDocumentManager();
+
+        $database = $this->dm->getDatabase();
+        $httpClient = $this->dm->getHttpClient();
 
         $httpClient->request('DELETE', '/' . $database);
         $resp = $httpClient->request('PUT', '/' . $database);
@@ -27,13 +30,6 @@ class ProxyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
         ));
         $resp = $httpClient->request('PUT', '/' . $database . '/1', $data);
         $this->assertEquals(201, $resp->status);
-
-        $config = new \Doctrine\ODM\CouchDB\Configuration();
-        $config->setDatabase($database);
-        $config->setProxyDir(\sys_get_temp_dir());
-        $config->setHttpClient($httpClient);
-
-        $this->dm = \Doctrine\ODM\CouchDB\DocumentManager::create($config);
 
         $cmf = $this->dm->getClassMetadataFactory();
         $metadata = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata($this->type);

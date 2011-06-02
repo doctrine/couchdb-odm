@@ -265,8 +265,8 @@ class UnitOfWork
     {
         $attachments = array();
 
-        $client = $this->dm->getConfiguration()->getHttpClient();
-        $basePath = '/' . $this->dm->getConfiguration()->getDatabase() . '/' . $documentId . '/';
+        $client = $this->dm->getHttpClient();
+        $basePath = '/' . $this->dm->getCouchDBClient()->getDatabase() . '/' . $documentId . '/';
         foreach ($data AS $filename => $attachment) {
             if (isset($attachment['stub']) && $attachment['stub']) {
                 $instance = Attachment::createStub($attachment['content_type'], $attachment['length'], $attachment['revpos'], $client, $basePath . $filename);

@@ -66,8 +66,14 @@ class DocumentManager implements ObjectManager
      */
     private $evm;
 
-    public function __construct(Configuration $config = null, EventManager $evm = null)
+    /**
+     * @param CouchDBClient $couchClient
+     * @param Configuration $config
+     * @param EventManager $evm
+     */
+    public function __construct(CouchDBClient $couchClient, Configuration $config = null, EventManager $evm = null)
     {
+        $this->couchDBClient = $couchClient;
         $this->config = $config ?: new Configuration();
         $this->evm = $evm ?: new EventManager();
         $this->metadataFactory = new ClassMetadataFactory($this);
@@ -88,9 +94,6 @@ class DocumentManager implements ObjectManager
      */
     public function getCouchDBClient()
     {
-        if ($this->couchDBClient === null) {
-            $this->couchDBClient = new CouchDBClient($this->getConfiguration()->getHttpClient(), $this->getConfiguration()->getDatabase());
-        }
         return $this->couchDBClient;
     }
 
@@ -101,9 +104,17 @@ class DocumentManager implements ObjectManager
      * @param EventManager $evm
      * @return DocumentManager
      */
-    public static function create(Configuration $config = null, EventManager $evm = null)
+    public static function create($couchParams, Configuration $config = null, EventManager $evm = null)
     {
-        return new DocumentManager($config, $evm);
+        if (is_array($couchParams)) {
+            $couchClient = CouchDBClient::create($couchParams);
+        } else if ($couchParams instanceof CouchDBClient) {
+            $couchClient = $couchParams;
+        } else {
+            throw new \InvalidArgumentException("Expecting array of instance of CouchDBClient as first argument to DocumentManager::create().");
+        }
+
+        return new DocumentManager($couchClient, $config, $evm);
     }
 
     /**
@@ -112,6 +123,16 @@ class DocumentManager implements ObjectManager
     public function getMetadataFactory()
     {
         return $this->metadataFactory;
+    }
+
+    public function getHttpClient()
+    {
+        return $this->couchDBClient->getHttpClient();
+    }
+
+    public function getDatabase()
+    {
+        return $this->couchDBClient->getDatabase();
     }
 
     /**
@@ -185,7 +206,7 @@ class DocumentManager implements ObjectManager
         if ($designDoc) {
             $designDoc = new $designDoc['className']($designDoc['options']);
         }
-        $query = new ODMQuery($this->config->getHttpClient(), $this->config->getDatabase(), $designDocName, $viewName, $designDoc);
+        $query = new ODMQuery($this->couchDBClient->getHttpClient(), $this->couchDBClient->getDatabase(), $designDocName, $viewName, $designDoc);
         $query->setDocumentManager($this);
         return $query;
     }
@@ -205,7 +226,7 @@ class DocumentManager implements ObjectManager
         if ($designDoc) {
             $designDoc = new $designDoc['className']($designDoc['options']);
         }
-        $query = new Query($this->config->getHttpClient(), $this->config->getDatabase(), $designDocName, $viewName, $designDoc);
+        $query = new Query($this->couchDBClient->getHttpClient(), $this->couchDBClient->getDatabase(), $designDocName, $viewName, $designDoc);
         return $query;
     }
 
@@ -223,8 +244,8 @@ class DocumentManager implements ObjectManager
         if ($designDoc) {
             $designDoc = new $designDoc['className']($designDoc['options']);
         }
-        $query = new ODMLuceneQuery($this->config->getHttpClient(),
-            $this->config->getDatabase(), $luceneHandlerName, $designDocName,
+        $query = new ODMLuceneQuery($this->couchDBClient->getHttpClient(),
+            $this->couchDBClient->getDatabase(), $luceneHandlerName, $designDocName,
             $viewName, $designDoc
         );
         $query->setDocumentManager($this);

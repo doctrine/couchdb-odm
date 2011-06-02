@@ -8,7 +8,7 @@ class ClassMetadataFactoryTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $this->dm = \Doctrine\ODM\CouchDB\DocumentManager::create();
+        $this->dm = \Doctrine\ODM\CouchDB\DocumentManager::create(array('dbname' => 'test'));
     }
 
     public function testNotMappedThrowsException()

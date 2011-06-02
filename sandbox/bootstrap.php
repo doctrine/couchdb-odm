@@ -27,13 +27,13 @@ $paths = __DIR__ . "/Documents";
 $metaDriver = new \Doctrine\ODM\CouchDB\Mapping\Driver\AnnotationDriver($reader, $paths);
 
 $config = new \Doctrine\ODM\CouchDB\Configuration();
-$config->setDatabase($database);
 $config->setProxyDir(\sys_get_temp_dir());
 $config->setMetadataDriverImpl($metaDriver);
-$config->setHttpClient($httpClient);
 $config->setLuceneHandlerName('_fti');
 
-$dm = \Doctrine\ODM\CouchDB\DocumentManager::create($config);
+$couchClient = new \Doctrine\CouchDB\CouchDBClient($httpClient, $database);
+
+$dm = \Doctrine\ODM\CouchDB\DocumentManager::create($couchClient, $config);
 
 ob_start(function($output) {
     if (PHP_SAPI != "cli") {

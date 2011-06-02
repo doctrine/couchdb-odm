@@ -16,7 +16,7 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $this->type = 'Doctrine\Tests\ODM\CouchDB\Functional\User';
         $this->dm = $this->createDocumentManager();
 
-        $httpClient = $this->dm->getConfiguration()->getHttpClient();
+        $httpClient = $this->dm->getHttpClient();
 
         $data = json_encode(
             array(
@@ -25,7 +25,7 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
                 'type' => $this->type,
             )
         );
-        $resp = $httpClient->request('PUT', '/' . $this->dm->getConfiguration()->getDatabase() . '/1', $data);
+        $resp = $httpClient->request('PUT', '/' . $this->dm->getDatabase() . '/1', $data);
         $this->assertEquals(201, $resp->status);
     }
 
@@ -160,7 +160,7 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
 
     public function testKeepTrackOfUnmappedData()
     {
-        $httpClient = $this->dm->getConfiguration()->getHttpClient();
+        $httpClient = $this->dm->getHttpClient();
 
         $data =  array(
             '_id' => "2",
@@ -169,7 +169,7 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
             'address' => array('city' => 'Bonn', 'country' => 'DE'),
             'type' => str_replace("\\", ".", $this->type),
         );
-        $resp = $httpClient->request('PUT', '/' . $this->dm->getConfiguration()->getDatabase() . '/2', json_encode($data));
+        $resp = $httpClient->request('PUT', '/' . $this->dm->getDatabase() . '/2', json_encode($data));
         $this->assertEquals(201, $resp->status);
 
         $user = $this->dm->find($this->type, 2);
@@ -179,7 +179,7 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $user->username = 'beberlei2';
         $this->dm->flush();
 
-        $resp = $httpClient->request('GET', '/' . $this->dm->getConfiguration()->getDatabase() . '/2');
+        $resp = $httpClient->request('GET', '/' . $this->dm->getDatabase() . '/2');
         $this->assertEquals(200, $resp->status);
 
         $data['username'] = 'beberlei2';
