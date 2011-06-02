@@ -30,7 +30,7 @@ namespace Doctrine\CouchDB\HTTP;
  * @since       1.0
  * @author      Kore Nordmann <kore@arbitracker.org>
  */
-class StreamClient extends Client
+class StreamClient extends AbstractHTTPClient
 {
     /**
      * Perform a request to the server and return the result

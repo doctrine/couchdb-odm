@@ -22,6 +22,7 @@ namespace Doctrine\ODM\CouchDB;
 use Doctrine\Common\Cache\Cache;
 use Doctrine\CouchDB\HTTP\Client;
 use Doctrine\CouchDB\HTTP\SocketClient;
+use Doctrine\CouchDB\HTTP\LoggingClient;
 use Doctrine\ODM\CouchDB\Mapping\Driver\Driver;
 use Doctrine\ODM\CouchDB\Mapping\MetadataResolver\MetadataResolver;
 use Doctrine\ODM\CouchDB\Mapping\MetadataResolver\DoctrineResolver;
@@ -60,6 +61,7 @@ class Configuration
         'allOrNothingFlush' => true,
         'luceneHandlerName' => false,
         'metadataResolver' => null,
+        'logging' => false,
     );
 
     /**
@@ -119,7 +121,11 @@ class Configuration
     public function getHttpClient()
     {
         if (!isset($this->attributes['httpclient'])) {
-            $this->attributes['httpclient'] = new SocketClient();
+            if ($this->attributes['logging']) {
+                $this->attributes['httpclient'] = new LoggingClient(new SocketClient());
+            } else {
+                $this->attributes['httpclient'] = new SocketClient();
+            }
         }
 
         return $this->attributes['httpclient'];
@@ -352,5 +358,13 @@ class Configuration
         }
 
         return $this->attributes['luceneHandlerName'];
+    }
+
+    public function enableLogging()
+    {
+        $this->attributes['logging'] = true;
+        if (isset($this->attributes['httpclient'])) {
+            $this->attributes['httpclient'] = new LoggingClient($this->attributes['httpclient']);
+        }
     }
 }

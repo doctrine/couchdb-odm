@@ -1,90 +1,26 @@
 <?php
-/** HTTP Client interface
+/*
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ * This software consists of voluntary contributions made by many individuals
+ * and is licensed under the LGPL. For more information, see
+ * <http://www.doctrine-project.org>.
  */
 
 namespace Doctrine\CouchDB\HTTP;
 
-/**
- * Basic couch DB connection handling class
- *
- * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.com
- * @since       1.0
- * @author      Kore Nordmann <kore@arbitracker.org>
- */
-abstract class Client
+interface Client
 {
-    /**
-     * CouchDB connection options
-     *
-     * @var array
-     */
-    protected $options = array(
-        'host'       => 'localhost',
-        'port'       => 5984,
-        'ip'         => '127.0.0.1',
-        'timeout'    => .01,
-        'keep-alive' => true,
-        'username'   => null,
-        'password'   => null,
-    );
-
-    /**
-     * Construct a CouchDB connection
-     *
-     * Construct a CouchDB connection from basic connection parameters for one
-     * given database.
-     *
-     * @param string $host
-     * @param int $port
-     * @param string $username
-     * @param string $password
-     * @param string $ip
-     * @return void
-     */
-    public function __construct( $host = 'localhost', $port = 5984, $username = null, $password = null, $ip = null )
-    {
-        $this->options['host']     = (string) $host;
-        $this->options['port']     = (int) $port;
-        $this->options['username'] = $username;
-        $this->options['password'] = $password;
-
-        if ($ip === null) {
-            $this->options['ip'] = gethostbyname($this->options['host']);
-        } else {
-            $this->options['ip'] = $ip;
-        }
-    }
-
-    /**
-     * Set option value
-     *
-     * Set the value for an connection option. Throws an
-     * InvalidArgumentException for unknown options.
-     *
-     * @param string $option
-     * @param mixed $value
-     * @return void
-     */
-    public function setOption( $option, $value )
-    {
-        switch ( $option ) {
-        case 'keep-alive':
-            $this->options[$option] = (bool) $value;
-            break;
-
-        case 'http-log':
-        case 'password':
-        case 'username':
-            $this->options[$option] = $value;
-            break;
-
-        default:
-            throw new \InvalidArgumentException( "Unknown option $option." );
-        }
-    }
-
     /**
      * Perform a request to the server and return the result
      *
@@ -99,6 +35,5 @@ abstract class Client
      * @param bool $raw
      * @return Response
      */
-    abstract public function request( $method, $path, $data = null, $raw = false );
+    function request( $method, $path, $data = null, $raw = false );
 }
-

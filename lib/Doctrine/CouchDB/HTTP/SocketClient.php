@@ -29,7 +29,7 @@ namespace Doctrine\CouchDB\HTTP;
  * @since       1.0
  * @author      Kore Nordmann <kore@arbitracker.org>
  */
-class SocketClient extends Client
+class SocketClient extends AbstractHTTPClient
 {
     /**
      * Connection pointer for connections, once keep alive is working on the
