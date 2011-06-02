@@ -209,10 +209,10 @@
     </target>
 
     <target name="pirum-release">
-        <exec command="sudo pirum add ${project.pirum_dir} ${project.basedir}/dist/DoctrineCouchDB-${version}.tgz" dir="."  passthru="true" />
+        <exec command="sudo pirum add ${project.pirum_dir} ${project.basedir}/dist/CouchDB-${version}.tgz" dir="."  passthru="true" />
         <exec command="sudo pirum build ${project.pirum_dir}" passthru="true" />
         
-        <exec command="sudo pirum add ${project.pirum_dir} ${project.basedir}/dist/DoctrineCouchDB-ODM-${version}.tgz" dir="."  passthru="true" />
+        <exec command="sudo pirum add ${project.pirum_dir} ${project.basedir}/dist/CouchDB-ODM-${version}.tgz" dir="."  passthru="true" />
         <exec command="sudo pirum build ${project.pirum_dir}" passthru="true" />
     </target>
 
@@ -232,7 +232,6 @@
         <exec command="git add ${project.basedir}/lib/Doctrine/CouchDB/Version.php" passthru="true" />
         <exec command="git add ${project.basedir}/lib/Doctrine/ODM/CouchDB/Version.php" passthru="true" />
         <exec command="git commit -m 'Bump Dev Version to ${next_version}-DEV'" passthru="true" />
-        <exec command="git push origin master" passthru="true" />
     </target>
 
     <target name="release" depends="git-tag,build-packages,distribute-download,pirum-release,update-dev-version" />
