@@ -191,6 +191,7 @@ class ClassMetadataFactory
 
         $loaded = array();
         $parent = null;
+        /* @var $parent ClassMetadata */
         foreach ($parentClasses AS $className) {
             if (isset($this->loadedMetadata[$className])) {
                 continue;
@@ -201,7 +202,12 @@ class ClassMetadataFactory
                 throw MappingException::classNotFound($className);
             }
 
-            $this->loadedMetadata[$className] = $class = new ClassMetadata($className);
+            if ($parent) {
+                $class = $parent->deriveChildMetadata($className);
+            } else {
+                $class = new ClassMetadata($className);
+            }
+            $this->loadedMetadata[$className] = $class;
             $this->driver->loadMetadataForClass($className, $this->loadedMetadata[$className]);
 
             $parent = $class;
