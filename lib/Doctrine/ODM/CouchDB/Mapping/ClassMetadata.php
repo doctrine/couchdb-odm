@@ -44,7 +44,46 @@ class ClassMetadata extends ClassMetadataInfo
     {
         parent::__construct($documentName);
         $this->reflClass = new \ReflectionClass($documentName);
+        $this->name = $this->reflClass->getName();
         $this->namespace = $this->reflClass->getNamespaceName();
+    }
+
+    /**
+     * Used to derive a class metadata of the current instance for a mapped child class.
+     *
+     * @param  string $childName
+     * @return ClassMetadata
+     */
+    public function deriveChildMetadata($childName)
+    {
+        if (!is_subclass_of($childName, $this->name)) {
+            throw new \InvalidArgumentException("Only child class names of '".$this->name."' are valid values.");
+        }
+
+        $cm = clone $this;
+        /* @var $cm ClassMetadata */
+        $cm->reflClass = new \ReflectionClass($childName);
+        $cm->name = $cm->reflClass->getName();
+        $cm->namespace = $cm->reflClass->getNamespaceName();
+        if ($this->isMappedSuperclass) {
+            $cm->rootDocumentName = $cm->name;
+        }
+
+        foreach ($cm->fieldMappings AS $fieldName => $fieldMapping) {
+            if (!isset($fieldMapping['declared'])) {
+                $cm->fieldMappings[$fieldName]['declared'] = $this->name;
+            }
+        }
+        foreach ($cm->associationsMappings AS $assocName => $assocMapping) {
+            if (!isset($assocMapping['declared'])) {
+                $cm->associationsMappings[$assocName]['declared'] = $this->name;
+            }
+        }
+        if ($cm->attachmentField && !$cm->attachmentDeclaredClass) {
+            $cm->attachmentDeclaredClass = $this->name;
+        }
+
+        return $cm;
     }
 
     protected function validateAndCompleteFieldMapping($mapping)
@@ -83,7 +122,6 @@ class ClassMetadata extends ClassMetadataInfo
         // This metadata is always serialized/cached.
         $serialized = array(
             'name',
-            'alsoLoadMethods',
             'associationsMappings',
             'fieldMappings',
             'jsonNames',
@@ -104,6 +142,9 @@ class ClassMetadata extends ClassMetadataInfo
         if ($this->hasAttachments) {
             $serialized[] = 'hasAttachments';
             $serialized[] = 'attachmentField';
+            if ($this->attachmentDeclaredClass) {
+                $serialized[] = 'attachmentDeclaredClass';
+            }
         }
 
         if ($this->isReadOnly) {
@@ -157,8 +198,11 @@ class ClassMetadata extends ClassMetadataInfo
         }
 
         if ($this->hasAttachments) {
-            // TODO: doesnt support inheritance
-            $reflField = $this->reflClass->getProperty($this->attachmentField);
+            if ($this->attachmentDeclaredClass) {
+                $reflField = new \ReflectionProperty($this->attachmentDeclaredClass, $this->attachmentField);
+            } else {
+                $reflField = $this->reflClass->getProperty($this->attachmentField);
+            }
             $reflField->setAccessible(true);
             $this->reflFields[$this->attachmentField] = $reflField;
         }

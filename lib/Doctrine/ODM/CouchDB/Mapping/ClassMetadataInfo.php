@@ -163,6 +163,13 @@ class ClassMetadataInfo
     public $attachmentField = null;
 
     /**
+     * If in an inheritance scenario the attachment field is on a super class, this is its name.
+     *
+     * @var string|null
+     */
+    public $attachmentDeclaredClass = null;
+
+    /**
      * Initializes a new ClassMetadata instance that will hold the object-document mapping
      * metadata of the class with the given name.
      *

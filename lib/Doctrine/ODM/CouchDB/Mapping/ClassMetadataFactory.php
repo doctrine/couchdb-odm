@@ -169,22 +169,46 @@ class ClassMetadataFactory
         return $this->loadedMetadata[$className];
     }
 
+    protected function getParentClasses($className)
+    {
+        return class_parents($className);
+    }
+
     /**
      * Loads the metadata of the class in question and all it's ancestors whose metadata
      * is still not loaded.
      *
      * @param string $className The name of the class for which the metadata should get loaded.
      */
-    private function loadMetadata($className)
+    private function loadMetadata($name)
     {
-        if (!class_exists($className)) {
-            throw MappingException::classNotFound($className);
+        if (!class_exists($name)) {
+            throw MappingException::classNotFound($name);
         }
 
-        $this->loadedMetadata[$className] = new ClassMetadata($className);
-        $this->driver->loadMetadataForClass($className, $this->loadedMetadata[$className]);
+        $parentClasses = $this->getParentClasses($name);
+        $parentClasses[] = $name;
 
-        return array($className);
+        $loaded = array();
+        $parent = null;
+        foreach ($parentClasses AS $className) {
+            if (isset($this->loadedMetadata[$className])) {
+                continue;
+            }
+
+            // original class was checked above already
+            if ($className != $name && !class_exists($className)) {
+                throw MappingException::classNotFound($className);
+            }
+
+            $this->loadedMetadata[$className] = $class = new ClassMetadata($className);
+            $this->driver->loadMetadataForClass($className, $this->loadedMetadata[$className]);
+
+            $parent = $class;
+            $loaded[] = $className;
+        }
+
+        return $loaded;
     }
 
     /**
