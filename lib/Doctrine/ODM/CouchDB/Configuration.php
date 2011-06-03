@@ -186,8 +186,10 @@ class Configuration
      */
     public function getMetadataDriverImpl()
     {
-        return isset($this->attributes['metadataDriverImpl']) ?
-            $this->attributes['metadataDriverImpl'] : null;
+        if (!isset($this->attributes['metadataDriverImpl'])) {
+            $this->attributes['metadataDriverImpl'] = $this->newDefaultAnnotationDriver();
+        }
+        return $this->attributes['metadataDriverImpl'];
     }
 
     /**

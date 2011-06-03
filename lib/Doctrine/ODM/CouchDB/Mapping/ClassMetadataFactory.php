@@ -70,6 +70,9 @@ class ClassMetadataFactory
     {
         $this->dm = $dm;
         $this->driver = $this->dm->getConfiguration()->getMetadataDriverImpl();
+        if (!$this->driver) {
+            throw new \RuntimeException("No metadata driver was configured.");
+        }
     }
 
     /**
@@ -186,7 +189,7 @@ class ClassMetadataFactory
             throw MappingException::classNotFound($name);
         }
 
-        $parentClasses = $this->getParentClasses($name);
+        $parentClasses = array_reverse($this->getParentClasses($name));
         $parentClasses[] = $name;
 
         $loaded = array();
@@ -194,6 +197,7 @@ class ClassMetadataFactory
         /* @var $parent ClassMetadata */
         foreach ($parentClasses AS $className) {
             if (isset($this->loadedMetadata[$className])) {
+                $parent = $this->loadedMetadata[$className];
                 continue;
             }
 

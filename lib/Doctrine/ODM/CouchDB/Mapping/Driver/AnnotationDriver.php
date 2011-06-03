@@ -116,6 +116,8 @@ class AnnotationDriver implements Driver
         } elseif (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\EmbeddedDocument'])) {
             $documentAnnot = $classAnnotations['Doctrine\ODM\CouchDB\Mapping\EmbeddedDocument'];
             $class->isEmbeddedDocument = true;
+        } else if (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\MappedSuperclass'])) {
+            $class->isMappedSuperclass = true;
         } else {
             throw MappingException::classIsNotAValidDocument($className);
         }

@@ -45,4 +45,50 @@ class ClassMetadataFactoryTest extends \PHPUnit_Framework_TestCase
 
         $this->assertInternalType('array', $metadata);
     }
+
+    public function testGetMetadataForDocumentWithMappedSuperclass()
+    {
+        $class = $this->dm->getMetadataFactory()->getMetadataFor(__NAMESPACE__ ."\\Child");
+
+        $this->assertFalse($class->isMappedSuperclass, "Child is not a mapped superclass!");
+        $this->assertEquals(__NAMESPACE__ ."\\Child", $class->rootDocumentName);
+
+        $class = $this->dm->getMetadataFactory()->getMetadataFor(__NAMESPACE__ ."\\ChildChild");
+        $this->assertFalse($class->isMappedSuperclass, "ChildChild is not a mapped superclass!");
+        $this->assertEquals(__NAMESPACE__ ."\\Child", $class->rootDocumentName);
+
+        $class = $this->dm->getMetadataFactory()->getMetadataFor(__NAMESPACE__ ."\\Super");
+        $this->assertTrue($class->isMappedSuperclass);
+    }
+}
+
+/**
+ * @MappedSuperclass
+ */
+class Super
+{
+    /** @Id */
+    private $id;
+}
+
+/**
+ * @Document
+ */
+class Child extends Super
+{
+    /**
+     * @Field(type="string")
+     */
+    private $var;
+}
+
+/**
+ * @Document
+ */
+class ChildChild extends Child
+{
+    /**
+     * @Field(type="string")
+     */
+    private $var2;
 }

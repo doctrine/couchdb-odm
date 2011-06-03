@@ -69,6 +69,9 @@ class ClassMetadata extends ClassMetadataInfo
             $cm->rootDocumentName = $cm->name;
         }
 
+        $cm->isMappedSuperclass = false;
+        $cm->isEmbeddedDocument = false;
+
         foreach ($cm->fieldMappings AS $fieldName => $fieldMapping) {
             if (!isset($fieldMapping['declared'])) {
                 $cm->fieldMappings[$fieldName]['declared'] = $this->name;
