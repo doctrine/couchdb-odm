@@ -13,7 +13,7 @@ use Doctrine\Common\Persistence\Mapping\ClassMetadata;
  * @author      Benjamin Eberlei <kontakt@beberlei.de>
  * @author      Lukas Kahwe Smith <smith@pooteeweet.org>
  */
-class ClassMetadataInfo
+class ClassMetadataInfo implements ClassMetadata
 {
     const IDGENERATOR_UUID = 1;
     const IDGENERATOR_ASSIGNED = 2;
@@ -179,6 +179,19 @@ class ClassMetadataInfo
     {
         $this->name = $documentName;
         $this->rootDocumentName = $documentName;
+    }
+
+    /**
+     * Gets the ReflectionClass instance of the mapped class.
+     *
+     * @return ReflectionClass
+     */
+    public function getReflectionClass()
+    {
+        if ( ! $this->reflClass) {
+            $this->reflClass = new ReflectionClass($this->name);
+        }
+        return $this->reflClass;
     }
 
     /**
@@ -395,6 +408,18 @@ class ClassMetadataInfo
     }
 
     /**
+     * A numerically indexed list of field names of this persistent class.
+     *
+     * This array includes identifier fields if present on this class.
+     *
+     * @return array
+     */
+    public function getFieldNames()
+    {
+        return array_keys($this->fieldMappings);
+    }
+
+    /**
      * Gets the mapping of a field.
      *
      * @param string $fieldName  The field name.
@@ -408,9 +433,70 @@ class ClassMetadataInfo
         return $this->fieldMappings[$fieldName];
     }
 
+    /**
+     * Gets the type of a field.
+     *
+     * @param string $fieldName
+     * @return Doctrine\DBAL\Types\Type
+     */
+    public function getTypeOfField($fieldName)
+    {
+        return isset($this->fieldMappings[$fieldName]) ?
+                $this->fieldMappings[$fieldName]['type'] : null;
+    }
+
+    /**
+     * Checks if the given field is a mapped association for this class.
+     *
+     * @param string $fieldName
+     * @return boolean
+     */
+    public function hasAssociation($fieldName)
+    {
+        return isset($this->associationMappings[$fieldName]);
+    }
+
     public function isCollectionValuedAssociation($name)
     {
         // TODO: included @EmbedMany here also?
         return isset($this->associationsMappings[$name]) && ($this->associationsMappings[$name]['type'] & self::TO_MANY);
+    }
+
+    /**
+     * Checks if the given field is a mapped single valued association for this class.
+     *
+     * @param string $fieldName
+     * @return boolean
+     */
+    public function isSingleValuedAssociation($fieldName)
+    {
+        return isset($this->associationMappings[$fieldName]) &&
+                ($this->associationMappings[$fieldName]['type'] & self::TO_ONE);
+    }
+
+    /**
+     * A numerically indexed list of association names of this persistent class.
+     *
+     * This array includes identifier associations if present on this class.
+     *
+     * @return array
+     */
+    public function getAssociationNames()
+    {
+        return array_keys($this->associationMappings);
+    }
+
+    /**
+     * Returns the target class name of the given association.
+     *
+     * @param string $assocName
+     * @return string
+     */
+    public function getAssociationTargetClass($assocName)
+    {
+        if (!isset($this->associationMappings[$assocName])) {
+            throw new \InvalidArgumentException("Association name expected, '" . $assocName ."' is not an association.");
+        }
+        return $this->associationMappings[$assocName]['targetDocument'];
     }
 }
