@@ -35,7 +35,7 @@ use Doctrine\ODM\CouchDB\DocumentManager,
  * @author      Benjamin Eberlei <kontakt@beberlei.de>
  * @author      Lukas Kahwe Smith <smith@pooteeweet.org>
  */
-class ClassMetadataFactory
+class ClassMetadataFactory implements \Doctrine\Common\Persistence\Mapping\ClassMetadataFactory
 {
     /**
      * @var DocumentManager
