@@ -70,7 +70,7 @@ class AnnotationDriver implements Driver
      * @param $reader The AnnotationReader to use.
      * @param string|array $paths One or multiple paths where mapping classes can be found. 
      */
-    public function __construct(AnnotationReader $reader, $paths = null)
+    public function __construct($reader, $paths = null)
     {
         $this->reader = $reader;
         if ($paths) {
