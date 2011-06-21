@@ -56,6 +56,8 @@ class YamlDriver extends AbstractFileDriver
             }
         } else if ($element['type'] == 'embedded') {
             $class->isEmbeddedDocument = true;
+        } else if (strtolower($element['type']) == "mappedsuperclass") {
+            $class->isMappedSuperclass = true;
         } else {
             throw MappingException::classIsNotAValidDocument($className);
         }

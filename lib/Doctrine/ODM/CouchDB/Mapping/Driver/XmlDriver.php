@@ -58,6 +58,8 @@ class XmlDriver extends AbstractFileDriver
             }
         } else if ($xmlRoot->getName() == "embedded-document") {
             $class->isEmbeddedDocument = true;
+        } else if ($xmlRoot->getName() == "mapped-superclass") {
+            $class->isMappedSuperclass = true;
         } else {
             throw MappingException::classIsNotAValidDocument($className);
         }
