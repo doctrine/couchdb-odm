@@ -174,7 +174,14 @@ class ClassMetadataFactory implements \Doctrine\Common\Persistence\Mapping\Class
 
     protected function getParentClasses($className)
     {
-        return class_parents($className);
+        // Collect parent classes, ignoring transient (not-mapped) classes.
+        $parentClasses = array();
+        foreach (array_reverse(class_parents($className)) as $parentClass) {
+            if ( ! $this->driver->isTransient($parentClass)) {
+                $parentClasses[] = $parentClass;
+            }
+        }
+        return $parentClasses;
     }
 
     /**
@@ -189,7 +196,7 @@ class ClassMetadataFactory implements \Doctrine\Common\Persistence\Mapping\Class
             throw MappingException::classNotFound($name);
         }
 
-        $parentClasses = array_reverse($this->getParentClasses($name));
+        $parentClasses = $this->getParentClasses($name);
         $parentClasses[] = $name;
 
         $loaded = array();
