@@ -146,7 +146,7 @@ class XmlDriver extends AbstractFileDriver
         $result = array();
         $xmlElement = simplexml_load_file($file);
 
-        foreach (array('document', 'embedded-document') as $type) {
+        foreach (array('document', 'embedded-document', 'mapped-superclass') as $type) {
             if (isset($xmlElement->$type)) {
                 foreach ($xmlElement->$type as $documentElement) {
                     $documentName = (string) $documentElement['name'];
