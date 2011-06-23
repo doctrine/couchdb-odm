@@ -69,7 +69,7 @@ class LoggingClient implements Client
             'duration' => $duration,
             'method' => $method,
             'path' => rawurldecode($path),
-            'request' => ($data && strlen($data) < 10000) ? $data : null,
+            'request' => $data,
             'request_size' => strlen($data),
             'response_status' => $response->status,
             'response' => $response->body,
