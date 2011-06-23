@@ -68,7 +68,7 @@ class LoggingClient implements Client
         $this->requests[] = array(
             'duration' => $duration,
             'method' => $method,
-            'path' => $path,
+            'path' => rawurldecode($path),
             'request' => ($data && strlen($data) < 10000) ? $data : null,
             'request_size' => strlen($data),
             'response_status' => $response->status,
