@@ -24,6 +24,7 @@ use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 use Doctrine\ODM\CouchDB\Types\Type;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\CouchDB\HTTP\HTTPException;
 
 /**
  * Unit of work class
@@ -1090,7 +1091,7 @@ class UnitOfWork
                 }
             }
         } else if ($response->status >= 400) {
-            throw HTTP\HTTPException::fromResponse($bulkUpdater->getPath(), $response);
+            throw HTTPException::fromResponse($bulkUpdater->getPath(), $response);
         }
 
         foreach ($this->visitedCollections AS $col) {
