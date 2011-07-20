@@ -100,7 +100,7 @@ class SocketClient extends AbstractHTTPClient
         {
             $request .= "Content-type: application/json\r\n";
             $request .= "Content-Length: " . strlen( $data ) . "\r\n\r\n";
-            $request .= "$data\r\n";
+            $request .= "$data";
         }
         else
         {
