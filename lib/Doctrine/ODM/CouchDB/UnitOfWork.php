@@ -1168,6 +1168,26 @@ class UnitOfWork
     }
 
     /**
+     * Checks whether a document is registered in the identity map of this UnitOfWork.
+     *
+     * @param object $document
+     * @return boolean
+     */
+    public function isInIdentityMap($document)
+    {
+        $oid = spl_object_hash($document);
+        if ( ! isset($this->documentIdentifiers[$oid])) {
+            return false;
+        }
+        $classMetadata = $this->dm->getClassMetadata(get_class($document));
+        if ($this->documentIdentifiers[$oid] === '') {
+            return false;
+        }
+
+        return isset($this->identityMap[$this->documentIdentifiers[$oid]]);
+    }
+
+    /**
      * Get the CouchDB revision of the document that was current upon retrieval.
      *
      * @throws CouchDBException
