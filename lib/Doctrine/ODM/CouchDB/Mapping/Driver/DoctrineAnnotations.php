@@ -80,6 +80,6 @@ final class ReferenceMany extends Reference
     public $cascade = array();
     public $mappedBy;
 }
-final class Attachments extends Reference
+final class Attachments extends Annotation
 {
 }

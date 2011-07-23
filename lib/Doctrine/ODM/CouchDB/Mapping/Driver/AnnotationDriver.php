@@ -24,7 +24,7 @@ use Doctrine\ODM\CouchDB\Mapping\ClassMetadata,
     Doctrine\ODM\CouchDB\Mapping\MappingException;
 
 // TODO: this is kinda ugly
-require __DIR__ . '/DoctrineAnnotations.php';
+require_once __DIR__ . '/DoctrineAnnotations.php';
 
 /**
  * The AnnotationDriver reads the mapping metadata from docblock annotations.
