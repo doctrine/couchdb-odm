@@ -197,7 +197,7 @@ class UnitOfWork
 
         if ($conflict && $this->evm->hasListeners(Event::onConflict)) {
             // there is a conflict and we have an event handler that might resolve it
-            $this->evm->dispatchEvent(Event::onConflict, new Events\ConflictEventArgs($data, $this->dm, $type));
+            $this->evm->dispatchEvent(Event::onConflict, new Event\ConflictEventArgs($data, $this->dm, $type));
             // the event might be resolved in the couch now, load it again:
             return $this->dm->find($type, $id);
         }
@@ -251,7 +251,7 @@ class UnitOfWork
         }
 
         if ($this->evm->hasListeners(Event::postLoad)) {
-            $this->evm->dispatchEvent(Event::postLoad, new Events\LifecycleEventArgs($document, $this->dm));
+            $this->evm->dispatchEvent(Event::postLoad, new Event\LifecycleEventArgs($document, $this->dm));
         }
 
         return $document;
@@ -389,7 +389,7 @@ class UnitOfWork
         $this->documentState[$oid] = self::STATE_REMOVED;
 
         if ($this->evm->hasListeners(Event::preRemove)) {
-            $this->evm->dispatchEvent(Event::preRemove, new Events\LifecycleEventArgs($document, $this->dm));
+            $this->evm->dispatchEvent(Event::preRemove, new Event\LifecycleEventArgs($document, $this->dm));
         }
 
         $this->cascadeRemove($document, $visited);
@@ -967,7 +967,7 @@ class UnitOfWork
         $this->registerManaged($document, $id, null);
 
         if ($this->evm->hasListeners(Event::prePersist)) {
-            $this->evm->dispatchEvent(Event::prePersist, new Events\LifecycleEventArgs($document, $this->dm));
+            $this->evm->dispatchEvent(Event::prePersist, new Event\LifecycleEventArgs($document, $this->dm));
         }
     }
 
@@ -981,7 +981,7 @@ class UnitOfWork
         $this->detectChangedDocuments();
 
         if ($this->evm->hasListeners(Event::onFlush)) {
-            $this->evm->dispatchEvent(Event::onFlush, new Events\OnFlushEventArgs($this));
+            $this->evm->dispatchEvent(Event::onFlush, new Event\OnFlushEventArgs($this));
         }
 
         $config = $this->dm->getConfiguration();
@@ -994,7 +994,7 @@ class UnitOfWork
             $this->removeFromIdentityMap($document);
 
             if ($this->evm->hasListeners(Event::postRemove)) {
-                $this->evm->dispatchEvent(Event::postRemove, new Events\LifecycleEventArgs($document, $this->dm));
+                $this->evm->dispatchEvent(Event::postRemove, new Event\LifecycleEventArgs($document, $this->dm));
             }
         }
 
@@ -1002,7 +1002,7 @@ class UnitOfWork
             $class = $this->dm->getClassMetadata(get_class($document));
 
             if ($this->evm->hasListeners(Event::preUpdate)) {
-                $this->evm->dispatchEvent(Event::preUpdate, new Events\LifecycleEventArgs($document, $this->dm));
+                $this->evm->dispatchEvent(Event::preUpdate, new Event\LifecycleEventArgs($document, $this->dm));
                 $this->computeChangeSet($class, $document); // TODO: prevent association computations in this case?
             }
 
@@ -1087,7 +1087,7 @@ class UnitOfWork
                 }
 
                 if ($this->evm->hasListeners(Event::postUpdate)) {
-                    $this->evm->dispatchEvent(Event::postUpdate, new Events\LifecycleEventArgs($document, $this->dm));
+                    $this->evm->dispatchEvent(Event::postUpdate, new Event\LifecycleEventArgs($document, $this->dm));
                 }
             }
         } else if ($response->status >= 400) {

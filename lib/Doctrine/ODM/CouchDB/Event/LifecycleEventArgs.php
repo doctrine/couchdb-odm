@@ -18,24 +18,26 @@
  */
 
 
-namespace Doctrine\ODM\CouchDB\Events;
+namespace Doctrine\ODM\CouchDB\Event;
 
-class ConflictEventArgs extends \Doctrine\Common\EventArgs
+class LifecycleEventArgs extends \Doctrine\Common\EventArgs
 {
-    private $data;
-    private $documentManager;
-    private $documentName;
+    private $document;
 
-    public function __construct($data, $documentManager, $documentName)
+    private $documentManager;
+
+    function __construct($document, $documentManager)
     {
-        $this->data = $data;
+        $this->document = $document;
         $this->documentManager = $documentManager;
-        $this->documentName = $documentName;
     }
 
-    public function getData()
+    /**
+     * @return object
+     */
+    public function getDocument()
     {
-        return $this->data;
+        return $this->document;
     }
 
     /**
@@ -44,10 +46,5 @@ class ConflictEventArgs extends \Doctrine\Common\EventArgs
     public function getDocumentManager()
     {
         return $this->documentManager;
-    }
-
-    public function getDocumentName()
-    {
-        return $this->documentName;
     }
 }

@@ -110,7 +110,7 @@ class PreUpdateSubscriber2 implements EventSubscriber
         return array(\Doctrine\ODM\CouchDB\Event::preUpdate);
     }
 
-    public function preUpdate(\Doctrine\ODM\CouchDB\Events\LifecycleEventArgs $args)
+    public function preUpdate(\Doctrine\ODM\CouchDB\Event\LifecycleEventArgs $args)
     {
         $this->eventArgs[] = $args;
     }

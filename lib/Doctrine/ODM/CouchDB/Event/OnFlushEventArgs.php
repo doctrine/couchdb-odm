@@ -18,7 +18,7 @@
  */
 
 
-namespace Doctrine\ODM\CouchDB\Events;
+namespace Doctrine\ODM\CouchDB\Event;
 
 class OnFlushEventArgs extends \Doctrine\Common\EventArgs
 {
