@@ -453,7 +453,7 @@ class ClassMetadataInfo implements ClassMetadata
      */
     public function hasAssociation($fieldName)
     {
-        return isset($this->associationMappings[$fieldName]);
+        return isset($this->associationsMappings[$fieldName]);
     }
 
     public function isCollectionValuedAssociation($name)
@@ -470,8 +470,8 @@ class ClassMetadataInfo implements ClassMetadata
      */
     public function isSingleValuedAssociation($fieldName)
     {
-        return isset($this->associationMappings[$fieldName]) &&
-                ($this->associationMappings[$fieldName]['type'] & self::TO_ONE);
+        return isset($this->associationsMappings[$fieldName]) &&
+                ($this->associationsMappings[$fieldName]['type'] & self::TO_ONE);
     }
 
     /**
@@ -483,7 +483,7 @@ class ClassMetadataInfo implements ClassMetadata
      */
     public function getAssociationNames()
     {
-        return array_keys($this->associationMappings);
+        return array_keys($this->associationsMappings);
     }
 
     /**
@@ -494,9 +494,9 @@ class ClassMetadataInfo implements ClassMetadata
      */
     public function getAssociationTargetClass($assocName)
     {
-        if (!isset($this->associationMappings[$assocName])) {
+        if (!isset($this->associationsMappings[$assocName])) {
             throw new \InvalidArgumentException("Association name expected, '" . $assocName ."' is not an association.");
         }
-        return $this->associationMappings[$assocName]['targetDocument'];
+        return $this->associationsMappings[$assocName]['targetDocument'];
     }
 }
