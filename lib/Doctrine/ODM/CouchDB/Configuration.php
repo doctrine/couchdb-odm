@@ -270,8 +270,16 @@ class Configuration
     }
 
     /**
+     * @return array
+     */
+    public function getDesignDocumentNames()
+    {
+        return array_keys($this->attributes['designDocuments']);
+    }
+
+    /**
      * @param  string $name
-     * @return string|null
+     * @return array
      */
     public function getDesignDocument($name)
     {
