@@ -105,18 +105,24 @@ class AnnotationDriver implements Driver
     {
         $reflClass = $class->getReflectionClass();
 
-        $classAnnotations = $this->reader->getClassAnnotations($reflClass);
-        if (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\Document'])) {
-            $documentAnnot = $classAnnotations['Doctrine\ODM\CouchDB\Mapping\Document'];
+        /*
+         * The annotation reader will only return the imported Document related annotations
+         * of which there should be only one.
+         */
+        $documentAnnotations = $this->reader->getClassAnnotations($reflClass);
+        if (count($documentAnnotations) > 1) {
+            throw MappingException::classSpecifiesMultipleDocumentTypes($className);
+        }
 
+        $documentAnnot = array_shift($documentAnnotations);
+        if ($documentAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Document) {
             if ($documentAnnot->indexed) {
                 $class->indexed = true;
             }
             $class->setCustomRepositoryClass($documentAnnot->repositoryClass);
-        } elseif (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\EmbeddedDocument'])) {
-            $documentAnnot = $classAnnotations['Doctrine\ODM\CouchDB\Mapping\EmbeddedDocument'];
+        } elseif ($documentAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\EmbeddedDocument) {
             $class->isEmbeddedDocument = true;
-        } else if (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\MappedSuperclass'])) {
+        } else if ($documentAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\MappedSuperclass) {
             $class->isMappedSuperclass = true;
         } else {
             throw MappingException::classIsNotAValidDocument($className);

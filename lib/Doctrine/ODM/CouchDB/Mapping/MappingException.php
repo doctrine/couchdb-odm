@@ -23,6 +23,11 @@ class MappingException extends \Exception
         return new self('Class '.$className.' is not a valid document or mapped super class.');
     }
 
+    public static function classSpecifiesMultipleDocumentTypes($className)
+    {
+        return new self('Class '.$className.' may only contain one Document related class annotation.');
+    }
+
     public static function reflectionFailure($document, \ReflectionException $previousException)
     {
         return new self('An error occurred in ' . $document, 0, $previousException);
