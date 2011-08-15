@@ -653,7 +653,7 @@ class UnitOfWork
         
         switch ($this->getDocumentState($document)) {
             case self::STATE_MANAGED:
-                if (isset($this->identityMap[$oid])) {
+                if (isset($this->identityMap[$this->documentIdentifiers[$oid]])) {
                     $this->removeFromIdentityMap($document);
                 }
                 unset($this->scheduledRemovals[$oid], $this->scheduledUpdates[$oid],
