@@ -50,6 +50,7 @@ class UpdateDesignDocCommand extends Command
             $designDocNames = $config->getDesignDocumentNames();
         }
 
+        $foundChanges = false;
         foreach ($designDocNames as $docName) {
             $designDocData = $config->getDesignDocument($docName);
 
@@ -60,6 +61,7 @@ class UpdateDesignDocCommand extends Command
 
             if (is_null($remoteDocBody) || ($remoteDocBody['views'] != $localDocBody['views'])) {
                 $response = $couchDbClient->createDesignDocument($docName, $localDesignDoc);
+                $foundChanges = true;
 
                 if ($response->status < 300) {
                     $output->writeln("Succesfully updated: " . $docName);
@@ -67,6 +69,9 @@ class UpdateDesignDocCommand extends Command
                     $output->writeln("Error updating {$docName}: {$response->body['reason']}");
                 }
             }
+        }
+        if (!$foundChanges) {
+            $output->writeln("No changes found; nothing to do.");
         }
     }
 }
