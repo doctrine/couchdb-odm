@@ -29,8 +29,11 @@ class UpdateAllDesignDocsCommand extends Command
 {
     protected function configure()
     {
-        $this->setName('couchdb:odm:update-all-design-docs')
-             ->setDescription('Update all new/modified design documents registered in the DM configuration.');
+        $this->setName('couchdb:odm:update-design-dcs')
+             ->setDescription('Update all new/modified registered design docs or a single document if a docname is provided.')
+             ->setDefinition(array(
+                new InputArgument('docname', InputArgument::OPTIONAL, '(Optional) Design doc name as registered in DM configuration, otherwise all new/modified docs are updated.', null),
+             ));
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -38,7 +41,14 @@ class UpdateAllDesignDocsCommand extends Command
         $dm = $this->getHelper('couchdb')->getDocumentManager();
         $couchDbClient = $dm->getCouchDBClient();
         $config = $dm->getConfiguration();
-        $designDocNames = $config->getDesignDocumentNames();
+
+        //If a docname is provided update only that document,
+        //otherwise update all modified/new docs.
+        if (is_string($inputDoc = $input->getArgument('docname'))) {
+            $designDocNames = array($inputDoc);
+        } else {
+            $designDocNames = $config->getDesignDocumentNames();
+        }
 
         foreach ($designDocNames as $docName) {
             $designDocData = $config->getDesignDocument($docName);
@@ -49,7 +59,7 @@ class UpdateAllDesignDocsCommand extends Command
             $remoteDocBody = $couchDbClient->findDocument('_design/' . $docName)->body;
 
             if (is_null($remoteDocBody) || ($remoteDocBody['views'] != $localDocBody['views'])) {
-                $response = $dm->getCouchDBClient()->createDesignDocument($docName, $localDesignDoc);
+                $response = $couchDbClient->createDesignDocument($docName, $localDesignDoc);
 
                 if ($response->status < 300) {
                     $output->writeln("Succesfully updated: " . $docName);
