@@ -192,6 +192,9 @@ class EmbeddedDocumentSerializer
     {
         // EmbedMany case
         if ('many' == $valueFieldMapping['embedded'] && is_array($value)) {
+            if (count($originalData) != count($value)) {
+                return true;
+            }
             foreach ($value as $key => $valueElement) {
                 if (!isset($originalData[$key])
                     || $this->isChanged($valueElement, $originalData[$key], $valueFieldMapping)) {

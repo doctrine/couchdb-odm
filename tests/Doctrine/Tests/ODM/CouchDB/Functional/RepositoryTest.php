@@ -81,6 +81,25 @@ class RepositoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
         $this->assertEquals(0, count($groups), "No results, group is not indexed!");
     }
 
+    public function testLoadManyWithMissingIds()
+    {
+        $this->dm = $this->createDocumentManager();
+        $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findMany(array('missing-id-1', 'missing-id-2'));
+        $this->assertEmpty($users);
+
+        $user1 = new \Doctrine\Tests\Models\CMS\CmsUser();
+        $user1->username = "beberlei";
+        $user1->status = "active";
+        $user1->name = "Benjamin";
+        $this->dm = $this->createDocumentManager();
+        $this->dm->persist($user1);
+        $this->dm->flush();
+        $this->dm->clear();
+
+        $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findMany(array($user1->id, 'missing-id-2'));
+        $this->assertEquals(1, count($users));
+    }
+
     public function testFindBy()
     {
         for ($i = 0; $i < 10; $i++) {
