@@ -30,25 +30,48 @@ class UpdateDesignDocCommand extends Command
     protected function configure()
     {
         $this->setName('couchdb:odm:update-design-doc')
-             ->setDescription('Update design document')
+             ->setDescription('Update all new/modified registered design docs or a single document if a docname is provided.')
              ->setDefinition(array(
-                new InputArgument('docname', InputArgument::REQUIRED, 'Design doc name as registered in DocumentManager configuration.', null),
+                new InputArgument('docname', InputArgument::OPTIONAL, '(Optional) Design doc name as registered in DM configuration, otherwise all new/modified docs are updated.', null),
              ));
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $dm = $this->getHelper('couchdb')->getDocumentManager();
-        $designDocData = $dm->getConfiguration()->getDesignDocument($input->getArgument('docname'));
+        $couchDbClient = $dm->getCouchDBClient();
+        $config = $dm->getConfiguration();
 
-        $designDoc = new $designDocData['className']($designDocData['options']);
-
-        $response = $dm->getCouchDBClient()->createDesignDocument($input->getArgument('docname'), $designDoc);
-
-        if ($response->status < 300) {
-            $output->writeln("Design document was updated succesfully.");
+        //If a docname is provided update only that document,
+        //otherwise update all modified/new docs.
+        if (is_string($inputDoc = $input->getArgument('docname'))) {
+            $designDocNames = array($inputDoc);
         } else {
-            throw new \RuntimeException($response->body['reason']);
+            $designDocNames = $config->getDesignDocumentNames();
+        }
+
+        $foundChanges = false;
+        foreach ($designDocNames as $docName) {
+            $designDocData = $config->getDesignDocument($docName);
+
+            $localDesignDoc = new $designDocData['className']($designDocData['options']);
+            $localDocBody = $localDesignDoc->getData();
+
+            $remoteDocBody = $couchDbClient->findDocument('_design/' . $docName)->body;
+
+            if (is_null($remoteDocBody) || ($remoteDocBody['views'] != $localDocBody['views'])) {
+                $response = $couchDbClient->createDesignDocument($docName, $localDesignDoc);
+                $foundChanges = true;
+
+                if ($response->status < 300) {
+                    $output->writeln("Succesfully updated: " . $docName);
+                } else {
+                    $output->writeln("Error updating {$docName}: {$response->body['reason']}");
+                }
+            }
+        }
+        if (!$foundChanges) {
+            $output->writeln("No changes found; nothing to do.");
         }
     }
 }
