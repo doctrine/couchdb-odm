@@ -1,0 +1,16 @@
+{
+    "name": "doctrine/couchdb-odm",
+    "type": "library",
+    "description": "CouchDB Document Object Mapper",
+    "keywords": ["persistence", "couchdb"],
+    "homepage": "http://www.doctrine-project.org",
+    "license": "LGPL",
+    "authors": [
+        {"name": "Benjamin Eberlei", "email": "kontakt@beberlei.de"},
+        {"name": "Lukas Kahwe Smith", "email": "smith@pooteeweet.org"}
+    ],
+    "require": {
+        "php": ">=5.3.2",
+        "doctrine/common": ">=2.2.0"
+    }
+}
