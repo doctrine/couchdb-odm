@@ -58,8 +58,9 @@ class UpdateDesignDocCommand extends Command
             $localDocBody = $localDesignDoc->getData();
 
             $remoteDocBody = $couchDbClient->findDocument('_design/' . $docName)->body;
-
-            if (is_null($remoteDocBody) || ($remoteDocBody['views'] != $localDocBody['views'])) {
+            if (is_null($remoteDocBody)
+                || (isset($remoteDocBody['error']) && $remoteDocBody['error'] == 'not_found')
+                || ($remoteDocBody['views'] != $localDocBody['views'])) {
                 $response = $couchDbClient->createDesignDocument($docName, $localDesignDoc);
                 $foundChanges = true;
 
