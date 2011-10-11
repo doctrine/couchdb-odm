@@ -1,3 +1,28 @@
+Upgrade from Alpha2 to Alpha3
+=============================
+
+Changed Annotation Indexing notation
+------------------------------------
+
+The notation to index a class or property as searchable through a repository using a CouchDB
+view has changed from:
+
+    /** @Document(indexed=true) */
+    class User
+    {
+        /** @Field(indexed=true) */
+        private $username;
+    }
+
+to:
+
+    /** @Document @Index */
+    class User
+    {
+        /** @Field @Index */
+        private $username;
+    }
+
 Upgrade from Alpha 1 to Alpha2
 ==============================
 

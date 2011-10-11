@@ -117,6 +117,8 @@ class AnnotationDriver implements Driver
             } else if ($classAnnotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\MappedSuperclass) {
                 $class->isMappedSuperclass = true;
                 $isValidDocument = true;
+            } else if ($classAnnotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Index) {
+                $class->indexed = true;
             }
         }
 
@@ -125,11 +127,11 @@ class AnnotationDriver implements Driver
         }
 
         foreach ($reflClass->getProperties() as $property) {
+            $isField = false;
             $mapping = array();
             $mapping['fieldName'] = $property->getName();
 
             foreach ($this->reader->getPropertyAnnotations($property) as $fieldAnnot) {
-                
                 if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Field) {
                     if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Version) {
                         $mapping['isVersionField'] = true;
@@ -137,7 +139,9 @@ class AnnotationDriver implements Driver
 
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
                     unset($mapping['value']);
-                    $class->mapField($mapping);
+                    $isField = true;
+                } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Index) {
+                    $mapping['indexed'] = true;
                 } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\ReferenceOne) {
                     $cascade = 0;
                     foreach ($fieldAnnot->cascade AS $cascadeMode) {
@@ -165,6 +169,10 @@ class AnnotationDriver implements Driver
                     unset($mapping['value']);
                     $class->mapEmbedded($mapping);
                 }
+            }
+
+            if ($isField) {
+                $class->mapField($mapping);
             }
         }
     }
