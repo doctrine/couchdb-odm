@@ -51,16 +51,16 @@ class EmbeddedDocumentSerializer
      * @return array
      *
      */
-    public function serializeEmbeddedDocument($embeddedValue, $embeddedFieldMapping)
+    public function serializeEmbeddedDocument($embeddedValue, $embeddedFieldMapping, $embedMany = false)
     {
         if ($embeddedValue === null) {
             return null;
         }
 
-        if ('many' == $embeddedFieldMapping['embedded'] && (is_array($embeddedValue) || $embeddedValue instanceof \Traversable)) {
+        if (!$embedMany && 'many' == $embeddedFieldMapping['embedded'] && (is_array($embeddedValue) || $embeddedValue instanceof \Traversable)) {
             $data = array();
             foreach ($embeddedValue as $key => $val) {
-                $data[$key] = $this->serializeEmbeddedDocument($val, $embeddedFieldMapping);
+                $data[$key] = $this->serializeEmbeddedDocument($val, $embeddedFieldMapping, true);
             }
         } else {
             $embeddedClass = null;
