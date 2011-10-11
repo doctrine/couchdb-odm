@@ -23,6 +23,11 @@ to:
         private $username;
     }
 
+Changed XML and YAML Indexing Attribute
+---------------------------------------
+
+The attribute for indexing classes or properties in XML and YAML was renamed from "indexed" to "index".
+
 Upgrade from Alpha 1 to Alpha2
 ==============================
 

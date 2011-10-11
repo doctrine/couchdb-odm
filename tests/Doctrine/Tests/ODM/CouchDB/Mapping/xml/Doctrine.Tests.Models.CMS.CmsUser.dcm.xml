@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <doctrine-mapping>
-    <document name="Doctrine\Tests\Models\CMS\CmsUser">
+    <document name="Doctrine\Tests\Models\CMS\CmsUser" index="true">
         <id name="id" />
-        <field name="status" type="string" indexed="true" />
-        <field name="username" type="string" indexed="true" />
-        <field name="name" type="string" indexed="true" />
+        <field name="status" type="string" index="true" />
+        <field name="username" type="string" index="true" />
+        <field name="name" type="string" index="true" />
         
         <embed-one field="address" />
         

@@ -64,7 +64,7 @@ class YamlDriver extends AbstractFileDriver
             foreach ($element['id'] AS $fieldName => $idElement) {
                 $class->mapField(array(
                     'fieldName' => $fieldName,
-                    'indexed'   => (isset($idElement['indexed'])) ? (bool)$idElement['indexed'] : false,
+                    'indexed'   => (isset($idElement['index'])) ? (bool)$idElement['index'] : false,
                     'type'      => (isset($idElement['type'])) ? $idElement['type'] : null,
                     'id'        => true,
                     'strategy'  => (isset($idElement['strategy'])) ? $idElement['strategy'] :  null,
@@ -77,7 +77,7 @@ class YamlDriver extends AbstractFileDriver
                 $class->mapField(array(
                     'fieldName' => $fieldName,
                     'jsonName'  => (isset($fieldElement['jsonName'])) ? $fieldElement['jsonName'] : null,
-                    'indexed'   => (isset($fieldElement['indexed'])) ? (bool)$fieldElement['indexed'] : false,
+                    'indexed'   => (isset($fieldElement['index'])) ? (bool)$fieldElement['index'] : false,
                     'type'      => (isset($fieldElement['type'])) ? $fieldElement['type'] : null,
                     'isVersionField' => (isset($fieldElement['version'])) ? true : null,
                 ));
