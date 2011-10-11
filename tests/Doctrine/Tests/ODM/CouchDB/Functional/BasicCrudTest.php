@@ -199,7 +199,7 @@ class User
 {
     /** @Id(strategy="ASSIGNED") */
     public $id;
-    /** @String */
+    /** @Field(type="string") */
     public $username;
 }
 
@@ -210,6 +210,6 @@ class User2
 {
     /** @Id(strategy="ASSIGNED") */
     public $id;
-    /** @String */
+    /** @Field(type="string") */
     public $username;
 }

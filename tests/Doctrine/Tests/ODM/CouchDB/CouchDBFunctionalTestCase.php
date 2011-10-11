@@ -48,8 +48,8 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
         $httpClient->request('DELETE', '/' . $database);
         $resp = $httpClient->request('PUT', '/' . $database);
 
-        $reader = new AnnotationReader();
-        $reader->setDefaultAnnotationNamespace('Doctrine\ODM\CouchDB\Mapping\\');
+        $reader = new \Doctrine\Common\Annotations\SimpleAnnotationReader();
+        $reader->addNamespace('Doctrine\ODM\CouchDB\Mapping\Annotations\\');
         $paths = __DIR__ . "/../../Models";
         $metaDriver = new AnnotationDriver($reader, $paths);
 

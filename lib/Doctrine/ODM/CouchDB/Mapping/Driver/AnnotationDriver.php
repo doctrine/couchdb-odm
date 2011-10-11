@@ -20,11 +20,8 @@
 namespace Doctrine\ODM\CouchDB\Mapping\Driver;
 
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata,
-    Doctrine\Common\Annotations\AnnotationReader,
+    Doctrine\Common\Annotations\Reader,
     Doctrine\ODM\CouchDB\Mapping\MappingException;
-
-// TODO: this is kinda ugly
-require __DIR__ . '/DoctrineAnnotations.php';
 
 /**
  * The AnnotationDriver reads the mapping metadata from docblock annotations.
@@ -70,7 +67,7 @@ class AnnotationDriver implements Driver
      * @param $reader The AnnotationReader to use.
      * @param string|array $paths One or multiple paths where mapping classes can be found. 
      */
-    public function __construct(AnnotationReader $reader, $paths = null)
+    public function __construct(Reader $reader, $paths = null)
     {
         $this->reader = $reader;
         if ($paths) {
@@ -106,17 +103,17 @@ class AnnotationDriver implements Driver
         $reflClass = $class->getReflectionClass();
 
         $classAnnotations = $this->reader->getClassAnnotations($reflClass);
-        if (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\Document'])) {
-            $documentAnnot = $classAnnotations['Doctrine\ODM\CouchDB\Mapping\Document'];
+        if (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\Annotations\Document'])) {
+            $documentAnnot = $classAnnotations['Doctrine\ODM\CouchDB\Mapping\Annotations\Document'];
 
             if ($documentAnnot->indexed) {
                 $class->indexed = true;
             }
             $class->setCustomRepositoryClass($documentAnnot->repositoryClass);
-        } elseif (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\EmbeddedDocument'])) {
-            $documentAnnot = $classAnnotations['Doctrine\ODM\CouchDB\Mapping\EmbeddedDocument'];
+        } elseif (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\Annotations\EmbeddedDocument'])) {
+            $documentAnnot = $classAnnotations['Doctrine\ODM\CouchDB\Mapping\Annotations\EmbeddedDocument'];
             $class->isEmbeddedDocument = true;
-        } else if (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\MappedSuperclass'])) {
+        } else if (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\Annotations\MappedSuperclass'])) {
             $class->isMappedSuperclass = true;
         } else {
             throw MappingException::classIsNotAValidDocument($className);
@@ -180,9 +177,9 @@ class AnnotationDriver implements Driver
     {
         $classAnnotations = $this->reader->getClassAnnotations(new \ReflectionClass($className));
 
-        return ! isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\Document']) &&
-               ! isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\MappedSuperclass']) &&
-               ! isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\EmbeddedDocument']);
+        return ! isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\Annotations\Document']) &&
+               ! isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\Annotations\MappedSuperclass']) &&
+               ! isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\Annotations\EmbeddedDocument']);
     }
 
     /**

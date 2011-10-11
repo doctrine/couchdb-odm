@@ -21,3 +21,5 @@ $classLoader->register();
 
 $classLoader = new ClassLoader('Symfony\Component', __DIR__ . '/../lib/vendor');
 $classLoader->register();
+
+Doctrine\Common\Annotations\AnnotationRegistry::registerAutoloadNamespace('Doctrine\ODM\CouchDB\Mapping\Annotations');

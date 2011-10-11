@@ -9,13 +9,13 @@ class CmsAddress
 {
     /** @ No Id for embedded */
     public $id;
-    /** @String */
+    /** @Field(type="string") */
     public $country;
-    /** @String */
+    /** @Field(type="string") */
     public $zip;
-    /** @String */
+    /** @Field(type="string") */
     public $city;
-    /** @String */
+    /** @Field(type="string") */
     public $street;
 
     public function getId() {

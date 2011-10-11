@@ -11,11 +11,11 @@ class CmsUser
 {
     /** @Id */
     public $id;
-    /** @String(indexed=true) */
+    /** @Field(type="string")(indexed=true) */
     public $status;
-    /** @String(indexed=true) */
+    /** @Field(type="string")(indexed=true) */
     public $username;
-    /** @String(indexed=true) */
+    /** @Field(type="string")(indexed=true) */
     public $name;
 
     /** @EmbedOne */
