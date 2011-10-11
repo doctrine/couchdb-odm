@@ -13,7 +13,7 @@ class CmsGroup
 {
     /** @Id */
     public $id;
-    /** @String */
+    /** @Field(type="string") */
     public $name;
 
     /** @ReferenceMany(targetDocument="CmsUser", mappedBy="groups") */

@@ -9,9 +9,9 @@ class CmsArticle
 {
     /** @Id */
     public $id;
-    /** @String */
+    /** @Field(type="string") */
     public $topic;
-    /** @String */
+    /** @Field(type="string") */
     public $text;
     /** @ReferenceOne(targetDocument="CmsUser") */
     public $user;

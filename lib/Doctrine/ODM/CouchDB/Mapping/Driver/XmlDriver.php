@@ -70,7 +70,7 @@ class XmlDriver extends AbstractFileDriver
                 $class->mapField(array(
                     'fieldName' => (string)$fieldMapping['name'],
                     'jsonName'  => (isset($fieldMapping['json-name'])) ? (string)$fieldMapping['json-name'] : null,
-                    'indexed'   => (isset($fieldMapping['indexed'])) ? (bool)$fieldMapping['indexed'] : false,
+                    'indexed'   => (isset($fieldMapping['index'])) ? (bool)$fieldMapping['index'] : false,
                     'type'      => (isset($fieldMapping['type'])) ? (string)$fieldMapping['type'] : null,
                     'isVersionField'   => (isset($fieldMapping['version'])) ? true : null,
                 ));
@@ -81,7 +81,7 @@ class XmlDriver extends AbstractFileDriver
         foreach ($xmlRoot->id as $idElement) {
             $class->mapField(array(
                 'fieldName' => (string)$idElement['name'],
-                'indexed'   => (isset($idElement['indexed'])) ? (bool)$idElement['indexed'] : false,
+                'indexed'   => (isset($idElement['index'])) ? (bool)$idElement['index'] : false,
                 'type'      => (isset($idElement['type'])) ? (string)$idElement['type'] : null,
                 'id'        => true,
                 'strategy'  => (isset($idElement['strategy'])) ? (string)$idElement['strategy'] : null,
