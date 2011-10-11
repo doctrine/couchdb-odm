@@ -103,19 +103,24 @@ class AnnotationDriver implements Driver
         $reflClass = $class->getReflectionClass();
 
         $classAnnotations = $this->reader->getClassAnnotations($reflClass);
-        if (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\Annotations\Document'])) {
-            $documentAnnot = $classAnnotations['Doctrine\ODM\CouchDB\Mapping\Annotations\Document'];
-
-            if ($documentAnnot->indexed) {
-                $class->indexed = true;
+        $isValidDocument = false;
+        foreach ($classAnnotations AS $classAnnotation) {
+            if ($classAnnotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Document) {
+                if ($classAnnotation->indexed) {
+                    $class->indexed = true;
+                }
+                $class->setCustomRepositoryClass($classAnnotation->repositoryClass);
+                $isValidDocument = true;
+            } elseif ($classAnnotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\EmbeddedDocument) {
+                $class->isEmbeddedDocument = true;
+                $isValidDocument = true;
+            } else if ($classAnnotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\MappedSuperclass) {
+                $class->isMappedSuperclass = true;
+                $isValidDocument = true;
             }
-            $class->setCustomRepositoryClass($documentAnnot->repositoryClass);
-        } elseif (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\Annotations\EmbeddedDocument'])) {
-            $documentAnnot = $classAnnotations['Doctrine\ODM\CouchDB\Mapping\Annotations\EmbeddedDocument'];
-            $class->isEmbeddedDocument = true;
-        } else if (isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\Annotations\MappedSuperclass'])) {
-            $class->isMappedSuperclass = true;
-        } else {
+        }
+
+        if (!$isValidDocument) {
             throw MappingException::classIsNotAValidDocument($className);
         }
 
@@ -125,15 +130,15 @@ class AnnotationDriver implements Driver
 
             foreach ($this->reader->getPropertyAnnotations($property) as $fieldAnnot) {
                 
-                if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Field) {
-                    if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Version) {
+                if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Field) {
+                    if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Version) {
                         $mapping['isVersionField'] = true;
                     }
 
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
                     unset($mapping['value']);
                     $class->mapField($mapping);
-                } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\ReferenceOne) {
+                } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\ReferenceOne) {
                     $cascade = 0;
                     foreach ($fieldAnnot->cascade AS $cascadeMode) {
                         $cascade += constant('Doctrine\ODM\CouchDB\Mapping\ClassMetadata::CASCADE_' . strtoupper($cascadeMode));
@@ -143,7 +148,7 @@ class AnnotationDriver implements Driver
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
                     unset($mapping['value']);
                     $class->mapManyToOne($mapping);
-                } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\ReferenceMany) {
+                } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\ReferenceMany) {
                     $cascade = 0;
                     foreach ($fieldAnnot->cascade AS $cascadeMode) {
                         $cascade += constant('Doctrine\ODM\CouchDB\Mapping\ClassMetadata::CASCADE_' . strtoupper($cascadeMode));
@@ -153,9 +158,9 @@ class AnnotationDriver implements Driver
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
                     unset($mapping['value']);
                     $class->mapManyToMany($mapping);
-                } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Attachments) {
+                } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Attachments) {
                     $class->mapAttachments($mapping['fieldName']);
-                } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\EmbedOne || $fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\EmbedMany) {
+                } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\EmbedOne || $fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\EmbedMany) {
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
                     unset($mapping['value']);
                     $class->mapEmbedded($mapping);

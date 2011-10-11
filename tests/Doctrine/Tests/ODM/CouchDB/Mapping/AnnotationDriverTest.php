@@ -10,7 +10,7 @@ class AnnotationDriverTest extends AbstractMappingDriverTest
     {
         $cm = new ClassMetadata('stdClass');
         $reader = new \Doctrine\Common\Annotations\SimpleAnnotationReader();
-        $reader->addNamespace('Doctrine\ODM\CouchDB\Mapping\Annotations\\');
+        $reader->addNamespace('Doctrine\ODM\CouchDB\Mapping\Annotations');
         $annotationDriver = new \Doctrine\ODM\CouchDB\Mapping\Driver\AnnotationDriver($reader);
 
         $this->setExpectedException('Doctrine\ODM\CouchDB\Mapping\MappingException');
@@ -61,7 +61,7 @@ class AnnotationDriverTest extends AbstractMappingDriverTest
     {
         $cache = new \Doctrine\Common\Cache\ArrayCache();
         $reader = new \Doctrine\Common\Annotations\SimpleAnnotationReader();
-        $reader->addNamespace('Doctrine\ODM\CouchDB\Mapping\Annotations\\');
+        $reader->addNamespace('Doctrine\ODM\CouchDB\Mapping\Annotations');
         return new \Doctrine\ODM\CouchDB\Mapping\Driver\AnnotationDriver($reader);
     }
 

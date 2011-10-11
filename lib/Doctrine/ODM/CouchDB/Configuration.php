@@ -161,7 +161,7 @@ class Configuration
     public function newDefaultAnnotationDriver($paths = array())
     {
         $reader = new \Doctrine\Common\Annotations\SimpleAnnotationReader();
-        $reader->addNamespace('Doctrine\ODM\CouchDB\Mapping\Annotations\\');
+        $reader->addNamespace('Doctrine\ODM\CouchDB\Mapping\Annotations');
 
         return new \Doctrine\ODM\CouchDB\Mapping\Driver\AnnotationDriver($reader, (array) $paths);
     }
