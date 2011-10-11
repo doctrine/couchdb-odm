@@ -182,9 +182,16 @@ class AnnotationDriver implements Driver
     {
         $classAnnotations = $this->reader->getClassAnnotations(new \ReflectionClass($className));
 
-        return ! isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\Annotations\Document']) &&
-               ! isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\Annotations\MappedSuperclass']) &&
-               ! isset($classAnnotations['Doctrine\ODM\CouchDB\Mapping\Annotations\EmbeddedDocument']);
+        foreach ($classAnnotations AS $classAnnotation) {
+            if ($classAnnotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Document) {
+                return false;
+            } else if ($classAnnotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\MappedSuperclass) {
+                return false;
+            } else if ($classAnnotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\EmbeddedDocument) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
