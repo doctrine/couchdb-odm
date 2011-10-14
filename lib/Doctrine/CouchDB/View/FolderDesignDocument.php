@@ -27,18 +27,34 @@ class FolderDesignDocument implements DesignDocument
 
             $this->data = array();
             foreach ($ri AS $path) {
-                if (substr($path, -3) === ".js") {
-                    $parts = explode("/", ltrim(str_replace($this->folderPath, '', str_replace(".js", "", $path)), '/'));
+                $fileData = $this->getFileData($path);
+                if ($fileData !== null) {
+                    $parts = explode("/", ltrim(str_replace($this->folderPath, '', $fileData["key"]), '/'));
 
                     if (count($parts) == 3) {
-                        $this->data[$parts[0]][$parts[1]][$parts[2]] = file_get_contents($path);
+                        $this->data[$parts[0]][$parts[1]][$parts[2]] = $fileData["data"];
                     } else if (count($parts) == 2) {
-                        $this->data[$parts[0]][$parts[1]] = file_get_contents($path);
+                        $this->data[$parts[0]][$parts[1]] = $fileData["data"];
+                    } else if (count($parts) == 1) {
+                        $this->data[$parts[0]] = $fileData["data"];
                     }
                 }
             }
         }
 
         return $this->data;
+    }
+
+    private function getFileData($path)
+    {
+        $result = null;
+        if (substr($path, -3) === ".js") {
+            $result = array("key" => str_replace(".js", "", $path),
+                            "data"=> file_get_contents($path));
+        } else if (substr($path, -5) === ".json") {
+            $result = array("key" => str_replace(".json", "", $path),
+                            "data"=> json_decode(file_get_contents($path), true));
+        }
+        return $result;
     }
 }
