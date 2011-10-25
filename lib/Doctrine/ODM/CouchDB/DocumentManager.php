@@ -99,7 +99,7 @@ class DocumentManager implements ObjectManager
 
     /**
      * Factory method for a Document Manager.
-     * 
+     *
      * @param Configuration $config
      * @param EventManager $evm
      * @return DocumentManager
@@ -232,7 +232,7 @@ class DocumentManager implements ObjectManager
 
     /**
      * Create a CouchDB-Lucene Query.
-     * 
+     *
      * @param string $designDocName
      * @param string $viewName
      * @return View\ODMLuceneQuery
@@ -330,5 +330,19 @@ class DocumentManager implements ObjectManager
     {
         // Todo: Do a real delegated clear?
         $this->unitOfWork = new UnitOfWork($this);
+    }
+
+    /**
+     * Initialize an object that is a lazy load proxy, or do nothing.
+     *
+     * @param object $obj
+     */
+    public function initializeObject($obj)
+    {
+        if ($obj instanceof PersistentCollection) {
+            $obj->initialize();
+        } else if ($obj instanceof Proxy\Proxy) {
+            $obj->__doctrineLoad__();
+        }
     }
 }

@@ -260,7 +260,7 @@ class <proxyClassName> extends \<className> implements \Doctrine\ODM\CouchDB\Pro
         $this->__doctrineDocumentManager__ = $documentManager;
         $this->__doctrineIdentifier__ = $identifier;
     }
-    private function __doctrineLoad__()
+    public function __doctrineLoad__()
     {
         if (!$this->__isInitialized__ && $this->__doctrineDocumentManager__) {
             $this->__isInitialized__ = true;
