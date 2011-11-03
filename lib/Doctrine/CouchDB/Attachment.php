@@ -106,7 +106,7 @@ class Attachment
     /**
      * Get the length of the base64 encoded representation of this attachment.
      *
-     * @return string
+     * @return int
      */
     public function getLength()
     {
