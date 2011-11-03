@@ -16,7 +16,7 @@
     "autoload": {
         "psr-0": {
             "Doctrine\\CouchDB": "lib/",
-            "Doctrine\\ODM": "lib/"
+            "Doctrine\\ODM\\CouchDB": "lib/"
         }
     }
 }
