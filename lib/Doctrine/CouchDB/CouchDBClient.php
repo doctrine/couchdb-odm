@@ -58,7 +58,7 @@ class CouchDBClient
 
     static private $clients = array(
         'socket' => 'Doctrine\CouchDB\HTTP\SocketClient',
-        'stream' => 'Doctrine\CouchDB\HtTP\StreamClient',
+        'stream' => 'Doctrine\CouchDB\HTTP\StreamClient',
     );
 
     /**
