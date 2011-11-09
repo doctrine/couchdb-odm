@@ -149,7 +149,7 @@ class UnitOfWork
     public function createDocument($documentName, $data, array &$hints = array())
     {
         if (!$this->metadataResolver->canMapDocument($data)) {
-            throw new \InvalidArgumentException("Missing or missmatching metadata description in the Document, cannot hydrate!");
+            throw new \InvalidArgumentException("Missing or mismatching metadata description in the Document, cannot hydrate!");
         }
 
         $type = $this->metadataResolver->getDocumentType($data);
