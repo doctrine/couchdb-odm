@@ -19,8 +19,6 @@ abstract class Type
     /** The map of supported doctrine mapping types. */
     private static $_typesMap = array(
         self::MIXED => 'Doctrine\ODM\CouchDB\Types\MixedType',
-        self::TARRAY => 'Doctrine\ODM\CouchDB\Types\ArrayType',
-        self::OBJECT => 'Doctrine\ODM\CouchDB\Types\ObjectType',
         self::BOOLEAN => 'Doctrine\ODM\CouchDB\Types\BooleanType',
         self::INTEGER => 'Doctrine\ODM\CouchDB\Types\IntegerType',
         self::STRING => 'Doctrine\ODM\CouchDB\Types\StringType',
