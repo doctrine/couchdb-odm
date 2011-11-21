@@ -69,17 +69,17 @@ class UnitOfWorkTest extends CouchDBTestCase
                    ->method('request')
                    ->will($this->returnValue(new \Doctrine\CouchDB\HTTP\Response(404, array(), "{}")));
         $this->dm->getCouchDBClient()->setHttpClient($httpClient);
-        
+
         $object = new UoWUser();
         $object->id = "1";
         $object->username = "bar";
-        
+
         $this->uow->scheduleInsert($object);
     }
 
     public function testScheduleInsert_ForAssignedIdGenerator_WithoutId()
     {
-        $this->setExpectedException('Exception');
+        $this->setExpectedException('Doctrine\ODM\CouchDB\CouchDBException');
 
         $object = new UoWUser();
         $object->username = "bar";
@@ -96,7 +96,7 @@ class UnitOfWorkTest extends CouchDBTestCase
             "e2c4783e9ff922eefe869998a01828b2"
         );
         $uuidResponse = new \Doctrine\CouchDB\HTTP\Response(200, array(), json_encode(array('uuids' => $uuids)));
-        
+
         $client = $this->getMock('Doctrine\CouchDB\HTTP\Client', array('request'));
         $client->expects($this->once())
                ->method('request')

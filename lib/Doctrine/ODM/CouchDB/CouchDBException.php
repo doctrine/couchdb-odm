@@ -61,5 +61,10 @@ class CouchDBException extends \Exception
     {
         return  new self("CouchDB Lucene is not configured. You have to configure the handler name to enable support for Lucene Queries.");
     }
+
+    public static function assignedIdGeneratorNoIdFound($className)
+    {
+        return new self("Document has assigned id generator configured, however no ID was found during persist().");
+    }
 }
 

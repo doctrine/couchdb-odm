@@ -38,7 +38,7 @@ class EmbedManyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
     public function testFind()
     {
         $embedder = $this->dm->find($this->type, 1);
-        $this->assertType($this->type, $embedder);
+        $this->assertInstanceOf($this->type, $embedder);
         $this->assertEquals(2, count($embedder->embeds));
         $this->assertEquals('embedded 1', $embedder->embeds[0]->name);
         $this->assertEquals('embedded 2', $embedder->embeds[1]->name);

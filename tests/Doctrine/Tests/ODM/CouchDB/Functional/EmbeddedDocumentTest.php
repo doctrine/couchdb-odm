@@ -46,7 +46,7 @@ class EmbeddedAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctio
         $this->dm->getEventManager()->addEventListener('preUpdate', $listener);
 
         $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $this->userId);
-        $this->assertType('\Doctrine\Tests\Models\CMS\CmsAddress', $user->address);
+        $this->assertInstanceOf('\Doctrine\Tests\Models\CMS\CmsAddress', $user->address);
         $this->assertEquals('Hungary', $user->address->country);
         $this->assertEquals('1122', $user->address->zip);
         $this->assertEquals('Budapest', $user->address->city);
@@ -59,7 +59,7 @@ class EmbeddedAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctio
     public function testSaveModifiedEmbedded()
     {
         $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $this->userId);
-        $this->assertType('\Doctrine\Tests\Models\CMS\CmsAddress', $user->address);
+        $this->assertInstanceOf('\Doctrine\Tests\Models\CMS\CmsAddress', $user->address);
         $this->assertEquals('Hungary', $user->address->country);
         $this->assertEquals('1122', $user->address->zip);
         $this->assertEquals('Budapest', $user->address->city);
@@ -81,7 +81,7 @@ class EmbeddedAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctio
     public function testSaveEmbedded()
     {
         $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $this->userId);
-        $this->assertType('\Doctrine\Tests\Models\CMS\CmsAddress', $user->address);
+        $this->assertInstanceOf('\Doctrine\Tests\Models\CMS\CmsAddress', $user->address);
         $this->assertEquals('Hungary', $user->address->country);
         $this->assertEquals('1122', $user->address->zip);
         $this->assertEquals('Budapest', $user->address->city);

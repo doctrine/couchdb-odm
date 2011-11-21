@@ -86,7 +86,7 @@ class ClassMetadataInfo implements ClassMetadata
 
     /**
      * Is this class indexed? If yes, then a findAll() query can be executed for this type.
-     * 
+     *
      * @var bool
      */
     public $indexed = false;
@@ -284,21 +284,21 @@ class ClassMetadataInfo implements ClassMetadata
         $this->hasAttachments = true;
         $this->attachmentField = $fieldName;
     }
-    
+
     /**
      * Map an embedded object
-     * 
+     *
      * - fieldName - The name of the property/field on the mapped php class
      * - jsonName - JSON key name of this field in CouchDB.
      * - targetDocument - Name of the target document
      * - embedded - one or many embedded objects?
-     * 
-     * @param array $mapping 
+     *
+     * @param array $mapping
      */
     public function mapEmbedded(array $mapping)
     {
         //$mapping = $this->validateAndCompleteReferenceMapping($mapping);
-        
+
         $this->mapField($mapping);
     }
 
@@ -359,7 +359,7 @@ class ClassMetadataInfo implements ClassMetadata
 
         return $mapping;
     }
-    
+
     protected function validateAndCompleteReferenceMapping($mapping)
     {
         if (isset($mapping['targetDocument']) && strpos($mapping['targetDocument'], '\\') === false && strlen($this->namespace)) {
@@ -498,5 +498,21 @@ class ClassMetadataInfo implements ClassMetadata
             throw new \InvalidArgumentException("Association name expected, '" . $assocName ."' is not an association.");
         }
         return $this->associationsMappings[$assocName]['targetDocument'];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAssociationMappedByTargetField($assocName)
+    {
+        return $this->associationsMappings[$assocName]['mappedBy'];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isAssociationInverseSide($assocName)
+    {
+        return isset($this->associationsMappings[$assocName]) && ! $this->associationsMappings[$assocName];
     }
 }

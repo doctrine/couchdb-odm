@@ -4,6 +4,7 @@ namespace Doctrine\ODM\CouchDB\Id;
 
 use Doctrine\ODM\CouchDB\DocumentManager;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
+use Doctrine\ODM\CouchDB\CouchDBException;
 
 class AssignedIdGenerator extends IdGenerator
 {
@@ -17,7 +18,7 @@ class AssignedIdGenerator extends IdGenerator
     {
         $id = $cm->getIdentifierValue($document);
         if (!$id) {
-            throw new \Exception("no id");
+            throw CouchDBException::assignedIdGeneratorNoIdFound($cm->name);
         }
         return $id;
     }
