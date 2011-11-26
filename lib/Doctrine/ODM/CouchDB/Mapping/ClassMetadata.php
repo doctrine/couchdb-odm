@@ -286,6 +286,21 @@ class ClassMetadata extends ClassMetadataInfo
     {
         return (string) $this->reflFields[$this->identifier]->getValue($document);
     }
+    
+    /**
+     * Get identifier values of this document.
+     * 
+     * Since CouchDB only allows exactly one identifier field this is a proxy
+     * to {@see getIdentifierValue()} and returns an array with the identifier
+     * field as a key.
+     * 
+     * @param object $document
+     * @return array
+     */
+    public function getIdentifierValues($document)
+    {
+        return array($this->identifier => $this->getIdentifierValue($document));
+    }
 
     /**
      * Sets the specified field to the specified value on the given document.
