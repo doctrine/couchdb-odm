@@ -2,7 +2,6 @@
 
 namespace Doctrine\ODM\CouchDB\Mapping;
 
-use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 
 /**
  * Metadata class
@@ -13,7 +12,7 @@ use Doctrine\Common\Persistence\Mapping\ClassMetadata;
  * @author      Benjamin Eberlei <kontakt@beberlei.de>
  * @author      Lukas Kahwe Smith <smith@pooteeweet.org>
  */
-class ClassMetadataInfo implements ClassMetadata
+class ClassMetadataInfo
 {
     const IDGENERATOR_UUID = 1;
     const IDGENERATOR_ASSIGNED = 2;

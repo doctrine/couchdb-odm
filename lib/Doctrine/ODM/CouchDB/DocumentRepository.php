@@ -193,4 +193,9 @@ class DocumentRepository implements ObjectRepository
     {
         return $this->class;
     }
+
+    public function getClassName()
+    {
+        return $this->getDocumentName();
+    }
 }

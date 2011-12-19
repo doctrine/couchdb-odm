@@ -2,6 +2,8 @@
 
 namespace Doctrine\ODM\CouchDB\Mapping;
 
+use Doctrine\Common\Persistence\Mapping\ClassMetadata AS IClassMetadata;
+
 /**
  * Metadata class
  *
@@ -11,7 +13,7 @@ namespace Doctrine\ODM\CouchDB\Mapping;
  * @author      Benjamin Eberlei <kontakt@beberlei.de>
  * @author      Lukas Kahwe Smith <smith@pooteeweet.org>
  */
-class ClassMetadata extends ClassMetadataInfo
+class ClassMetadata extends ClassMetadataInfo implements IClassMetadata
 {
     /**
      * The ReflectionClass instance of the mapped class.
