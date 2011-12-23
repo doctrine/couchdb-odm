@@ -230,6 +230,19 @@ class ClassMetadataInfo
     }
 
     /**
+     * Get identifier field names of this class.
+     *
+     * Since CouchDB only allows exactly one identifier field this is a proxy
+     * to {@see getIdentifier()} and returns an array.
+     *
+     * @return array
+     */
+    public function getIdentifierFieldNames()
+    {
+        return array($this->identifier);
+    }
+
+    /**
      * Checks whether the class has a (mapped) field with a certain name.
      *
      * @return boolean
