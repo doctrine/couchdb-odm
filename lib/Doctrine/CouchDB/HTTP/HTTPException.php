@@ -12,6 +12,14 @@ namespace Doctrine\CouchDB\HTTP;
  */
 class HTTPException extends \Doctrine\CouchDB\CouchDBException
 {
+    /**
+     * @static
+     * @param string $ip
+     * @param int $port
+     * @param string $errstr
+     * @param int $errno
+     * @return HTTPException
+     */
     public static function connectionFailure( $ip, $port, $errstr, $errno )
     {
         return new self( sprintf(
@@ -20,9 +28,17 @@ class HTTPException extends \Doctrine\CouchDB\CouchDBException
             $port,
             $errno,
             $errstr
-        ) );
+        ), $errno );
     }
 
+    /**
+     * @static
+     * @param string $ip
+     * @param int $port
+     * @param string $errstr
+     * @param int $errno
+     * @return HTTPException
+     */
     public static function readFailure( $ip, $port, $errstr, $errno )
     {
         return new static( sprintf(
@@ -31,20 +47,25 @@ class HTTPException extends \Doctrine\CouchDB\CouchDBException
             $port,
             $errno,
             $errstr
-        ) );
+        ), $errno );
     }
 
     /**
+     * @static
+     * @param string $path
      * @param Response $response
+     * @return \Doctrine\CouchDB\HTTP\HTTPException
      */
-    public static function fromResponse($path, Response $response)
+    public static function fromResponse( $path, Response $response )
     {
         if (!isset($response->body['error'])) {
             $response->body['error'] = '';
         }
 
-        return new self("HTTP Error with status " . $response->status . " occoured while ".
-            "requesting " . $path . ". Error: " . $response->body['error'] . " " . $response->body['reason']);
+        return new self(
+            "HTTP Error with status " . $response->status . " occoured while "
+                . "requesting " . $path . ". Error: " . $response->body['error']
+                . " " . $response->body['reason'],
+            $response->status );
     }
 }
-
