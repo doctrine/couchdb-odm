@@ -13,12 +13,11 @@ namespace Doctrine\CouchDB\HTTP;
 class HTTPException extends \Doctrine\CouchDB\CouchDBException
 {
     /**
-     * @static
      * @param string $ip
-     * @param int $port
+     * @param integer $port
      * @param string $errstr
-     * @param int $errno
-     * @return HTTPException
+     * @param integer $errno
+     * @return \Doctrine\CouchDB\HTTP\HTTPException
      */
     public static function connectionFailure( $ip, $port, $errstr, $errno )
     {
@@ -32,12 +31,11 @@ class HTTPException extends \Doctrine\CouchDB\CouchDBException
     }
 
     /**
-     * @static
      * @param string $ip
-     * @param int $port
+     * @param integer $port
      * @param string $errstr
-     * @param int $errno
-     * @return HTTPException
+     * @param integer $errno
+     * @return \Doctrine\CouchDB\HTTP\HTTPException
      */
     public static function readFailure( $ip, $port, $errstr, $errno )
     {
@@ -51,7 +49,6 @@ class HTTPException extends \Doctrine\CouchDB\CouchDBException
     }
 
     /**
-     * @static
      * @param string $path
      * @param Response $response
      * @return \Doctrine\CouchDB\HTTP\HTTPException
