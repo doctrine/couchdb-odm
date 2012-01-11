@@ -257,12 +257,16 @@ class CouchDBClient
     /**
      * Get Information about a database.
      *
-     * @param  string $name
+     * @param  string|null $name
      * @return array
      */
-    public function getDatabaseInfo($name)
+    public function getDatabaseInfo($name = null)
     {
-        $response = $this->httpClient->request('GET', '/' . $this->databaseName);
+		if ( null === $name ) {
+			$name = $this->databaseName;
+		}
+
+        $response = $this->httpClient->request('GET', '/' . $name);
 
         if ($response->status != 200) {
             throw HTTPException::fromResponse('/' . urlencode($name), $response);
