@@ -63,7 +63,7 @@ class CouchDBClient
 
     /**
      * Factory method for CouchDBClients
-     * 
+     *
      * @param array $options
      * @return CouchDBClient
      */
@@ -262,9 +262,9 @@ class CouchDBClient
      */
     public function getDatabaseInfo($name = null)
     {
-		if ( null === $name ) {
-			$name = $this->databaseName;
-		}
+        if ( null === $name ) {
+            $name = $this->databaseName;
+        }
 
         $response = $this->httpClient->request('GET', '/' . $name);
 
@@ -323,7 +323,7 @@ class CouchDBClient
 
     /**
      * Execute a PUT request against CouchDB inserting or updating a document.
-     * 
+     *
      * @param array $data
      * @param string $id
      * @param string|null $rev
@@ -348,7 +348,7 @@ class CouchDBClient
 
     /**
      * Delete a document.
-     * 
+     *
      * @param  string $id
      * @param  string $rev
      * @return void
@@ -376,7 +376,7 @@ class CouchDBClient
 
     /**
      * Create or update a design document from the given in memory definition.
-     * 
+     *
      * @param string $designDocName
      * @param DesignDocument $designDoc
      * @return HTTP\Response
