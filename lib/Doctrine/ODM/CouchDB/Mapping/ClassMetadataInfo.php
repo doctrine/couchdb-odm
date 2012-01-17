@@ -181,19 +181,6 @@ class ClassMetadataInfo
     }
 
     /**
-     * Gets the ReflectionClass instance of the mapped class.
-     *
-     * @return ReflectionClass
-     */
-    public function getReflectionClass()
-    {
-        if ( ! $this->reflClass) {
-            $this->reflClass = new ReflectionClass($this->name);
-        }
-        return $this->reflClass;
-    }
-
-    /**
      * Checks whether a field is part of the identifier/primary key field(s).
      *
      * @param string $fieldName  The field name
@@ -245,6 +232,7 @@ class ClassMetadataInfo
     /**
      * Checks whether the class has a (mapped) field with a certain name.
      *
+     * @param string $fieldName
      * @return boolean
      */
     public function hasField($fieldName)
@@ -255,7 +243,7 @@ class ClassMetadataInfo
     /**
      * Registers a custom repository class for the document class.
      *
-     * @param string $mapperClassName  The class name of the custom mapper.
+     * @param string $repositoryClassName The class name of the custom repository
      */
     public function setCustomRepositoryClass($repositoryClassName)
     {
@@ -357,6 +345,11 @@ class ClassMetadataInfo
         $this->jsonNames[$mapping['jsonName']] = $mapping['fieldName'];
     }
 
+    /**
+     * @param array $mapping
+     * @return array
+     * @throws \Doctrine\ODM\CouchDB\Mapping\MappingException
+     */
     protected function validateAndCompleteFieldMapping($mapping)
     {
         if ( ! isset($mapping['fieldName']) || !$mapping['fieldName']) {
@@ -365,13 +358,32 @@ class ClassMetadataInfo
         if ( ! isset($mapping['jsonName'])) {
             $mapping['jsonName'] = $mapping['fieldName'];
         }
-        if (isset($this->fieldMappings[$mapping['fieldName']]) || isset($this->associationsMappings[$mapping['fieldName']])) {
-            throw MappingException::duplicateFieldMapping($this->name, $mapping['fieldName']);
+
+        /**
+         * Check to see if this field was already mapped by the parent class.
+         * If so, merge the mappings and return
+         */
+        $subMap = (
+            isset($this->fieldMappings[$mapping['fieldName']]) ? $this->fieldMappings[$mapping['fieldName']] : array()
+        );
+
+        if (!empty($subMap) && isset($subMap['declared']) && $subMap['declared'] != $this->name) {
+            $mapping = array_merge($mapping, $subMap);
+        } else {
+            if (isset($this->fieldMappings[$mapping['fieldName']])
+                || isset($this->associationsMappings[$mapping['fieldName']])
+            ) {
+                throw MappingException::duplicateFieldMapping($this->name, $mapping['fieldName']);
+            }
         }
 
         return $mapping;
     }
 
+    /**
+     * @param array $mapping
+     * @return array
+     */
     protected function validateAndCompleteReferenceMapping($mapping)
     {
         if (isset($mapping['targetDocument']) && strpos($mapping['targetDocument'], '\\') === false && strlen($this->namespace)) {
@@ -380,6 +392,10 @@ class ClassMetadataInfo
         return $mapping;
     }
 
+    /**
+     * @param array $mapping
+     * @return array
+     */
     protected function validateAndCompleteAssociationMapping($mapping)
     {
         $mapping = $this->validateAndCompleteFieldMapping($mapping);
@@ -389,6 +405,9 @@ class ClassMetadataInfo
         return $mapping;
     }
 
+    /**
+     * @param array $mapping
+     */
     public function mapManyToOne($mapping)
     {
         $mapping = $this->validateAndCompleteAssociationMapping($mapping);
@@ -399,6 +418,9 @@ class ClassMetadataInfo
         $this->storeAssociationMapping($mapping);
     }
 
+    /**
+     * @param array $mapping
+     */
     public function mapManyToMany($mapping)
     {
         $mapping = $this->validateAndCompleteAssociationMapping($mapping);
@@ -413,6 +435,9 @@ class ClassMetadataInfo
         $this->storeAssociationMapping($mapping);
     }
 
+    /**
+     * @param array $mapping
+     */
     private function storeAssociationMapping($mapping)
     {
         $this->associationsMappings[$mapping['fieldName']] = $mapping;
@@ -468,6 +493,10 @@ class ClassMetadataInfo
         return isset($this->associationsMappings[$fieldName]);
     }
 
+    /**
+     * @param string $name
+     * @return bool
+     */
     public function isCollectionValuedAssociation($name)
     {
         // TODO: included @EmbedMany here also?
@@ -514,6 +543,8 @@ class ClassMetadataInfo
 
     /**
      * {@inheritDoc}
+     * @param string $assocName
+     * @return array
      */
     public function getAssociationMappedByTargetField($assocName)
     {
@@ -522,6 +553,8 @@ class ClassMetadataInfo
 
     /**
      * {@inheritDoc}
+     * @param string $assocName
+     * @return bool
      */
     public function isAssociationInverseSide($assocName)
     {
