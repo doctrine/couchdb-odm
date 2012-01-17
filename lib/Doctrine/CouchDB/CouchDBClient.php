@@ -35,7 +35,7 @@ use Doctrine\CouchDB\View\DesignDocument;
  */
 class CouchDBClient
 {
-   /**
+    /**
      * Name of the CouchDB database
      *
      * @string
@@ -56,14 +56,12 @@ class CouchDBClient
      */
     private $version = null;
 
-    static private $clients = array(
-        'socket' => 'Doctrine\CouchDB\HTTP\SocketClient',
-        'stream' => 'Doctrine\CouchDB\HTTP\StreamClient',
-    );
+    static private $clients
+        = array('socket' => 'Doctrine\CouchDB\HTTP\SocketClient', 'stream' => 'Doctrine\CouchDB\HTTP\StreamClient',);
 
     /**
      * Factory method for CouchDBClients
-     * 
+     *
      * @param array $options
      * @return CouchDBClient
      */
@@ -73,16 +71,19 @@ class CouchDBClient
             throw new \InvalidArgumentException("'dbname' is a required option to create a CouchDBClient");
         }
 
-        $defaults = array('type' => 'socket', 'host' => 'localhost', 'port' => 5984, 'user' => null, 'password' => null, 'ip' => null, 'logging' => false);
+        $defaults = array('type' => 'socket', 'host' => 'localhost', 'port' => 5984, 'user' => null, 'password' => null,
+                          'ip' => null, 'logging' => false);
         $options = array_merge($defaults, $options);
 
         if (!isset(self::$clients[$options['type']])) {
-            throw new \InvalidArgumentException(sprintf('There is no client implementation registered for %s, valid options are %s',
-                $options['type'], array_keys(self::$clients)
+            throw new \InvalidArgumentException(sprintf(
+                'There is no client implementation registered for %s, valid options are %s', $options['type'],
+                array_keys(self::$clients)
             ));
         }
         $connectionClass = self::$clients[$options['type']];
-        $connection = new $connectionClass($options['host'], $options['port'], $options['user'], $options['password'], $options['ip']);
+        $connection
+            = new $connectionClass($options['host'], $options['port'], $options['user'], $options['password'], $options['ip']);
         if ($options['logging'] === true) {
             $connection = new HTTP\LoggingClient($connection);
         }
@@ -90,7 +91,7 @@ class CouchDBClient
     }
 
     /**
-     * @param Client $client
+     * @param \Doctrine\CouchDB\HTTP\Client $client
      * @param string $databaseName
      */
     public function __construct(Client $client, $databaseName)
@@ -144,7 +145,7 @@ class CouchDBClient
     public function findDocument($id)
     {
         $documentPath = '/' . $this->databaseName . '/' . urlencode($id);
-        return $this->httpClient->request( 'GET', $documentPath );
+        return $this->httpClient->request('GET', $documentPath);
     }
 
     /**
@@ -163,8 +164,10 @@ class CouchDBClient
             $allDocsPath .= '&skip=' . (int)$offset;
         }
 
-        return $this->httpClient->request('POST', $allDocsPath, json_encode(
-            array('keys' => array_values($ids)))
+        return $this->httpClient->request(
+            'POST', $allDocsPath, json_encode(
+                array('keys' => array_values($ids))
+            )
         );
     }
 
@@ -182,7 +185,7 @@ class CouchDBClient
             $allDocsPath .= '&limit=' . (int)$limit;
         }
         if ($startKey) {
-            $allDocsPath .= '&startkey="' . (string)$startKey.'"';
+            $allDocsPath .= '&startkey="' . (string)$startKey . '"';
         }
         return $this->httpClient->request('GET', $allDocsPath);
     }
@@ -262,9 +265,9 @@ class CouchDBClient
      */
     public function getDatabaseInfo($name = null)
     {
-		if ( null === $name ) {
-			$name = $this->databaseName;
-		}
+        if (null === $name) {
+            $name = $this->databaseName;
+        }
 
         $response = $this->httpClient->request('GET', '/' . $name);
 
@@ -323,7 +326,7 @@ class CouchDBClient
 
     /**
      * Execute a PUT request against CouchDB inserting or updating a document.
-     * 
+     *
      * @param array $data
      * @param string $id
      * @param string|null $rev
@@ -348,7 +351,7 @@ class CouchDBClient
 
     /**
      * Delete a document.
-     * 
+     *
      * @param  string $id
      * @param  string $rev
      * @return void
@@ -376,7 +379,7 @@ class CouchDBClient
 
     /**
      * Create or update a design document from the given in memory definition.
-     * 
+     *
      * @param string $designDocName
      * @param DesignDocument $designDoc
      * @return HTTP\Response
@@ -393,9 +396,7 @@ class CouchDBClient
         }
 
         return $this->httpClient->request(
-            "PUT",
-            sprintf("/%s/_design/%s", $this->databaseName, $designDocName),
-            json_encode($data)
+            "PUT", sprintf("/%s/_design/%s", $this->databaseName, $designDocName), json_encode($data)
         );
     }
 
@@ -474,7 +475,9 @@ class CouchDBClient
      * @param string|null $proxy
      * @return array
      */
-    public function replicate($source, $target, $cancel = null, $continuous = null, $filter = null, array $ids = null, $proxy = null)
+    public function replicate(
+        $source, $target, $cancel = null, $continuous = null, $filter = null, array $ids = null, $proxy = null
+    )
     {
         $params = array('target' => $target, 'source' => $source);
         if ($cancel !== null) {

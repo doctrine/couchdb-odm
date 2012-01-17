@@ -2,7 +2,6 @@
 
 namespace Doctrine\ODM\CouchDB\Mapping;
 
-
 /**
  * Metadata class
  *
@@ -11,17 +10,16 @@ namespace Doctrine\ODM\CouchDB\Mapping;
  * @since       1.0
  * @author      Benjamin Eberlei <kontakt@beberlei.de>
  * @author      Lukas Kahwe Smith <smith@pooteeweet.org>
- */
-class ClassMetadataInfo
+ */ class ClassMetadataInfo
 {
-    const IDGENERATOR_UUID = 1;
+    const IDGENERATOR_UUID     = 1;
     const IDGENERATOR_ASSIGNED = 2;
 
-    const TO_ONE = 5;
-    const TO_MANY = 10;
-    const ONE_TO_ONE = 1;
-    const ONE_TO_MANY = 2;
-    const MANY_TO_ONE = 4;
+    const TO_ONE       = 5;
+    const TO_MANY      = 10;
+    const ONE_TO_ONE   = 1;
+    const ONE_TO_MANY  = 2;
+    const MANY_TO_ONE  = 4;
     const MANY_TO_MANY = 8;
 
     const CASCADE_PERSIST = 1;
@@ -176,7 +174,7 @@ class ClassMetadataInfo
      */
     public function __construct($documentName)
     {
-        $this->name = $documentName;
+        $this->name             = $documentName;
         $this->rootDocumentName = $documentName;
     }
 
@@ -281,7 +279,7 @@ class ClassMetadataInfo
             throw MappingException::duplicateFieldMapping($this->name, $fieldName);
         }
 
-        $this->hasAttachments = true;
+        $this->hasAttachments  = true;
         $this->attachmentField = $fieldName;
     }
 
@@ -325,15 +323,17 @@ class ClassMetadataInfo
         }
 
         if (isset($mapping['id']) && $mapping['id'] === true) {
-            $mapping['type'] = 'string';
+            $mapping['type']     = 'string';
             $mapping['jsonName'] = '_id';
             $this->setIdentifier($mapping['fieldName']);
             if (isset($mapping['strategy'])) {
-                $this->idGenerator = constant('Doctrine\ODM\CouchDB\Mapping\ClassMetadata::IDGENERATOR_' . strtoupper($mapping['strategy']));
+                $this->idGenerator = constant(
+                    'Doctrine\ODM\CouchDB\Mapping\ClassMetadata::IDGENERATOR_' . strtoupper($mapping['strategy'])
+                );
                 unset($mapping['strategy']);
             }
         } else if (isset($mapping['isVersionField'])) {
-            $this->isVersioned = true;
+            $this->isVersioned  = true;
             $this->versionField = $mapping['fieldName'];
         }
 
@@ -342,7 +342,7 @@ class ClassMetadataInfo
         }
 
         $this->fieldMappings[$mapping['fieldName']] = $mapping;
-        $this->jsonNames[$mapping['jsonName']] = $mapping['fieldName'];
+        $this->jsonNames[$mapping['jsonName']]      = $mapping['fieldName'];
     }
 
     /**
@@ -352,10 +352,10 @@ class ClassMetadataInfo
      */
     protected function validateAndCompleteFieldMapping($mapping)
     {
-        if ( ! isset($mapping['fieldName']) || !$mapping['fieldName']) {
+        if (!isset($mapping['fieldName']) || !$mapping['fieldName']) {
             throw new MappingException("Mapping a property requires to specify the name.");
         }
-        if ( ! isset($mapping['jsonName'])) {
+        if (!isset($mapping['jsonName'])) {
             $mapping['jsonName'] = $mapping['fieldName'];
         }
 
@@ -363,9 +363,8 @@ class ClassMetadataInfo
          * Check to see if this field was already mapped by the parent class.
          * If so, merge the mappings and return
          */
-        $subMap = (
-            isset($this->fieldMappings[$mapping['fieldName']]) ? $this->fieldMappings[$mapping['fieldName']] : array()
-        );
+        $subMap = (isset($this->fieldMappings[$mapping['fieldName']]) ? $this->fieldMappings[$mapping['fieldName']]
+            : array());
 
         if (!empty($subMap) && isset($subMap['declared']) && $subMap['declared'] != $this->name) {
             $mapping = array_merge($mapping, $subMap);
@@ -386,7 +385,11 @@ class ClassMetadataInfo
      */
     protected function validateAndCompleteReferenceMapping($mapping)
     {
-        if (isset($mapping['targetDocument']) && strpos($mapping['targetDocument'], '\\') === false && strlen($this->namespace)) {
+        if (isset($mapping['targetDocument']) && strpos($mapping['targetDocument'], '\\') === false
+            && strlen(
+                $this->namespace
+            )
+        ) {
             $mapping['targetDocument'] = $this->namespace . '\\' . $mapping['targetDocument'];
         }
         return $mapping;
@@ -401,7 +404,7 @@ class ClassMetadataInfo
         $mapping = $this->validateAndCompleteFieldMapping($mapping);
 
         $mapping['sourceDocument'] = $this->name;
-        $mapping = $this->validateAndCompleteReferenceMapping($mapping);
+        $mapping                   = $this->validateAndCompleteReferenceMapping($mapping);
         return $mapping;
     }
 
@@ -413,7 +416,7 @@ class ClassMetadataInfo
         $mapping = $this->validateAndCompleteAssociationMapping($mapping);
 
         $mapping['isOwning'] = true;
-        $mapping['type'] = self::MANY_TO_ONE;
+        $mapping['type']     = self::MANY_TO_ONE;
 
         $this->storeAssociationMapping($mapping);
     }
@@ -441,7 +444,7 @@ class ClassMetadataInfo
     private function storeAssociationMapping($mapping)
     {
         $this->associationsMappings[$mapping['fieldName']] = $mapping;
-        $this->jsonNames[$mapping['jsonName']] = $mapping['fieldName'];
+        $this->jsonNames[$mapping['jsonName']]             = $mapping['fieldName'];
     }
 
     /**
@@ -464,7 +467,7 @@ class ClassMetadataInfo
      */
     public function getFieldMapping($fieldName)
     {
-        if ( ! isset($this->fieldMappings[$fieldName])) {
+        if (!isset($this->fieldMappings[$fieldName])) {
             throw MappingException::mappingNotFound($this->name, $fieldName);
         }
         return $this->fieldMappings[$fieldName];
@@ -478,8 +481,7 @@ class ClassMetadataInfo
      */
     public function getTypeOfField($fieldName)
     {
-        return isset($this->fieldMappings[$fieldName]) ?
-                $this->fieldMappings[$fieldName]['type'] : null;
+        return isset($this->fieldMappings[$fieldName]) ? $this->fieldMappings[$fieldName]['type'] : null;
     }
 
     /**
@@ -500,7 +502,8 @@ class ClassMetadataInfo
     public function isCollectionValuedAssociation($name)
     {
         // TODO: included @EmbedMany here also?
-        return isset($this->associationsMappings[$name]) && ($this->associationsMappings[$name]['type'] & self::TO_MANY);
+        return
+            isset($this->associationsMappings[$name]) && ($this->associationsMappings[$name]['type'] & self::TO_MANY);
     }
 
     /**
@@ -511,8 +514,8 @@ class ClassMetadataInfo
      */
     public function isSingleValuedAssociation($fieldName)
     {
-        return isset($this->associationsMappings[$fieldName]) &&
-                ($this->associationsMappings[$fieldName]['type'] & self::TO_ONE);
+        return isset($this->associationsMappings[$fieldName])
+            && ($this->associationsMappings[$fieldName]['type'] & self::TO_ONE);
     }
 
     /**
@@ -536,7 +539,8 @@ class ClassMetadataInfo
     public function getAssociationTargetClass($assocName)
     {
         if (!isset($this->associationsMappings[$assocName])) {
-            throw new \InvalidArgumentException("Association name expected, '" . $assocName ."' is not an association.");
+            throw new \InvalidArgumentException(
+                "Association name expected, '" . $assocName . "' is not an association.");
         }
         return $this->associationsMappings[$assocName]['targetDocument'];
     }
@@ -558,6 +562,6 @@ class ClassMetadataInfo
      */
     public function isAssociationInverseSide($assocName)
     {
-        return isset($this->associationsMappings[$assocName]) && ! $this->associationsMappings[$assocName];
+        return isset($this->associationsMappings[$assocName]) && !$this->associationsMappings[$assocName];
     }
 }
