@@ -11,11 +11,15 @@
     ],
     "require": {
         "php": ">=5.3.2",
-        "doctrine/common": ">=2.2.0"
+        "doctrine/common": ">=2.2.0,<2.2.9999",
+        "doctrine/couchdb": "*",
+        "symfony/console": ">=2.0,<=2.1"
+    },
+    "suggest": {
+        "symfony/yaml": ">=2.0,<=2.1"
     },
     "autoload": {
         "psr-0": {
-            "Doctrine\\CouchDB": "lib/",
             "Doctrine\\ODM\\CouchDB": "lib/"
         }
     }

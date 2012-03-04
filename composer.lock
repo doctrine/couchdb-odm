@@ -1,0 +1,19 @@
+{
+    "hash": "68401cf287a5dfd9f4349ee807d5809b",
+    "packages": [
+        {
+            "package": "doctrine/common",
+            "version": "2.2.1"
+        },
+        {
+            "package": "doctrine/couchdb",
+            "version": "dev-master",
+            "source-reference": "86c480de76fb2e0eeab976ae462b7e72c9259e5d"
+        },
+        {
+            "package": "symfony/console",
+            "version": "v2.0.10"
+        }
+    ],
+    "aliases": []
+}
