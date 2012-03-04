@@ -1,5 +1,5 @@
 {
-    "hash": "68401cf287a5dfd9f4349ee807d5809b",
+    "hash": "5522a45c2d0bcb7f57a11a858d4a5e22",
     "packages": [
         {
             "package": "doctrine/common",
@@ -12,7 +12,8 @@
         },
         {
             "package": "symfony/console",
-            "version": "v2.0.10"
+            "version": "dev-master",
+            "source-reference": "2ee50c7c845ef7f8bce9c540709ecfd64cbcda87"
         }
     ],
     "aliases": []

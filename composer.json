@@ -13,10 +13,10 @@
         "php": ">=5.3.2",
         "doctrine/common": ">=2.2.0,<2.2.9999",
         "doctrine/couchdb": "*",
-        "symfony/console": ">=2.0,<=2.1"
+        "symfony/console": ">=2.0"
     },
     "suggest": {
-        "symfony/yaml": ">=2.0,<=2.1"
+        "symfony/yaml": ">=2.0"
     },
     "autoload": {
         "psr-0": {
