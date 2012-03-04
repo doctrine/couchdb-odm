@@ -45,7 +45,7 @@ class Configuration
      */
     private $attributes = array(
         'designDocuments' => array(
-            'doctrine_associations' => array(    
+            'doctrine_associations' => array(
                 'className' => 'Doctrine\ODM\CouchDB\View\DoctrineAssociations',
                 'options' => array(),
             ),
@@ -61,6 +61,7 @@ class Configuration
         'allOrNothingFlush' => true,
         'luceneHandlerName' => false,
         'metadataResolver' => null,
+        'autoGenerateProxyClasses' => false,
     );
 
     /**
@@ -255,6 +256,16 @@ class Configuration
     public function getProxyNamespace()
     {
         return $this->attributes['proxyNamespace'];
+    }
+
+    public function setAutoGenerateProxyClasses($bool)
+    {
+        $this->attributes['autoGenerateProxyClasses'] = $bool;
+    }
+
+    public function getAutoGenerateProxyClasses()
+    {
+        return $this->attributes['autoGenerateProxyClasses'];
     }
 
     /**

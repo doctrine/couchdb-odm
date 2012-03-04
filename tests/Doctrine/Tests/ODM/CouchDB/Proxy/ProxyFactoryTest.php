@@ -44,7 +44,7 @@ class ProxyFactoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCase
 
     public function testReferenceProxyDelegatesLoadingToThePersister()
     {
-        $proxyClass = 'Proxies\DoctrineTestsModelsECommerceECommerceFeatureProxy';
+        $proxyClass = 'Proxies\__CG__\Doctrine\Tests\Models\ECommerce\ECommerceFeature';
         $modelClass = 'Doctrine\Tests\Models\ECommerce\ECommerceFeature';
 
         $query = array('documentName' => '\\'.$modelClass, 'id' => 'SomeUUID');

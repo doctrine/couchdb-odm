@@ -19,8 +19,9 @@
 
 namespace Doctrine\ODM\CouchDB\Proxy;
 
-use Doctrine\ODM\CouchDB\DocumentManager,
-    Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
+use Doctrine\ODM\CouchDB\DocumentManager;
+use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
+use Doctrine\Common\Util\ClassUtils;
 
 /**
  * This factory is used to create proxy objects for entities at runtime.
@@ -76,12 +77,13 @@ class ProxyFactory
      */
     public function getProxy($className, $identifier)
     {
-        $proxyClassName = str_replace('\\', '', $className) . 'Proxy';
-        $fqn = $this->proxyNamespace . '\\' . $proxyClassName;
+        $fqn = ClassUtils::generateProxyClassName($className, $this->proxyNamespace);
 
-        if ($this->autoGenerate && ! class_exists($fqn, false)) {
-            $fileName = $this->proxyDir . DIRECTORY_SEPARATOR . $proxyClassName . '.php';
-            $this->generateProxyClass($this->dm->getClassMetadata($className), $proxyClassName, $fileName, self::$proxyClassTemplate);
+        if ( ! class_exists($fqn, false)) {
+            $fileName = $this->getProxyFileName($className);
+            if ($this->autoGenerate) {
+                $this->generateProxyClass($this->dm->getClassMetadata($className), $fileName, self::$proxyClassTemplate);
+            }
             require $fileName;
         }
 
@@ -90,6 +92,22 @@ class ProxyFactory
         }
 
         return new $fqn($this->dm, $identifier);
+    }
+
+    /**
+     * Generate the Proxy file name
+     *
+     * @param string $className
+     * @param string $baseDir Optional base directory for proxy file name generation.
+     *                        If not specified, the directory configured on the Configuration of the
+     *                        EntityManager will be used by this factory.
+     * @return string
+     */
+    private function getProxyFileName($className, $baseDir = null)
+    {
+        $proxyDir = $baseDir ?: $this->proxyDir;
+
+        return $proxyDir . DIRECTORY_SEPARATOR . '__CG__' . str_replace('\\', '', $className) . '.php';
     }
 
     /**
@@ -110,9 +128,8 @@ class ProxyFactory
                 continue;
             }
 
-            $proxyClassName = str_replace('\\', '', $class->name) . 'Proxy';
-            $proxyFileName = $proxyDir . $proxyClassName . '.php';
-            $this->generateProxyClass($class, $proxyClassName, $proxyFileName, self::$proxyClassTemplate);
+            $proxyFileName = $this->getProxyFileName($class->name, $toDir);
+            $this->generateProxyClass($class, $proxyFileName, self::$proxyClassTemplate);
         }
     }
 
@@ -120,11 +137,10 @@ class ProxyFactory
      * Generates a proxy class file.
      *
      * @param $class
-     * @param $originalClassName
-     * @param $proxyClassName
-     * @param $file The path of the file to write to.
+     * @param $fileName
+     * @param $template
      */
-    private function generateProxyClass($class, $proxyClassName, $fileName, $file)
+    private function generateProxyClass($class, $fileName, $template)
     {
         $methods = $this->generateMethods($class);
         $sleepImpl = $this->generateSleep($class);
@@ -135,21 +151,23 @@ class ProxyFactory
             '<methods>', '<sleepImpl>'
         );
 
-        if(substr($class->name, 0, 1) == "\\") {
-            $className = substr($class->name, 1);
-        } else {
-            $className = $class->name;
-        }
+        $className = ltrim($class->name, '\\');
+        $proxyClassName = ClassUtils::generateProxyClassName($class->name, $this->proxyNamespace);
+        $parts = explode('\\', strrev($proxyClassName), 2);
+        $proxyClassNamespace = strrev($parts[1]);
+        $proxyClassName = strrev($parts[0]);
 
         $replacements = array(
-            $this->proxyNamespace,
-            $proxyClassName, $className,
-            $methods, $sleepImpl
+            $proxyClassNamespace,
+            $proxyClassName,
+            $className,
+            $methods,
+            $sleepImpl
         );
 
-        $file = str_replace($placeholders, $replacements, $file);
+        $template = str_replace($placeholders, $replacements, $template);
 
-        file_put_contents($fileName, $file, LOCK_EX);
+        file_put_contents($fileName, $template, LOCK_EX);
     }
 
     /**
@@ -206,7 +224,7 @@ class ProxyFactory
 
                 $methods .= $parameterString . ')';
                 $methods .= PHP_EOL . '    {' . PHP_EOL;
-                $methods .= '        $this->__doctrineLoad__();' . PHP_EOL;
+                $methods .= '        $this->__load();' . PHP_EOL;
                 $methods .= '        return parent::' . $method->getName() . '(' . $argumentString . ');';
                 $methods .= PHP_EOL . '    }' . PHP_EOL;
             }
@@ -260,13 +278,18 @@ class <proxyClassName> extends \<className> implements \Doctrine\ODM\CouchDB\Pro
         $this->__doctrineDocumentManager__ = $documentManager;
         $this->__doctrineIdentifier__ = $identifier;
     }
-    public function __doctrineLoad__()
+    public function __load()
     {
         if (!$this->__isInitialized__ && $this->__doctrineDocumentManager__) {
             $this->__isInitialized__ = true;
             $this->__doctrineDocumentManager__->refresh($this);
             unset($this->__doctrineDocumentManager__, $this->__doctrineIdentifier__);
         }
+    }
+
+    public function __isInitialized()
+    {
+        return $this->__isInitialized__;
     }
 
     <methods>
