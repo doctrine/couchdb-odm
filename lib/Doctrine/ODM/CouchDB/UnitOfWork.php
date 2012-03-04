@@ -311,7 +311,7 @@ class UnitOfWork
 
         $class = $this->dm->getClassMetadata(get_class($document));
         $state = $this->getDocumentState($document);
-        
+
         switch ($state) {
             case self::STATE_NEW:
                 $this->persistNew($class, $document);
@@ -719,7 +719,7 @@ class UnitOfWork
 
     /**
      * Get the state of a document.
-     * 
+     *
      * @param  object $document
      * @return int
      */
