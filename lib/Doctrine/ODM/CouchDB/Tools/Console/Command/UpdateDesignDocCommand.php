@@ -58,9 +58,7 @@ class UpdateDesignDocCommand extends Command
             $localDocBody = $localDesignDoc->getData();
 
             $remoteDocBody = $couchDbClient->findDocument('_design/' . $docName)->body;
-            if (is_null($remoteDocBody)
-                || (isset($remoteDocBody['error']) && $remoteDocBody['error'] == 'not_found')
-                || ($remoteDocBody['views'] != $localDocBody['views'])) {
+            if ($this->isMissingOrDifferent($localDocBody, $remoteDocBody)) {
                 $response = $couchDbClient->createDesignDocument($docName, $localDesignDoc);
                 $foundChanges = true;
 
@@ -74,5 +72,22 @@ class UpdateDesignDocCommand extends Command
         if (!$foundChanges) {
             $output->writeln("No changes found; nothing to do.");
         }
+    }
+    
+    private function isMissingOrDifferent($local, $remote) {
+        if (is_null($remote) || (isset($remote['error']) && $remote['error'] == 'not_found')) {
+            return true;
+        }
+        foreach ($local as $key => $val) {
+            if ($remote[$key] != $val) {
+                return true;
+            }
+            unset($remote[$key]);
+        }
+        // If any items remain (excluding _id and _rev) the remote is different.
+        if (count($remote) > 2) {
+            return true;
+        }
+        return false;
     }
 }
