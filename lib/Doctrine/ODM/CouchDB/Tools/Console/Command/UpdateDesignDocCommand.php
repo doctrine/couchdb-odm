@@ -79,7 +79,7 @@ class UpdateDesignDocCommand extends Command
             return true;
         }
         foreach ($local as $key => $val) {
-            if ($remote[$key] != $val) {
+            if (!isset($remote[$key]) || $remote[$key] != $val) {
                 return true;
             }
             unset($remote[$key]);
