@@ -69,7 +69,9 @@ class ClassMetadataFactory implements \Doctrine\Common\Persistence\Mapping\Class
     public function __construct(DocumentManager $dm)
     {
         $this->dm = $dm;
-        $this->driver = $this->dm->getConfiguration()->getMetadataDriverImpl();
+        $config = $this->dm->getConfiguration();
+        $this->driver = $config->getMetadataDriverImpl();
+        $this->cacheDriver = $config->getMetadataCacheImpl();
         if (!$this->driver) {
             throw new \RuntimeException("No metadata driver was configured.");
         }
