@@ -6,3 +6,4 @@ php:
 
 before_script:
   - git submodule update --init
+  - curl -X PUT localhost:5984/doctrine_test_database
