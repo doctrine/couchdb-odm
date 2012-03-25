@@ -28,6 +28,7 @@ use Doctrine\CouchDB\View\Query;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\CouchDB\View\ODMQuery;
 use Doctrine\ODM\CouchDB\View\ODMLuceneQuery;
+use Doctrine\ODM\CouchDB\CouchDBException;
 
 class DocumentManager implements ObjectManager
 {
@@ -326,10 +327,21 @@ class DocumentManager implements ObjectManager
         return $this->unitOfWork;
     }
 
-    public function clear()
+    /**
+     * Clears the ObjectManager. All objects that are currently managed
+     * by this ObjectManager become detached.
+     *
+     * @param string $objectName if given, only objects of this type will get detached
+     */
+    public function clear($objectName = null)
     {
-        // Todo: Do a real delegated clear?
-        $this->unitOfWork = new UnitOfWork($this);
+        if ($objectName === null) {
+            // Todo: Do a real delegated clear?
+            $this->unitOfWork = new UnitOfWork($this);
+        } else {
+            //TODO
+            throw new CouchDBException("DocumentManager#clear(\$objectName) not yet implemented.");
+        }
     }
 
     /**
