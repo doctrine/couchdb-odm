@@ -704,8 +704,7 @@ class UnitOfWork
                 $related = $class->reflFields[$assoc['fieldName']]->getValue($document);
                 if ($related instanceof Collection) {
                     if ($related instanceof PersistentCollection) {
-                        // Unwrap so that foreach() does not initialize
-                        $related = $related->unwrap();
+                        $related = $related->tryGetAll($visited);
                     }
                     foreach ($related as $relatedDocument) {
                         $this->doRefresh($relatedDocument, $visited);
