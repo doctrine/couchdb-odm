@@ -4,7 +4,7 @@
     "description": "CouchDB Document Object Mapper",
     "keywords": ["persistence", "couchdb"],
     "homepage": "http://www.doctrine-project.org",
-    "license": "LGPL",
+    "license": "MIT",
     "authors": [
         {"name": "Benjamin Eberlei", "email": "kontakt@beberlei.de"},
         {"name": "Lukas Kahwe Smith", "email": "smith@pooteeweet.org"}
