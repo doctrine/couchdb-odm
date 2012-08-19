@@ -62,6 +62,10 @@ class XmlDriver extends AbstractFileDriver
             }
         } else if ($xmlRoot->getName() == "embedded-document") {
             $class->isEmbeddedDocument = true;
+
+            if (isset($xmlRoot['inheritance-root']) && $xmlRoot['inheritance-root']) {
+                $class->markInheritanceRoot();
+            }
         } else if ($xmlRoot->getName() == "mapped-superclass") {
             $class->isMappedSuperclass = true;
         } else {
