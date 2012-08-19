@@ -324,7 +324,7 @@ class ClassMetadataInfo
      */
     public function mapEmbedded(array $mapping)
     {
-        //$mapping = $this->validateAndCompleteReferenceMapping($mapping);
+        $mapping = $this->validateAndCompleteReferenceMapping($mapping);
 
         $this->mapField($mapping);
     }
@@ -389,7 +389,7 @@ class ClassMetadataInfo
 
     protected function validateAndCompleteReferenceMapping($mapping)
     {
-        if (isset($mapping['targetDocument']) && strpos($mapping['targetDocument'], '\\') === false && strlen($this->namespace)) {
+        if (isset($mapping['targetDocument']) && $mapping['targetDocument'] && strpos($mapping['targetDocument'], '\\') === false && strlen($this->namespace)) {
             $mapping['targetDocument'] = $this->namespace . '\\' . $mapping['targetDocument'];
         }
         return $mapping;

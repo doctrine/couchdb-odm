@@ -71,14 +71,17 @@ class EmbeddedDocumentSerializer
                 } else {
                     $embeddedClass = $this->metadataFactory->getMetadataFor($embeddedFieldMapping['targetDocument']);
                 }
-                
+
                 if (!is_a($embeddedValue, $embeddedFieldMapping['targetDocument'])) {
-                    throw new \InvalidArgumentException('Mismatching metadata description in the EmbeddedDocument');
+                    throw new \InvalidArgumentException(
+                        'Mismatching metadata description in the EmbeddedDocument, expected class ' .
+                        $embeddedFieldMapping['targetDocument'] . ' but got ' . get_class($embeddedValue)
+                    );
                 }
             } else {
                 $embeddedClass = $this->metadataFactory->getMetadataFor(get_class($embeddedValue));
             }
-        
+
             $data = $this->metadataResolver->createDefaultDocumentStruct($embeddedClass);
             foreach($embeddedClass->reflFields AS $fieldName => $reflProperty) {
                 $value = $reflProperty->getValue($embeddedValue);
@@ -111,7 +114,7 @@ class EmbeddedDocumentSerializer
         } else if (!is_array($data)) {
             throw new \InvalidArgumentException("Cannot hydrate embedded if the data given is not an array");
         }
-        
+
         if ('many' == $embeddedFieldMapping['embedded']) {
 
             $result = array();
@@ -165,7 +168,7 @@ class EmbeddedDocumentSerializer
                                           $class->fieldMappings[$fieldName]['fieldName'],
                                           $fieldValue);
 
-                    
+
                 }
             } else {
                 //$nonMappedData[$jsonName] = $jsonValue;
@@ -177,12 +180,12 @@ class EmbeddedDocumentSerializer
 
     /**
      * Compares the two representation of an embedded document.
-     * 
+     *
      * If the original misses doctrine_metadata, but the values are the same, we assume there is no change
      * If the original has doctrine_metadata, and the new value has different class, that's a change,
      * even if the values are the same.
-     * 
-     * @param array $value 
+     *
+     * @param array $value
      * @param object $originalData
      * @param array $fieldMapping Mapping of the field that contains the embedded document in the
      *                            embedder document.
@@ -205,7 +208,7 @@ class EmbeddedDocumentSerializer
         }
 
         // EmbedOne case, or one instance of and EmbedMany
-        if ($this->metadataResolver->canMapDocument($originalData) 
+        if ($this->metadataResolver->canMapDocument($originalData)
             && get_class($value) != $this->metadataResolver->getDocumentType($originalData)) {
             return true;
         }
