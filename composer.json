@@ -15,6 +15,7 @@
         "doctrine/couchdb": "*",
         "symfony/console": ">=2.0"
     },
+    "minimum-stability": "dev",
     "suggest": {
         "symfony/yaml": ">=2.0"
     },

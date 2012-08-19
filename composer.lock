@@ -1,5 +1,5 @@
 {
-    "hash": "5522a45c2d0bcb7f57a11a858d4a5e22",
+    "hash": "4343dff215c65b110968c521ec0e5f2e",
     "packages": [
         {
             "package": "doctrine/common",
@@ -8,16 +8,28 @@
         {
             "package": "doctrine/couchdb",
             "version": "dev-master",
-            "source-reference": "cff7652ccdcb72f573fbdf698a7649aa9f126745"
+            "source-reference": "bd5911054f39504c884606db6e290a10b7f05f75",
+            "commit-date": "1345228208"
         },
         {
             "package": "symfony/console",
             "version": "dev-master",
-            "source-reference": "8d58af16c425977018293eb0a1570c9629b37994"
+            "alias-pretty-version": "2.1.x-dev",
+            "alias-version": "2.1.9999999.9999999-dev"
+        },
+        {
+            "package": "symfony/console",
+            "version": "dev-master",
+            "source-reference": "3b66f1056f5ac37146d3b755964e8a43a205f2f5",
+            "commit-date": "1344349441"
         }
     ],
     "packages-dev": null,
     "aliases": [
+
+    ],
+    "minimum-stability": "dev",
+    "stability-flags": [
 
     ]
 }
