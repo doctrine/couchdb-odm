@@ -70,6 +70,33 @@ class InheritenceTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestC
         $this->assertInstanceOf(__NAMESPACE__ . '\\CODM25ChildA', $parent->embed);
         $this->assertEquals('bar', $parent->embed->foo);
     }
+
+    public function testPersistInheritanceEmbedMany()
+    {
+        $child1 = new CODM25ChildA();
+        $child1->foo = "bar";
+        $child2 = new CODM25ChildA();
+        $child2->foo = "baz";
+        $parent = new CODM25Parent();
+        $parent->embeds[] = $child1;
+        $parent->embeds[] = $child2;
+
+        $dm = $this->createDocumentManager();
+        $dm->persist($parent);
+        $dm->persist($parent->embeds[0]);
+        $dm->persist($parent->embeds[1]);
+        $dm->flush();
+
+        $dm->clear();
+
+        $parent = $dm->find(__NAMESPACE__ . '\\CODM25Parent', $parent->id);
+
+        $this->assertEquals(2, count($parent->embeds));
+        $this->assertInstanceOf(__NAMESPACE__ . '\\CODM25ChildA', $parent->embeds[0]);
+        $this->assertEquals('bar', $parent->embeds[0]->foo);
+        $this->assertInstanceOf(__NAMESPACE__ . '\\CODM25ChildA', $parent->embeds[1]);
+        $this->assertEquals('baz', $parent->embeds[1]->foo);
+    }
 }
 
 /**
@@ -90,6 +117,11 @@ class CODM25Parent
      * @EmbedOne(targetDocument="CODM25Child")
      */
     public $embed;
+
+    /**
+     * @EmbedMany(targetDocument="CODM25Child")
+     */
+    public $embeds;
 }
 
 /**
