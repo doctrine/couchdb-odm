@@ -21,6 +21,7 @@ namespace Doctrine\ODM\CouchDB\Mapping;
 
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 use Doctrine\ODM\CouchDB\Types\Type;
+use Doctrine\Common\Util\ClassUtils;
 
 /**
  * Helper class serializing/unserializing embedded documents.
@@ -65,14 +66,11 @@ class EmbeddedDocumentSerializer
         } else {
             $embeddedClass = null;
             if (isset($embeddedFieldMapping['targetDocument'])) {
-                // TODO proper exception type and message here?
-                if ($this->metadataFactory->hasMetadataFor(\get_class($embeddedValue))) {
-                    $embeddedClass = $this->metadataFactory->getMetadataFor(\get_class($embeddedValue));
-                } else {
-                    $embeddedClass = $this->metadataFactory->getMetadataFor($embeddedFieldMapping['targetDocument']);
-                }
+                $embeddedClass = $this->metadataFactory->getMetadataFor(ClassUtils::getClass($embeddedValue));
 
-                if (!is_a($embeddedValue, $embeddedFieldMapping['targetDocument'])) {
+                if ($embeddedClass->name !== $embeddedFieldMapping['targetDocument'] &&
+                    !is_subclass_of($embeddedClass->name, $embeddedFieldMapping['targetDocument']) ) {
+
                     throw new \InvalidArgumentException(
                         'Mismatching metadata description in the EmbeddedDocument, expected class ' .
                         $embeddedFieldMapping['targetDocument'] . ' but got ' . get_class($embeddedValue)
