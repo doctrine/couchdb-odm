@@ -1246,4 +1246,14 @@ class UnitOfWork
         }
         return $docs;
     }
+
+    /**
+     * Get all entries currently in the identity map
+     *
+     * @return array
+     */
+    public function getIdentityMap()
+    {
+        return $this->identityMap;
+    }
 }

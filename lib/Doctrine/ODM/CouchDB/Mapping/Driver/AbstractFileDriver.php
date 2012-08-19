@@ -111,11 +111,16 @@ abstract class AbstractFileDriver implements Driver
      */
     public function getElement($className)
     {
-        if ($file = $this->findMappingFile($className)) {
-            $result = $this->loadMappingFile($file);
-            return $result[$className];
+        if (!($file = $this->findMappingFile($className))) {
+            return false;
         }
-        return false;
+
+        $result = $this->loadMappingFile($file);
+        if (!isset($result[ClassName])) {
+            return false;
+        }
+
+        return $result[$className];
     }
 
     /**
