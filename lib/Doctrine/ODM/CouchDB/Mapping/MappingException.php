@@ -52,4 +52,12 @@ class MappingException extends \Exception
     {
         return new self("No mapping found for field '$fieldName' in class '$className'.");
     }
+
+    public static function invalidInheritanceRoot($className, $parents)
+    {
+        return new self(
+            "Class '" . $className . "' cannot be the root of an inheritance hierachy, because it has " .
+            "parent classes: " . implode(", ", $parents)
+        );
+    }
 }

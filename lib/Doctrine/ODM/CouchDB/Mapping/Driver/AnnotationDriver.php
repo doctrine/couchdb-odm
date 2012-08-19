@@ -119,6 +119,8 @@ class AnnotationDriver implements Driver
                 $isValidDocument = true;
             } else if ($classAnnotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Index) {
                 $class->indexed = true;
+            } else if ($classAnnotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\InheritanceRoot) {
+                $class->markInheritanceRoot();
             }
         }
 
@@ -127,9 +129,13 @@ class AnnotationDriver implements Driver
         }
 
         foreach ($reflClass->getProperties() as $property) {
+            if ($class->isInheritedAssocation($property->name) || $class->isInheritedField($property->name)) {
+                continue;
+            }
+
             $isField = false;
             $mapping = array();
-            $mapping['fieldName'] = $property->getName();
+            $mapping['fieldName'] = $property->name;
 
             foreach ($this->reader->getPropertyAnnotations($property) as $fieldAnnot) {
                 if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Field) {

@@ -135,6 +135,14 @@ class ClassMetadata extends ClassMetadataInfo implements IClassMetadata
             'rootDocumentName',
         );
 
+        if ($this->inInheritanceHierachy) {
+            $serialized[] = 'inInheritanceHierachy';
+        }
+
+        if ($this->parentClasses) {
+            $serialized[] = 'parentClasses';
+        }
+
         if ($this->isVersioned) {
             $serialized[] = 'isVersioned';
             $serialized[] = 'versionField';

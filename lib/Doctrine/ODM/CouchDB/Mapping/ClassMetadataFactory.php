@@ -217,9 +217,11 @@ class ClassMetadataFactory implements \Doctrine\Common\Persistence\Mapping\Class
 
             if ($parent) {
                 $class = $parent->deriveChildMetadata($className);
+                $class->setParentClasses($parentClasses);
             } else {
                 $class = new ClassMetadata($className);
             }
+
             $this->loadedMetadata[$className] = $class;
             $this->driver->loadMetadataForClass($className, $this->loadedMetadata[$className]);
 

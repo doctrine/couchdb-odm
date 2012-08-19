@@ -60,7 +60,9 @@ class DoctrineResolver implements MetadataResolver
                 if (isset($class->associationsMappings[$assocName])) {
                     if ($class->associationsMappings[$assocName]['type'] & ClassMetadata::TO_ONE) {
                         if ($assocValue) {
-                            if ($class->associationsMappings[$assocName]['targetDocument']) {
+                            if ($class->associationsMappings[$assocName]['targetDocument'] &&
+                                $dm->getClassMetadata($class->associationsMappings[$assocName]['targetDocument'])->inInheritanceHierachy) {
+
                                 $assocValue = $dm->getReference($class->associationsMappings[$assocName]['targetDocument'], $assocValue);
                             } else {
                                 $response = $couchClient->findDocument($assocValue);

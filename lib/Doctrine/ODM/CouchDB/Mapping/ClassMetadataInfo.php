@@ -44,6 +44,21 @@ class ClassMetadataInfo
     public $name;
 
     /**
+     * READ-ONLY: The root document class name.
+     */
+    public $rootDocumentName;
+
+    /**
+     * READ-ONLY: Is this entity in an inheritance hierachy?
+     */
+    public $inInheritanceHierachy = false;
+
+    /**
+     * READ-ONLY: a list of all parent classes.
+     */
+    public $parentClasses = array();
+
+    /**
      * READ-ONLY: The namespace the document class is contained in.
      *
      * @var string
@@ -527,4 +542,29 @@ class ClassMetadataInfo
     {
         return isset($this->associationsMappings[$assocName]) && ! $this->associationsMappings[$assocName];
     }
+
+    public function isInheritedField($field)
+    {
+        return isset($this->fieldMappings[$field]['declared']);
+    }
+
+    public function isInheritedAssocation($field)
+    {
+        return isset($this->associationsMappings[$field]['declared']);
+    }
+
+    public function setParentClasses($classes)
+    {
+        $this->parentClasses         = $classes;
+        $this->inInheritanceHierachy = true;
+    }
+
+    public function markInheritanceRoot()
+    {
+        if ($this->parentClasses) {
+            throw MappingException::invalidInheritanceRoot($this->name, $this->parentClasses);
+        }
+        $htis->inInheritanceHierachy = true;
+    }
 }
+
