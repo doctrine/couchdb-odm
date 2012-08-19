@@ -47,14 +47,18 @@ class XmlDriver extends AbstractFileDriver
     {
         /* @var $xmlRoot SimpleXMLElement */
         $xmlRoot = $this->getElement($className);
-        
+
         if ($xmlRoot->getName() == "document") {
             $class->setCustomRepositoryClass(
                 isset($xmlRoot['repository-class']) ? (string)$xmlRoot['repository-class'] : null
             );
-            
+
             if (isset($xmlRoot['indexed']) && $xmlRoot['indexed'] == true) {
                 $class->indexed = true;
+            }
+
+            if (isset($xmlRoot['inheritance-root']) && $xmlRoot['inheritance-root']) {
+                $class->markInheritanceRoot();
             }
         } else if ($xmlRoot->getName() == "embedded-document") {
             $class->isEmbeddedDocument = true;
@@ -63,7 +67,7 @@ class XmlDriver extends AbstractFileDriver
         } else {
             throw MappingException::classIsNotAValidDocument($className);
         }
-        
+
         // Evaluate <field ...> mappings
         if (isset($xmlRoot->field)) {
             foreach ($xmlRoot->field as $fieldMapping) {
@@ -76,7 +80,7 @@ class XmlDriver extends AbstractFileDriver
                 ));
             }
         }
-        
+
         // Evaluate <id ..> mappings
         foreach ($xmlRoot->id as $idElement) {
             $class->mapField(array(
@@ -87,7 +91,7 @@ class XmlDriver extends AbstractFileDriver
                 'strategy'  => (isset($idElement['strategy'])) ? (string)$idElement['strategy'] : null,
             ));
         }
-        
+
         // Evaluate <many-to-one ..> mappings
         if (isset($xmlRoot->{"reference-one"})) {
             foreach ($xmlRoot->{"reference-one"} as $referenceOneElement) {
@@ -99,7 +103,7 @@ class XmlDriver extends AbstractFileDriver
                 ));
             }
         }
-        
+
         // Evaluate <many-to-one ..> mappings
         if (isset($xmlRoot->{"reference-many"})) {
             foreach ($xmlRoot->{"reference-many"} as $referenceManyElement) {
@@ -112,12 +116,12 @@ class XmlDriver extends AbstractFileDriver
                 ));
             }
         }
-        
+
         // Evaluate <attachments ..> mapping
         if (isset($xmlRoot->{"attachments"})) {
             $class->mapAttachments((string)$xmlRoot->{"attachments"}[0]['field']);
         }
-        
+
         // Evaluate <embed-one />
         if (isset($xmlRoot->{'embed-one'})) {
             foreach ($xmlRoot->{'embed-one'} AS $embedOneElement) {
@@ -129,7 +133,7 @@ class XmlDriver extends AbstractFileDriver
                 ));
             }
         }
-        
+
         // Evaluate <embed-many />
         if (isset($xmlRoot->{'embed-many'})) {
             foreach ($xmlRoot->{'embed-many'} AS $embedManyElement) {
@@ -159,7 +163,7 @@ class XmlDriver extends AbstractFileDriver
 
         return $result;
     }
-    
+
     /**
      * Gathers a list of cascade options found in the given cascade element.
      *

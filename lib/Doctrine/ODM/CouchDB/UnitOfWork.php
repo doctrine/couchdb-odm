@@ -88,7 +88,7 @@ class UnitOfWork
 
     /**
      * The original data of embedded document handled separetly from simple property mapping data.
-     * 
+     *
      * @var array
      */
     private $originalEmbeddedData = array();
@@ -134,7 +134,7 @@ class UnitOfWork
         $this->evm = $dm->getEventManager();
         $this->metadataResolver = $dm->getConfiguration()->getMetadataResolverImpl();
 
-        $this->embeddedSerializer = new Mapping\EmbeddedDocumentSerializer($this->dm->getMetadataFactory(), 
+        $this->embeddedSerializer = new Mapping\EmbeddedDocumentSerializer($this->dm->getMetadataFactory(),
                                                                            $this->metadataResolver);
     }
 
@@ -170,7 +170,7 @@ class UnitOfWork
                         $documentState[$class->fieldMappings[$fieldName]['fieldName']] = null;
                     } else if (isset($class->fieldMappings[$fieldName]['embedded'])) {
 
-                        $embeddedInstance = 
+                        $embeddedInstance =
                             $this->embeddedSerializer->createEmbeddedDocument($jsonValue, $class->fieldMappings[$fieldName]);
 
                         $documentState[$jsonName] = $embeddedInstance;
@@ -236,7 +236,7 @@ class UnitOfWork
         if ($documentName && !($document instanceof $documentName)) {
             throw new InvalidDocumentTypeException($type, $documentName);
         }
-        
+
         if ($overrideLocalValues) {
             $this->nonMappedData[$oid] = $nonMappedData;
             foreach ($class->reflFields as $prop => $reflFields) {
@@ -292,7 +292,7 @@ class UnitOfWork
 
     /**
      * Schedule insertion of this document and cascade if neccessary.
-     * 
+     *
      * @param object $document
      */
     public function scheduleInsert($document)
@@ -444,7 +444,7 @@ class UnitOfWork
         $visited = array();
         return $this->doMerge($document, $visited);
     }
-    
+
     private function doMerge($document, array &$visited, $prevManagedCopy = null, $assoc = null)
     {
         $oid = spl_object_hash($document);
@@ -453,9 +453,9 @@ class UnitOfWork
         }
 
         $visited[$oid] = $document; // mark visited
-        
+
         $class = $this->dm->getClassMetadata(get_class($document));
-        
+
         // First we assume DETACHED, although it can still be NEW but we can avoid
         // an extra db-roundtrip this way. If it is not MANAGED but has an identity,
         // we need to fetch it from the db anyway in order to merge.
@@ -464,7 +464,7 @@ class UnitOfWork
             $managedCopy = $document;
         } else {
             $id = $class->getIdentifierValue($document);
-            
+
             if (!$id) {
                 // document is new
                 // TODO: prePersist will be fired on the empty object?!
@@ -482,7 +482,7 @@ class UnitOfWork
                     // We need to fetch the managed copy in order to merge.
                     $managedCopy = $this->dm->find($class->name, $id);
                 }
-                
+
                 if ($managedCopy === null) {
                     // If the identifier is ASSIGNED, it is NEW, otherwise an error
                     // since the managed document was not found.
@@ -495,7 +495,7 @@ class UnitOfWork
                     }
                 }
             }
-                
+
             if ($class->isVersioned) {
                 $managedCopyVersion = $class->reflFields[$class->versionField]->getValue($managedCopy);
                 $documentVersion = $class->reflFields[$class->versionField]->getValue($document);
@@ -572,7 +572,7 @@ class UnitOfWork
                 }
             }
         }
-        
+
         if ($prevManagedCopy !== null) {
             $assocField = $assoc['fieldName'];
             $prevClass = $this->dm->getClassMetadata(get_class($prevManagedCopy));
@@ -585,7 +585,7 @@ class UnitOfWork
                 }
             }
         }
-        
+
         // Mark the managed copy visited as well
         $visited[spl_object_hash($managedCopy)] = true;
 
@@ -593,7 +593,7 @@ class UnitOfWork
 
         return $managedCopy;
     }
-    
+
     /**
      * Cascades a merge operation to associated entities.
      *
@@ -622,7 +622,7 @@ class UnitOfWork
             }
         }
     }
-    
+
 
     /**
      * Detaches a document from the persistence management. It's persistence will
@@ -635,10 +635,10 @@ class UnitOfWork
         $visited = array();
         $this->doDetach($document, $visited);
     }
-    
+
     /**
      * Executes a detach operation on the given entity.
-     * 
+     *
      * @param object $document
      * @param array $visited
      */
@@ -650,7 +650,7 @@ class UnitOfWork
         }
 
         $visited[$oid] = $document; // mark visited
-        
+
         switch ($this->getDocumentState($document)) {
             case self::STATE_MANAGED:
                 if (isset($this->identityMap[$this->documentIdentifiers[$oid]])) {
@@ -664,10 +664,10 @@ class UnitOfWork
             case self::STATE_DETACHED:
                 return;
         }
-        
+
         $this->cascadeDetach($document, $visited);
     }
-    
+
     /**
      * Cascades a detach operation to associated documents.
      *
@@ -815,9 +815,9 @@ class UnitOfWork
                 $actualData[$fieldName] = $value;
                 if (isset($class->fieldMappings[$fieldName]['embedded']) && $value !== null) {
                     // serializing embedded value right here, to be able to detect changes for later invocations
-                    $embeddedActualData[$fieldName] = 
+                    $embeddedActualData[$fieldName] =
                         $this->embeddedSerializer->serializeEmbeddedDocument($value, $class->fieldMappings[$fieldName]);
-                } 
+                }
             }
             // TODO: ORM transforms arrays and collections into persistent collections
         }
@@ -839,8 +839,8 @@ class UnitOfWork
             $changed = false;
             foreach ($actualData AS $fieldName => $fieldValue) {
                 // Important to not check embeded values here, because those are objects, equality check isn't enough
-                // 
-                if (isset($class->fieldMappings[$fieldName]) 
+                //
+                if (isset($class->fieldMappings[$fieldName])
                     && !isset($class->fieldMappings[$fieldName]['embedded'])
                     && $this->originalData[$oid][$fieldName] !== $fieldValue) {
                     $changed = true;
@@ -884,7 +884,7 @@ class UnitOfWork
                             )) {
                         $changed = true;
                         break;
-                    }                    
+                    }
                 }
             }
 
@@ -1007,7 +1007,7 @@ class UnitOfWork
             }
 
             $data = $this->metadataResolver->createDefaultDocumentStruct($class);
-            
+
             // Convert field values to json values.
             foreach ($this->originalData[$oid] AS $fieldName => $fieldValue) {
                 if (isset($class->fieldMappings[$fieldName])) {

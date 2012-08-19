@@ -51,8 +51,13 @@ class YamlDriver extends AbstractFileDriver
             $class->setCustomRepositoryClass(
                 (isset($element['repositoryClass'])) ? $element['repositoryClass'] : null
             );
+
             if (isset($element['indexed']) && $element['indexed'] == true) {
                 $class->indexed = true;
+            }
+
+            if (isset($element['inheritanceRoot']) && $element['inheritanceRoot']) {
+                $class->markInheritanceRoot();
             }
         } else if ($element['type'] == 'embedded') {
             $class->isEmbeddedDocument = true;
@@ -61,7 +66,7 @@ class YamlDriver extends AbstractFileDriver
         } else {
             throw MappingException::classIsNotAValidDocument($className);
         }
-        
+
         if (isset($element['id'])) {
             foreach ($element['id'] AS $fieldName => $idElement) {
                 $class->mapField(array(
@@ -73,7 +78,7 @@ class YamlDriver extends AbstractFileDriver
                 ));
             }
         }
-        
+
         if (isset($element['fields'])) {
             foreach ($element['fields'] AS $fieldName => $fieldElement) {
                 $class->mapField(array(
@@ -85,8 +90,8 @@ class YamlDriver extends AbstractFileDriver
                 ));
             }
         }
-        
-        
+
+
         if (isset($element['referenceOne'])) {
             foreach ($element['referenceOne'] AS $field => $referenceOneElement) {
                 $class->mapManyToOne(array(
@@ -97,7 +102,7 @@ class YamlDriver extends AbstractFileDriver
                 ));
             }
         }
-        
+
         if (isset($element['referenceMany'])) {
             foreach ($element['referenceMany'] AS $field => $referenceManyElement) {
                 $class->mapManyToMany(array(
@@ -109,11 +114,11 @@ class YamlDriver extends AbstractFileDriver
                 ));
             }
         }
-        
+
         if (isset($element['attachments'])) {
             $class->mapAttachments($element['attachments']);
         }
-        
+
         if (isset($element['embedOne'])) {
             foreach ($element['embedOne'] AS $field => $embedOneElement) {
                 $class->mapEmbedded(array(
@@ -124,7 +129,7 @@ class YamlDriver extends AbstractFileDriver
                 ));
             }
         }
-        
+
         if (isset($element['embedMany'])) {
             foreach ($element['embedMany'] AS $field => $embedManyElement) {
                 $class->mapEmbedded(array(
