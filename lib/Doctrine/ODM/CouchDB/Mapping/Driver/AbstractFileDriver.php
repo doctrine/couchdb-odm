@@ -116,7 +116,7 @@ abstract class AbstractFileDriver implements Driver
         }
 
         $result = $this->loadMappingFile($file);
-        if (!isset($result[ClassName])) {
+        if (!isset($result[$className])) {
             return false;
         }
 
