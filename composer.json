@@ -11,7 +11,7 @@
     ],
     "require": {
         "php": ">=5.3.2",
-        "doctrine/common": ">=2.2.0,<2.2.9999",
+        "doctrine/common": ">=2.2.0,<2.3.9999",
         "doctrine/couchdb": "*",
         "symfony/console": ">=2.0"
     },
