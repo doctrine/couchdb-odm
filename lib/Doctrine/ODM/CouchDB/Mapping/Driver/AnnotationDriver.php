@@ -19,8 +19,13 @@
 
 namespace Doctrine\ODM\CouchDB\Mapping\Driver;
 
-use Doctrine\ODM\CouchDB\Mapping\ClassMetadata,
+use Doctrine\Common\Annotations\AnnotationReader,
+    Doctrine\Common\Annotations\AnnotationRegistry,
     Doctrine\Common\Annotations\Reader,
+    Doctrine\Common\Persistence\Mapping\ClassMetadata,
+    Doctrine\Common\Persistence\Mapping\Driver\AnnotationDriver as AbstractAnnotationDriver,
+    Doctrine\ODM\CouchDB\Mapping\Annotations as ODM,
+    Doctrine\ODM\CouchDB\Mapping\ClassMetadata as ClassMetaDataInfo,
     Doctrine\ODM\CouchDB\Mapping\MappingException;
 
 /**
@@ -32,68 +37,13 @@ use Doctrine\ODM\CouchDB\Mapping\ClassMetadata,
  * @author      Jonathan H. Wage <jonwage@gmail.com>
  * @author      Roman Borschel <roman@code-factory.org>
  */
-class AnnotationDriver implements Driver
+class AnnotationDriver extends AbstractAnnotationDriver
 {
-    /**
-     * The AnnotationReader.
-     *
-     * @var AnnotationReader
-     */
-    private $reader;
-
-    /**
-     * The paths where to look for mapping files.
-     *
-     * @var array
-     */
-    private $paths = array();
-
-    /**
-     * The file extension of mapping documents.
-     *
-     * @var string
-     */
-    private $fileExtension = '.php';
-
-    /**
-     * @param array
-     */
-    private $classNames;
-
-    /**
-     * Initializes a new AnnotationDriver that uses the given AnnotationReader for reading
-     * docblock annotations.
-     * 
-     * @param $reader The AnnotationReader to use.
-     * @param string|array $paths One or multiple paths where mapping classes can be found. 
-     */
-    public function __construct(Reader $reader, $paths = null)
-    {
-        $this->reader = $reader;
-        if ($paths) {
-            $this->addPaths((array) $paths);
-        }
-    }
-
-    /**
-     * Append lookup paths to metadata driver.
-     *
-     * @param array $paths
-     */
-    public function addPaths(array $paths)
-    {
-        $this->paths = array_unique(array_merge($this->paths, $paths));
-    }
-
-    /**
-     * Retrieve the defined metadata lookup paths.
-     *
-     * @return array
-     */
-    public function getPaths()
-    {
-        return $this->paths;
-    }
+    protected $entityAnnotationClasses = array(
+        'Doctrine\\ODM\\CouchDB\\Mapping\\Annotations\\Document' => 0,
+        'Doctrine\\ODM\\CouchDB\\Mapping\\Annotations\\MappedSuperclass' => 1,
+        'Doctrine\\ODM\\CouchDB\\Mapping\\Annotations\\EmbeddedDocument' => 2,
+    );
 
     /**
      * {@inheritdoc}
@@ -102,34 +52,29 @@ class AnnotationDriver implements Driver
     {
         $reflClass = $class->getReflectionClass();
 
-        $classAnnotations = $this->reader->getClassAnnotations($reflClass);
-        $isValidDocument = false;
-        foreach ($classAnnotations AS $classAnnotation) {
-            if ($classAnnotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Document) {
-                if ($classAnnotation->indexed) {
-                    $class->indexed = true;
+        $documentAnnotations = array();
+        foreach ($this->reader->getClassAnnotations($reflClass) AS $annotation) {
+            foreach ($this->entityAnnotationClasses as $annotationClass => $i) {
+                if ($annotation instanceof $annotationClass) {
+                    $documentAnnotations[$i] = $annotation;
+                    continue 2;
                 }
-                $class->setCustomRepositoryClass($classAnnotation->repositoryClass);
-                $isValidDocument = true;
-            } elseif ($classAnnotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\EmbeddedDocument) {
-                $class->isEmbeddedDocument = true;
-                $isValidDocument = true;
-            } else if ($classAnnotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\MappedSuperclass) {
-                $class->isMappedSuperclass = true;
-                $isValidDocument = true;
-            } else if ($classAnnotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Index) {
+            }
+
+            //non-document class annotations
+            if ($annotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Index) {
                 $class->indexed = true;
-            } else if ($classAnnotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\InheritanceRoot) {
+            } else if ($annotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\InheritanceRoot) {
                 $class->markInheritanceRoot();
             }
         }
 
-        if (!$isValidDocument) {
+        if (!$documentAnnotations) {
             throw MappingException::classIsNotAValidDocument($className);
         }
 
         foreach ($reflClass->getProperties() as $property) {
-            if ($class->isInheritedAssocation($property->name) || $class->isInheritedField($property->name)) {
+            if ($class->isInheritedAssociation($property->name) || $class->isInheritedField($property->name)) {
                 continue;
             }
 
@@ -181,82 +126,5 @@ class AnnotationDriver implements Driver
                 $class->mapField($mapping);
             }
         }
-    }
-
-    /**
-     * Whether the class with the specified name is transient. Only non-transient
-     * classes, that is entities and mapped superclasses, should have their metadata loaded.
-     * A class is non-transient if it is annotated with either @Entity or
-     * @MappedSuperclass in the class doc block.
-     *
-     * @param string $className
-     * @return boolean
-     */
-    public function isTransient($className)
-    {
-        $classAnnotations = $this->reader->getClassAnnotations(new \ReflectionClass($className));
-
-        foreach ($classAnnotations AS $classAnnotation) {
-            if ($classAnnotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Document) {
-                return false;
-            } else if ($classAnnotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\MappedSuperclass) {
-                return false;
-            } else if ($classAnnotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\EmbeddedDocument) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getAllClassNames()
-    {
-        if ($this->classNames !== null) {
-            return $this->classNames;
-        }
-
-        if ( ! $this->paths) {
-            throw MappingException::pathRequired();
-        }
-
-        $classes = array();
-        $includedFiles = array();
-
-        foreach ($this->paths as $path) {
-            if ( ! is_dir($path)) {
-                throw MappingException::fileMappingDriversRequireConfiguredDirectoryPath();
-            }
-
-            $iterator = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($path),
-                \RecursiveIteratorIterator::LEAVES_ONLY
-            );
-
-            foreach ($iterator as $file) {
-                if (($fileName = $file->getBasename($this->fileExtension)) == $file->getBasename()) {
-                    continue;
-                }
-
-                $sourceFile = realpath($file->getPathName());
-                require_once $sourceFile;
-                $includedFiles[] = $sourceFile;
-            }
-        }
-
-        $declared = get_declared_classes();
-
-        foreach ($declared as $className) {
-            $rc = new \ReflectionClass($className);
-            $sourceFile = $rc->getFileName();
-            if (in_array($sourceFile, $includedFiles) && ! $this->isTransient($className)) {
-                $classes[] = $className;
-            }
-        }
-
-        $this->classNames = $classes;
-
-        return $classes;
     }
 }

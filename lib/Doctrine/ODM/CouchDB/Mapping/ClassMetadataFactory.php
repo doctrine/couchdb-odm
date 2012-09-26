@@ -20,9 +20,13 @@
 namespace Doctrine\ODM\CouchDB\Mapping;
 
 use Doctrine\ODM\CouchDB\DocumentManager,
-    Doctrine\ODM\CouchDB\Mapping\ClassMetadata,
     Doctrine\ODM\CouchDB\CouchDBException,
-    Doctrine\Common\Cache\Cache;
+    Doctrine\ODM\CouchDB\Mapping\ClassMetadata,
+    Doctrine\Common\Persistence\Mapping\Driver\MappingDriver,
+    Doctrine\Common\Persistence\Mapping\ClassMetadata as ClassMetadataInterface,
+    Doctrine\Common\Persistence\Mapping\ReflectionService,
+    Doctrine\Common\Persistence\Mapping\RuntimeReflectionService,
+    Doctrine\Common\Persistence\Mapping\AbstractClassMetadataFactory;
 
 /**
  * The ClassMetadataFactory is used to create ClassMetadata objects that contain all the
@@ -35,7 +39,7 @@ use Doctrine\ODM\CouchDB\DocumentManager,
  * @author      Benjamin Eberlei <kontakt@beberlei.de>
  * @author      Lukas Kahwe Smith <smith@pooteeweet.org>
  */
-class ClassMetadataFactory implements \Doctrine\Common\Persistence\Mapping\ClassMetadataFactory
+class ClassMetadataFactory extends AbstractClassMetadataFactory
 {
     /**
      * @var DocumentManager
@@ -43,68 +47,50 @@ class ClassMetadataFactory implements \Doctrine\Common\Persistence\Mapping\Class
     private $dm;
 
     /**
-     * @var array
-     */
-    private $loadedMetadata;
-
-    /**
      *  The used metadata driver.
      *
-     * @var Doctrine\ODM\CouchDB\Mapping\Driver\Driver
+     * @var MappingDriver
      */
     private $driver;
 
     /**
-     * The used cache driver.
-     *
-     * @var Cache
-     */
-    private $cacheDriver;
-
-    /**
      * Creates a new factory instance that uses the given DocumentManager instance.
      *
-     * @param $dm  The DocumentManager instance
+     * @param DocumentManager $dm The DocumentManager instance
      */
     public function __construct(DocumentManager $dm)
     {
         $this->dm = $dm;
         $config = $this->dm->getConfiguration();
+        $this->setCacheDriver($config->getMetadataCacheImpl());
         $this->driver = $config->getMetadataDriverImpl();
-        $this->cacheDriver = $config->getMetadataCacheImpl();
         if (!$this->driver) {
-            throw new \RuntimeException("No metadata driver was configured.");
+            throw new \RuntimeException('No metadata driver was configured.');
         }
     }
 
     /**
-     * Sets the cache driver used by the factory to cache ClassMetadata instances.
-     *
-     * @param Doctrine\Common\Cache\Cache $cacheDriver
+     * {@inheritdoc}
      */
-    public function setCacheDriver($cacheDriver)
+    protected function doLoadMetadata($class, $parent, $rootEntityFound, array $nonSuperclassParents)
     {
-        $this->cacheDriver = $cacheDriver;
+        /** @var $parent ClassMetaData */
+        if ($parent) {
+            $parent->deriveChildMetadata($class->getName());
+            $class->setParentClasses($nonSuperclassParents);
+        }
+
+        if ($this->getDriver()) {
+            $this->getDriver()->loadMetadataForClass($class->getName(), $class);
+        }
     }
 
     /**
-     * Gets the cache driver used by the factory to cache ClassMetadata instances.
-     *
-     * @return Doctrine\Common\Cache\Cache
+     * {@inheritdoc}
      */
-    public function getCacheDriver()
+    protected function getFqcnFromAlias($namespaceAlias, $simpleClassName)
     {
-        return $this->cacheDriver;
-    }
-
-    /**
-     * Gets the array of loaded ClassMetadata instances.
-     *
-     * @return array $loadedMetadata The loaded metadata.
-     */
-    public function getLoadedMetadata()
-    {
-        return $this->loadedMetadata;
+        return $this->dm->getConfiguration()->getDocumentNamespace($namespaceAlias) . '\\' . $simpleClassName;
     }
 
     /**
@@ -127,63 +113,15 @@ class ClassMetadataFactory implements \Doctrine\Common\Persistence\Mapping\Class
      * Gets the class metadata descriptor for a class.
      *
      * @param string $className The name of the class.
-     * @return Doctrine\ODM\CouchDB\Mapping\ClassMetadata
+     * @return ClassMetadata
      */
     public function getMetadataFor($className)
     {
-        if ( ! isset($this->loadedMetadata[$className])) {
-            $realClassName = $className;
-
-            // Check for namespace alias
-            if (strpos($className, ':') !== false) {
-                list($namespaceAlias, $simpleClassName) = explode(':', $className);
-                $realClassName = $this->dm->getConfiguration()->getDocumentNamespace($namespaceAlias) . '\\' . $simpleClassName;
-
-                if (isset($this->loadedMetadata[$realClassName])) {
-                    // We do not have the alias name in the map, include it
-                    $this->loadedMetadata[$className] = $this->loadedMetadata[$realClassName];
-
-                    return $this->loadedMetadata[$realClassName];
-                }
-            }
-
-            if ($this->cacheDriver) {
-                if (($cached = $this->cacheDriver->fetch("$realClassName\$COUCHDBCLASSMETADATA")) !== false) {
-                    $this->loadedMetadata[$realClassName] = $cached;
-                } else {
-                    foreach ($this->loadMetadata($realClassName) as $loadedClassName) {
-                        $this->cacheDriver->save(
-                            "$loadedClassName\$COUCHDBCLASSMETADATA", $this->loadedMetadata[$loadedClassName], null
-                        );
-                    }
-                }
-            } else {
-                $this->loadMetadata($realClassName);
-            }
-
-            if ($className != $realClassName) {
-                // We do not have the alias name in the map, include it
-                $this->loadedMetadata[$className] = $this->loadedMetadata[$realClassName];
-            }
+        $metadata = parent::getMetadataFor($className);
+        if ($metadata) {
+            return $metadata;
         }
-
-        if (!isset($this->loadedMetadata[$className])) {
-            throw MappingException::classNotMapped();
-        }
-
-        return $this->loadedMetadata[$className];
-    }
-
-    protected function getParentClasses($className)
-    {
-        // Collect parent classes, ignoring transient (not-mapped) classes.
-        $parentClasses = array();
-        foreach (array_reverse(class_parents($className)) as $parentClass) {
-            if ( ! $this->driver->isTransient($parentClass)) {
-                $parentClasses[] = $parentClass;
-            }
-        }
-        return $parentClasses;
+        throw MappingException::classNotMapped($className);
     }
 
     /**
@@ -192,75 +130,19 @@ class ClassMetadataFactory implements \Doctrine\Common\Persistence\Mapping\Class
      *
      * @param string $className The name of the class for which the metadata should get loaded.
      */
-    private function loadMetadata($name)
+    protected function loadMetadata($className)
     {
-        if (!class_exists($name)) {
-            throw MappingException::classNotFound($name);
+        if (class_exists($className)) {
+            return parent::loadMetadata($className);
         }
-
-        $parentClasses = $this->getParentClasses($name);
-        $parentClasses[] = $name;
-
-        $loaded = array();
-        $parent = null;
-        /* @var $parent ClassMetadata */
-        foreach ($parentClasses AS $className) {
-            if (isset($this->loadedMetadata[$className])) {
-                $parent = $this->loadedMetadata[$className];
-                continue;
-            }
-
-            // original class was checked above already
-            if ($className != $name && !class_exists($className)) {
-                throw MappingException::classNotFound($className);
-            }
-
-            if ($parent) {
-                $class = $parent->deriveChildMetadata($className);
-                $class->setParentClasses($parentClasses);
-            } else {
-                $class = new ClassMetadata($className);
-            }
-
-            $this->loadedMetadata[$className] = $class;
-            $this->driver->loadMetadataForClass($className, $this->loadedMetadata[$className]);
-
-            $parent = $class;
-            $loaded[] = $className;
-        }
-
-        return $loaded;
-    }
-
-    /**
-     * Checks whether the factory has the metadata for a class loaded already.
-     *
-     * @param string $className
-     * @return boolean TRUE if the metadata of the class in question is already loaded, FALSE otherwise.
-     */
-    public function hasMetadataFor($className)
-    {
-        return isset($this->loadedMetadata[$className]);
-    }
-
-    /**
-     * Sets the metadata descriptor for a specific class.
-     *
-     * NOTE: This is only useful in very special cases, like when generating proxy classes.
-     *
-     * @param string $className
-     * @param ClassMetadata $class
-     */
-    public function setMetadataFor($className, $class)
-    {
-        $this->loadedMetadata[$className] = $class;
+        throw MappingException::classNotFound($className);
     }
 
     /**
      * Creates a new ClassMetadata instance for the given class name.
      *
      * @param string $className
-     * @return Doctrine\ODM\CouchDB\Mapping\ClassMetadata
+     * @return ClassMetadata
      */
     protected function newClassMetadataInstance($className)
     {
@@ -268,16 +150,40 @@ class ClassMetadataFactory implements \Doctrine\Common\Persistence\Mapping\Class
     }
 
     /**
-     * Whether the class with the specified name should have its metadata loaded.
-     * This is only the case if it is either mapped as an Entity or a
-     * MappedSuperclass.
-     *
-     * @param string $className
-     * @return boolean
+     * {@inheritdoc}
      */
-    public function isTransient($className)
+    protected function getDriver()
     {
-        return $this->driver->isTransient($className);
+        return $this->driver;
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    protected function initialize()
+    {
+        $this->initialized = true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function initializeReflection(ClassMetadataInterface $class, ReflectionService $reflService)
+    {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function wakeupReflection(ClassMetadataInterface $class, ReflectionService $reflService)
+    {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function isEntity(ClassMetadataInterface $class)
+    {
+        return isset($class->isMappedSuperclass) && $class->isMappedSuperclass === false;
+    }
 }
