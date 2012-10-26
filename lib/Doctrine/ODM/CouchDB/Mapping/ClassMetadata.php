@@ -110,6 +110,7 @@ class ClassMetadata extends ClassMetadataInfo implements IClassMetadata
         parent::mapAttachments($fieldName);
 
         $this->reflFields[$fieldName] = $this->reflClass->getProperty($fieldName);
+        $this->reflFields[$fieldName]->setAccessible(true);
     }
 
     /**
