@@ -33,7 +33,7 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
     {
         return TestUtil::getTestDatabase();
     }
-    
+
     public function createCouchDBClient()
     {
         return new CouchDBClient($this->getHttpClient(), $this->getTestDatabase());
@@ -57,7 +57,7 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
         $config->setProxyDir(\sys_get_temp_dir());
         $config->setAutoGenerateProxyClasses(true);
         $config->setMetadataDriverImpl($metaDriver);
-        $setMetadataCacheImpl = $config->setMetadataCacheImpl(new ArrayCache);
+        $config->setMetadataCacheImpl(new ArrayCache);
         $config->setLuceneHandlerName('_fti');
 
         return DocumentManager::create($couchDBClient, $config);

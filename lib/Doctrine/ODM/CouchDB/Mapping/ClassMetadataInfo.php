@@ -2,6 +2,8 @@
 
 namespace Doctrine\ODM\CouchDB\Mapping;
 
+use ReflectionClass,
+    Doctrine\DBAL\Types\Type;
 
 /**
  * Metadata class
@@ -464,7 +466,7 @@ class ClassMetadataInfo
      * Gets the type of a field.
      *
      * @param string $fieldName
-     * @return Doctrine\DBAL\Types\Type
+     * @return Type
      */
     public function getTypeOfField($fieldName)
     {
@@ -548,7 +550,7 @@ class ClassMetadataInfo
         return isset($this->fieldMappings[$field]['declared']);
     }
 
-    public function isInheritedAssocation($field)
+    public function isInheritedAssociation($field)
     {
         return isset($this->associationsMappings[$field]['declared']);
     }
@@ -557,6 +559,9 @@ class ClassMetadataInfo
     {
         $this->parentClasses         = $classes;
         $this->inInheritanceHierachy = true;
+        if (count($classes) > 0) {
+            $this->rootDocumentName = array_pop($classes);
+        }
     }
 
     public function markInheritanceRoot()
@@ -564,7 +569,7 @@ class ClassMetadataInfo
         if ($this->parentClasses) {
             throw MappingException::invalidInheritanceRoot($this->name, $this->parentClasses);
         }
-        $htis->inInheritanceHierachy = true;
+        $this->inInheritanceHierachy = true;
     }
 }
 

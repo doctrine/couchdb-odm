@@ -19,9 +19,11 @@
 
 namespace Doctrine\ODM\CouchDB\Mapping\Driver;
 
-use Doctrine\ODM\CouchDB\Mapping\ClassMetadata,
-    SimpleXmlElement,
-    Doctrine\ODM\CouchDB\Mapping\MappingException;
+use Doctrine\Common\Persistence\Mapping\Driver\FileDriver,
+    Doctrine\Common\Persistence\Mapping\ClassMetadata,
+    Doctrine\ODM\CouchDB\Mapping\MappingException,
+    Doctrine\Common\Persistence\Mapping\MappingException as DoctrineMappingException,
+    SimpleXmlElement;
 
 /**
  * XmlDriver is a metadata driver that enables mapping through XML files.
@@ -30,25 +32,39 @@ use Doctrine\ODM\CouchDB\Mapping\ClassMetadata,
  * @link        www.doctrine-project.org
  * @since       1.0
  * @author      Benjamin Eberlei <kontakt@beberlei.de>
+ * @author      Jonathan H. Wage <jonwage@gmail.com>
+ * @author      Roman Borschel <roman@code-factory.org>
  */
-class XmlDriver extends AbstractFileDriver
+class XmlDriver extends FileDriver
 {
+    const DEFAULT_FILE_EXTENSION = '.dcm.yml';
+
     /**
-     * The file extension of mapping documents.
-     *
-     * @var string
+     * {@inheritDoc}
      */
-    protected $fileExtension = '.dcm.xml';
+    public function __construct($locator, $fileExtension = self::DEFAULT_FILE_EXTENSION)
+    {
+        parent::__construct($locator, $fileExtension);
+    }
 
     /**
      * {@inheritdoc}
      */
     public function loadMetadataForClass($className, ClassMetadata $class)
     {
-        /* @var $xmlRoot SimpleXMLElement */
-        $xmlRoot = $this->getElement($className);
+        /** @var $class \Doctrine\ODM\CouchDB\Mapping\ClassMetadata */
+        try {
+            $xmlRoot = $this->getElement($className);
+        } catch (DoctrineMappingException $e) {
+            // Convert Exception type for consistency with other drivers
+            throw new MappingException($e->getMessage(), $e->getCode(), $e);
+        }
 
-        if ($xmlRoot->getName() == "document") {
+        if (!$xmlRoot) {
+            return;
+        }
+
+        if ($xmlRoot->getName() == 'document') {
             $class->setCustomRepositoryClass(
                 isset($xmlRoot['repository-class']) ? (string)$xmlRoot['repository-class'] : null
             );
@@ -100,7 +116,7 @@ class XmlDriver extends AbstractFileDriver
         if (isset($xmlRoot->{"reference-one"})) {
             foreach ($xmlRoot->{"reference-one"} as $referenceOneElement) {
                 $class->mapManyToOne(array(
-                    'cascade'           => (isset($referenceManyElement->cascade)) ? $this->getCascadeMode($referenceManyElement->cascade) : 0,
+                    'cascade'           => (isset($referenceOneElement->cascade)) ? $this->getCascadeMode($referenceOneElement->cascade) : 0,
                     'targetDocument'    => (string)$referenceOneElement['target-document'],
                     'fieldName'         => (string)$referenceOneElement['field'],
                     'jsonName'          => (isset($referenceOneElement['json-name'])) ? (string)$referenceOneElement['json-name'] : null,
