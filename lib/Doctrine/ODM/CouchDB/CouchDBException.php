@@ -67,5 +67,10 @@ class CouchDBException extends \Exception
         return new self("Document $className has assigned id generator configured, " .
             "however no ID was found during persist().");
     }
-}
 
+    public static function unexpectedDocumentType($document)
+    {
+        $type = gettype($document);
+        return new self("Document was expected to be an object. $type given instead.");
+    }
+}
