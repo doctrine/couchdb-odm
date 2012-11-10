@@ -447,6 +447,10 @@ class UnitOfWork
 
     private function doMerge($document, array &$visited, $prevManagedCopy = null, $assoc = null)
     {
+        if (!is_object($document)) {
+            throw CouchDBException::unexpectedDocumentType($document);
+        }
+
         $oid = spl_object_hash($document);
         if (isset($visited[$oid])) {
             return; // Prevent infinite recursion
