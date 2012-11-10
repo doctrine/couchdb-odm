@@ -3,8 +3,9 @@
 namespace Doctrine\Tests\ODM\CouchDB\Functional;
 
 use Doctrine\CouchDB\View\DesignDocument;
+use Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase;
 
-class LuceneQueryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
+class LuceneQueryTest extends CouchDBFunctionalTestCase
 {
     /**
      * @var DocumentManager
@@ -22,8 +23,8 @@ class LuceneQueryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestC
             'lucene_users', 'Doctrine\Tests\ODM\CouchDB\Functional\LuceneQueryDesignDoc', array()
         );
 
-        $query = $this->dm->createLuceneQuery('lucene_users', 'by_name');
-        $query->createDesignDocument();
+        $query    = $this->dm->createLuceneQuery('lucene_users', 'by_name');
+        $response = $query->createDesignDocument();
 
         $user1 = new \Doctrine\Tests\Models\CMS\CmsUser();
         $user1->username = "beberlei";
@@ -40,7 +41,16 @@ class LuceneQueryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestC
         $this->dm->flush();
 
         $query->setQuery("Lukas");
-        $result = $query->execute();
+
+        try {
+            $result = $query->execute();
+        } catch(\Doctrine\CouchDB\HTTP\HTTPException $e) {
+            if ($e->getCode() == 404) {
+                $this->markTestSkipped("Lucene is not integrated");
+            } else {
+                throw $e;
+            }
+        }
 
         $this->assertEquals(1, count($result));
         foreach ($result AS $user) {

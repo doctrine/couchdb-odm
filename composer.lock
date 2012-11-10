@@ -76,19 +76,19 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/couchdb-client.git",
-                "reference": "bd5911054f39504c884606db6e290a10b7f05f75"
+                "reference": "4674e1608c61506c81bd401dcea0dd3354428eda"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/doctrine/couchdb-client/zipball/bd5911054f39504c884606db6e290a10b7f05f75",
-                "reference": "bd5911054f39504c884606db6e290a10b7f05f75",
+                "url": "https://github.com/doctrine/couchdb-client/archive/4674e1608c61506c81bd401dcea0dd3354428eda.zip",
+                "reference": "4674e1608c61506c81bd401dcea0dd3354428eda",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.2",
                 "doctrine/common": "*"
             },
-            "time": "1345228208",
+            "time": "1352577764",
             "type": "library",
             "installation-source": "source",
             "autoload": {
@@ -102,15 +102,11 @@
             "authors": [
                 {
                     "name": "Benjamin Eberlei",
-                    "email": "kontakt@beberlei.de",
-                    "homepage": null,
-                    "role": null
+                    "email": "kontakt@beberlei.de"
                 },
                 {
                     "name": "Lukas Kahwe Smith",
-                    "email": "smith@pooteeweet.org",
-                    "homepage": null,
-                    "role": null
+                    "email": "smith@pooteeweet.org"
                 }
             ],
             "description": "CouchDB Client",
