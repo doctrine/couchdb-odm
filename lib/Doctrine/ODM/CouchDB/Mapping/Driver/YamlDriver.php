@@ -19,8 +19,11 @@
 
 namespace Doctrine\ODM\CouchDB\Mapping\Driver;
 
-use Doctrine\ODM\CouchDB\Mapping\ClassMetadata,
-    Doctrine\ODM\CouchDB\Mapping\MappingException;
+use Doctrine\Common\Persistence\Mapping\Driver\FileDriver,
+    Doctrine\Common\Persistence\Mapping\ClassMetadata,
+    Doctrine\ODM\CouchDB\Mapping\MappingException,
+    Doctrine\Common\Persistence\Mapping\MappingException as DoctrineMappingException,
+    Symfony\Component\Yaml\Yaml;
 
 /**
  * The YamlDriver reads the mapping metadata from yaml schema files.
@@ -31,21 +34,34 @@ use Doctrine\ODM\CouchDB\Mapping\ClassMetadata,
  * @author      Jonathan H. Wage <jonwage@gmail.com>
  * @author      Roman Borschel <roman@code-factory.org>
  */
-class YamlDriver extends AbstractFileDriver
+class YamlDriver extends FileDriver
 {
+    const DEFAULT_FILE_EXTENSION = '.dcm.yml';
+
     /**
-     * The file extension of mapping documents.
-     *
-     * @var string
+     * {@inheritDoc}
      */
-    protected $fileExtension = '.dcm.yml';
+    public function __construct($locator, $fileExtension = self::DEFAULT_FILE_EXTENSION)
+    {
+        parent::__construct($locator, $fileExtension);
+    }
 
     /**
      * {@inheritdoc}
      */
     public function loadMetadataForClass($className, ClassMetadata $class)
     {
-        $element = $this->getElement($className);
+        /** @var $class \Doctrine\ODM\CouchDB\Mapping\ClassMetadata */
+        try {
+            $element = $this->getElement($className);
+        } catch (DoctrineMappingException $e) {
+            // Convert Exception type for consistency with other drivers
+            throw new MappingException($e->getMessage(), $e->getCode(), $e);
+        }
+
+        if (!$element) {
+            return;
+        }
 
         if ($element['type'] == 'document') {
             $class->setCustomRepositoryClass(
@@ -148,6 +164,6 @@ class YamlDriver extends AbstractFileDriver
 
     protected function loadMappingFile($file)
     {
-        return \Symfony\Component\Yaml\Yaml::parse($file);
+        return Yaml::parse($file);
     }
 }

@@ -23,7 +23,7 @@ use Doctrine\Common\Cache\Cache;
 use Doctrine\CouchDB\HTTP\Client;
 use Doctrine\CouchDB\HTTP\SocketClient;
 use Doctrine\CouchDB\HTTP\LoggingClient;
-use Doctrine\ODM\CouchDB\Mapping\Driver\Driver;
+use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
 use Doctrine\ODM\CouchDB\Mapping\MetadataResolver\MetadataResolver;
 use Doctrine\ODM\CouchDB\Mapping\MetadataResolver\DoctrineResolver;
 
@@ -144,11 +144,11 @@ class Configuration
     /**
      * Sets the cache driver implementation that is used for metadata caching.
      *
-     * @param Driver $driverImpl
+     * @param MappingDriver $driverImpl
      * @todo Force parameter to be a Closure to ensure lazy evaluation
      *       (as soon as a metadata cache is in effect, the driver never needs to initialize).
      */
-    public function setMetadataDriverImpl(Driver $driverImpl)
+    public function setMetadataDriverImpl(MappingDriver $driverImpl)
     {
         $this->attributes['metadataDriverImpl'] = $driverImpl;
     }

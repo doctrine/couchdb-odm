@@ -2,7 +2,9 @@
 
 namespace Doctrine\ODM\CouchDB\Mapping;
 
-use Doctrine\Common\Persistence\Mapping\ClassMetadata AS IClassMetadata;
+use Doctrine\Common\Persistence\Mapping\ClassMetadata AS IClassMetadata,
+    ReflectionClass,
+    ReflectionProperty;
 
 /**
  * Metadata class
@@ -67,6 +69,7 @@ class ClassMetadata extends ClassMetadataInfo implements IClassMetadata
         $cm->reflClass = new \ReflectionClass($childName);
         $cm->name = $cm->reflClass->getName();
         $cm->namespace = $cm->reflClass->getNamespaceName();
+
         if ($this->isMappedSuperclass) {
             $cm->rootDocumentName = $cm->name;
         }
@@ -297,14 +300,14 @@ class ClassMetadata extends ClassMetadataInfo implements IClassMetadata
     {
         return (string) $this->reflFields[$this->identifier]->getValue($document);
     }
-    
+
     /**
      * Get identifier values of this document.
-     * 
+     *
      * Since CouchDB only allows exactly one identifier field this is a proxy
      * to {@see getIdentifierValue()} and returns an array with the identifier
      * field as a key.
-     * 
+     *
      * @param object $document
      * @return array
      */

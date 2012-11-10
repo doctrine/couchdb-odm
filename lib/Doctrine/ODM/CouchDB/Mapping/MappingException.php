@@ -60,4 +60,11 @@ class MappingException extends \Exception
             "parent classes: " . implode(", ", $parents)
         );
     }
+    
+    public static function mappingFileNotFound($className, $filename)
+    {
+        return new self(
+            "Mapping file:  '" . $filename . "' not found, for class: '" . $className . "'."
+        );
+    }
 }
