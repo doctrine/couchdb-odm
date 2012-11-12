@@ -19,7 +19,8 @@
 
 namespace Doctrine\ODM\CouchDB\Proxy;
 
-interface Proxy extends \Doctrine\Common\Persistence\Proxy
-{
+use Doctrine\Common\Proxy\Proxy as BaseProxy;
 
+interface Proxy extends BaseProxy
+{
 }

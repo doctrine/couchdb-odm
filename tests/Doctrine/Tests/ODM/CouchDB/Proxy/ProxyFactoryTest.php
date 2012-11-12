@@ -59,7 +59,7 @@ class ProxyFactoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCase
 
         $this->proxyFactory = new ProxyFactory($dmMock, __DIR__ . '/generated', 'Proxies', true);
 
-        $proxy = $this->proxyFactory->getProxy($modelClass, $query['id'], $query['documentName']);
+        $proxy = $this->proxyFactory->getProxy($modelClass, $query['id']);
 
         $this->assertInstanceOf('Doctrine\ODM\CouchDB\Proxy\Proxy', $proxy);
 

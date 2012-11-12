@@ -2,8 +2,7 @@
 
 namespace Doctrine\ODM\CouchDB\Mapping;
 
-use ReflectionClass,
-    Doctrine\DBAL\Types\Type;
+use ReflectionClass;
 
 /**
  * Metadata class
@@ -239,24 +238,27 @@ class ClassMetadataInfo
     /**
      * Gets the mapped identifier field of this class.
      *
-     * @return string $identifier
+     * Since CouchDB only allows exactly one identifier field this method
+     * returns always an array with one key
+     *
+     * @return array
      */
     public function getIdentifier()
     {
-        return $this->identifier;
+        return (array) $this->identifier;
     }
 
     /**
      * Get identifier field names of this class.
      *
-     * Since CouchDB only allows exactly one identifier field this is a proxy
-     * to {@see getIdentifier()} and returns an array.
+     * Since CouchDB only allows exactly one identifier field this method
+     * returns always an array with one key
      *
      * @return array
      */
     public function getIdentifierFieldNames()
     {
-        return array($this->identifier);
+        return (array) $this->identifier;
     }
 
     /**
