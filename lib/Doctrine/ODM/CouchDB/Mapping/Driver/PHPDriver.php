@@ -19,6 +19,7 @@
 
 namespace Doctrine\ODM\CouchDB\Mapping\Driver;
 
+use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use Doctrine\Common\Persistence\Mapping\Driver\PHPDriver as CommonPHPDriver;
 
 /**
@@ -33,4 +34,62 @@ use Doctrine\Common\Persistence\Mapping\Driver\PHPDriver as CommonPHPDriver;
  */
 class PHPDriver extends CommonPHPDriver
 {
+    /**
+     * The paths where to look for mapping files.
+     *
+     * @var array
+     */
+    private $paths = array();
+
+    /**
+     * The file extension of mapping documents.
+     *
+     * @var string
+     */
+    private $fileExtension = '.php';
+
+    /**
+     * @param array
+     */
+    private $classNames;
+
+    /**
+     * Initializes a new AnnotationDriver that uses the given AnnotationReader for reading
+     * docblock annotations.
+     *
+     * @param string|array $paths One or multiple paths where mapping classes can be found.
+     */
+    public function __construct($paths = null)
+    {
+        if ($paths) {
+            $this->addPaths((array) $paths);
+        }
+    }
+
+    /**
+     * Append lookup paths to metadata driver.
+     *
+     * @param array $paths
+     */
+    public function addPaths(array $paths)
+    {
+        $this->paths = array_unique(array_merge($this->paths, $paths));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function loadMetadataForClass($className, ClassMetadata $metadata)
+    {
+        $className::loadMetadata($metadata);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isTransient($className)
+    {
+        return method_exists($className, 'loadMetadata') ? false : true;
+    }
+
 }
