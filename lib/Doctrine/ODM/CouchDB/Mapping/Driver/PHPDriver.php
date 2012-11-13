@@ -19,7 +19,9 @@
 
 namespace Doctrine\ODM\CouchDB\Mapping\Driver;
 
+use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use Doctrine\Common\Persistence\Mapping\Driver\PHPDriver as CommonPHPDriver;
+use Doctrine\Common\Annotations\AnnotationReader;
 
 /**
  * The PHPDriver invokes a static PHP function on the document class itself passing
@@ -33,4 +35,105 @@ use Doctrine\Common\Persistence\Mapping\Driver\PHPDriver as CommonPHPDriver;
  */
 class PHPDriver extends CommonPHPDriver
 {
+    /**
+     * @var Array
+     */
+    private $paths = array();
+
+    /**
+     * @var string
+     */
+    private $fileExtension = '.php';
+
+    /**
+     * @param Array
+     */
+    private $classNames;
+
+    /**
+     * @param string|array $paths One or multiple paths where mapping classes can be found.
+     */
+    public function __construct($paths = null)
+    {
+        if (!empty($paths)) {
+            $this->addPaths((Array)$paths);
+        }
+    }
+
+    /**
+     * @param Array $paths
+     */
+    public function addPaths(Array $paths)
+    {
+        $this->paths = array_unique(array_merge($this->paths, $paths));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function loadMetadataForClass($className, ClassMetadata $metadata)
+    {
+        $className::loadMetadata($metadata);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @todo Same code exists in AnnotationDriver, should we re-use it somehow or not worry about it?
+     */
+    public function getAllClassNames()
+    {
+        if ($this->classNames !== null) {
+            return $this->classNames;
+        }
+
+        if (!$this->paths) {
+            throw MappingException::pathRequired();
+        }
+
+        $classes = array();
+        $includedFiles = array();
+
+        foreach ($this->paths as $path) {
+            if ( ! is_dir($path)) {
+                throw MappingException::fileMappingDriversRequireConfiguredDirectoryPath();
+            }
+
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($path),
+                \RecursiveIteratorIterator::LEAVES_ONLY
+            );
+
+            foreach ($iterator as $file) {
+                if (($fileName = $file->getBasename($this->fileExtension)) == $file->getBasename()) {
+                    continue;
+                }
+
+                $sourceFile = realpath($file->getPathName());
+                require_once $sourceFile;
+                $includedFiles[] = $sourceFile;
+            }
+        }
+
+        $declared = get_declared_classes();
+
+        foreach ($declared as $className) {
+            $rc = new \ReflectionClass($className);
+            $sourceFile = $rc->getFileName();
+            if (in_array($sourceFile, $includedFiles) && ! $this->isTransient($className)) {
+                $classes[] = $className;
+            }
+        }
+
+        $this->classNames = $classes;
+
+        return $classes;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isTransient($className)
+    {
+        return method_exists($className, 'loadMetadata') ? false : true;
+    }
 }
