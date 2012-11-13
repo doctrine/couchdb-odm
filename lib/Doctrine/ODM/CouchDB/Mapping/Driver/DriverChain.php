@@ -29,7 +29,7 @@ namespace Doctrine\ODM\CouchDB\Mapping\Driver;
  * @author      Roman Borschel <roman@code-factory.org>
  * @author      Bulat Shakirzyanov <mallluhuct@gmail.com>
  */
-class DriverChain extends MappingDriverChaing
+class DriverChain extends MappingDriverChain
 {
 }
 
