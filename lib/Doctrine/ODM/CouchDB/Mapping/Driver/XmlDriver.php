@@ -37,7 +37,7 @@ use Doctrine\Common\Persistence\Mapping\Driver\FileDriver,
  */
 class XmlDriver extends FileDriver
 {
-    const DEFAULT_FILE_EXTENSION = '.dcm.yml';
+    const DEFAULT_FILE_EXTENSION = '.dcm.xml';
 
     /**
      * {@inheritDoc}

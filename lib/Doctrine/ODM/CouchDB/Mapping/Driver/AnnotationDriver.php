@@ -39,12 +39,6 @@ use Doctrine\Common\Annotations\AnnotationReader,
  */
 class AnnotationDriver extends AbstractAnnotationDriver
 {
-    protected $entityAnnotationClasses = array(
-        'Doctrine\\ODM\\CouchDB\\Mapping\\Annotations\\Document' => 0,
-        'Doctrine\\ODM\\CouchDB\\Mapping\\Annotations\\MappedSuperclass' => 1,
-        'Doctrine\\ODM\\CouchDB\\Mapping\\Annotations\\EmbeddedDocument' => 2,
-    );
-
     /**
      * {@inheritdoc}
      */
@@ -52,24 +46,30 @@ class AnnotationDriver extends AbstractAnnotationDriver
     {
         $reflClass = $class->getReflectionClass();
 
-        $documentAnnotations = array();
-        foreach ($this->reader->getClassAnnotations($reflClass) AS $annotation) {
-            foreach ($this->entityAnnotationClasses as $annotationClass => $i) {
-                if ($annotation instanceof $annotationClass) {
-                    $documentAnnotations[$i] = $annotation;
-                    continue 2;
-                }
-            }
+        $isValidDocument  = false;
+        $classAnnotations = $this->reader->getClassAnnotations($reflClass);
 
-            //non-document class annotations
-            if ($annotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Index) {
+        foreach ($classAnnotations AS $classAnnotation) {
+            if ($classAnnotation instanceof ODM\Document) {
+                if ($classAnnotation->indexed) {
+                    $class->indexed = true;
+                }
+                $class->setCustomRepositoryClass($classAnnotation->repositoryClass);
+                $isValidDocument = true;
+            } elseif ($classAnnotation instanceof ODM\EmbeddedDocument) {
+                $class->isEmbeddedDocument = true;
+                $isValidDocument = true;
+            } else if ($classAnnotation instanceof ODM\MappedSuperclass) {
+                $class->isMappedSuperclass = true;
+                $isValidDocument = true;
+            } else if ($classAnnotation instanceof ODM\Index) {
                 $class->indexed = true;
-            } else if ($annotation instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\InheritanceRoot) {
+            } else if ($classAnnotation instanceof ODM\InheritanceRoot) {
                 $class->markInheritanceRoot();
             }
         }
 
-        if (!$documentAnnotations) {
+        if ( ! $isValidDocument) {
             throw MappingException::classIsNotAValidDocument($className);
         }
 

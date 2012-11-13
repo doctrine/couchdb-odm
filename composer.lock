@@ -1,31 +1,31 @@
 {
-    "hash": "edca04875a08a55167befcad5f89d5e5",
+    "hash": "50cc412803d220f45c11bd84d603a8b5",
     "packages": [
         {
             "name": "doctrine/common",
-            "version": "2.3.0",
+            "version": "2.3.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/common",
-                "reference": "2.3.0"
+                "reference": "bb0aebbf234db52df476a2b473d434745b34221c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/doctrine/common/zipball/2.3.0",
-                "reference": "2.3.0",
+                "url": "https://github.com/doctrine/common/archive/bb0aebbf234db52df476a2b473d434745b34221c.zip",
+                "reference": "bb0aebbf234db52df476a2b473d434745b34221c",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.2"
             },
-            "time": "2012-09-19 22:55:18",
+            "time": "1348120518",
             "type": "library",
             "extra": {
                 "branch-alias": {
                     "dev-master": "2.3.x-dev"
                 }
             },
-            "installation-source": "dist",
+            "installation-source": "source",
             "autoload": {
                 "psr-0": {
                     "Doctrine\\Common": "lib/"
@@ -76,19 +76,19 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/couchdb-client.git",
-                "reference": "4674e1608c61506c81bd401dcea0dd3354428eda"
+                "reference": "dc13c5db96a62819f4d0f1f62e1a43076fdcd91c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/doctrine/couchdb-client/archive/4674e1608c61506c81bd401dcea0dd3354428eda.zip",
-                "reference": "4674e1608c61506c81bd401dcea0dd3354428eda",
+                "url": "https://github.com/doctrine/couchdb-client/archive/dc13c5db96a62819f4d0f1f62e1a43076fdcd91c.zip",
+                "reference": "dc13c5db96a62819f4d0f1f62e1a43076fdcd91c",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.2",
                 "doctrine/common": "*"
             },
-            "time": "1352577764",
+            "time": "1352808869",
             "type": "library",
             "installation-source": "source",
             "autoload": {
@@ -123,18 +123,18 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Console",
-                "reference": "7907e712997a6cb40cce3227a754636461d7e502"
+                "reference": "6da537054e8f9f795e64a5b02eb7f9646c9b59e7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/symfony/Console/archive/7907e712997a6cb40cce3227a754636461d7e502.zip",
-                "reference": "7907e712997a6cb40cce3227a754636461d7e502",
+                "url": "https://github.com/symfony/Console/archive/6da537054e8f9f795e64a5b02eb7f9646c9b59e7.zip",
+                "reference": "6da537054e8f9f795e64a5b02eb7f9646c9b59e7",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
-            "time": "1352466606",
+            "time": "1352815684",
             "type": "library",
             "extra": {
                 "branch-alias": {

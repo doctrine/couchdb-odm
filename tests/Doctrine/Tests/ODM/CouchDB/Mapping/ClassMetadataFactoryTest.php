@@ -31,21 +31,6 @@ class ClassMetadataFactoryTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($cm, $cmf->getMetadataFor('stdClass'));
     }
 
-    public function testGetAllMetadata()
-    {
-        $driver = new \Doctrine\ODM\CouchDB\Mapping\Driver\PHPDriver(array(__DIR__));
-        $this->dm->getConfiguration()->setMetadataDriverImpl($driver);
-
-        $cmf = new ClassMetadataFactory($this->dm);
-
-        $cm = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata('stdClass');
-        $cmf->setMetadataFor('stdClass', $cm);
-
-        $metadata = $cmf->getAllMetadata();
-
-        $this->assertInternalType('array', $metadata);
-    }
-
     public function testGetMetadataForDocumentWithMappedSuperclass()
     {
         $class = $this->dm->getMetadataFactory()->getMetadataFor(__NAMESPACE__ ."\\Child");
