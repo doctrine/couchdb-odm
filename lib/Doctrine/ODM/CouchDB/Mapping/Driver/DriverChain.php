@@ -2,8 +2,9 @@
 
 namespace Doctrine\ODM\CouchDB\Mapping\Driver;
 
-use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 use Doctrine\ODM\CouchDB\Mapping\MappingException;
+use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
+use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 
 /**
  * The DriverChain allows you to add multiple other mapping drivers for
@@ -16,7 +17,7 @@ use Doctrine\ODM\CouchDB\Mapping\MappingException;
  * @author      Roman Borschel <roman@code-factory.org>
  * @author      Bulat Shakirzyanov <mallluhuct@gmail.com>
  */
-class DriverChain implements Driver
+class DriverChain implements MappingDriver
 {
     /**
      * @var array
@@ -26,10 +27,10 @@ class DriverChain implements Driver
     /**
      * Add a nested driver.
      *
-     * @param Driver $nestedDriver
+     * @param MappingDriver $nestedDriver
      * @param string $namespace
      */
-    public function addDriver(Driver $nestedDriver, $namespace)
+    public function addDriver(MappingDriver $nestedDriver, $namespace)
     {
         $this->drivers[$namespace] = $nestedDriver;
     }
