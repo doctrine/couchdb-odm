@@ -66,7 +66,6 @@ class PHPDriver extends CommonPHPDriver
     public function addPaths(Array $paths)
     {
         $this->paths = array_unique(array_merge($this->paths, $paths));
-        var_dump($this->getAllClassNames()); die();
     }
 
     /**
