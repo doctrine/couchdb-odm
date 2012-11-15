@@ -43,7 +43,14 @@ class ManyToOneAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFuncti
     {
         $article = $this->dm->find('Doctrine\Tests\Models\CMS\CmsArticle', $this->articleId);
         $this->assertInstanceOf('Doctrine\Tests\Models\CMS\CmsUser', $article->user);
-        $this->assertNull($article->user->username, 'CmsUser is a proxy, username is NULL through public access');
+        $this->assertInstanceOf('Doctrine\ODM\CouchDB\Proxy\Proxy', $article->user);
+        $this->assertFalse($article->user->__isInitialized());
+        $this->assertEquals(
+            'beberlei',
+            $article->user->username,
+            'CmsUser is a proxy, username is loaded through public access'
+        );
+        $this->assertTrue($article->user->__isInitialized());
         $this->assertEquals('beberlei', $article->user->getUsername());
     }
 

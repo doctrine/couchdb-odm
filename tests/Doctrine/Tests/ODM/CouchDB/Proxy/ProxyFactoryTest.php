@@ -78,7 +78,13 @@ class DocumentManagerMock extends \Doctrine\ODM\CouchDB\DocumentManager
 
     public function getClassMetadata($class)
     {
-        return new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata($class);
+        $metadata = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata($class);
+        $metadata->identifier = 'id';
+        $reflId = new \ReflectionProperty($class, 'id');
+        $reflId->setAccessible(true);
+        $metadata->reflFields['id'] = $reflId;
+
+        return $metadata;
     }
 
     public function getMetadataFactory()

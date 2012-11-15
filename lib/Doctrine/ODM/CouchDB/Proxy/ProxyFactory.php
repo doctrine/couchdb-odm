@@ -23,32 +23,54 @@ use Doctrine\ODM\CouchDB\DocumentManager;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\Common\Proxy\ProxyGenerator;
+use Doctrine\Common\Proxy\Exception\UnexpectedValueException;
 
 /**
  * This factory is used to create proxy objects for entities at runtime.
  *
  * @author Roman Borschel <roman@code-factory.org>
  * @author Giorgio Sironi <piccoloprincipeazzurro@gmail.com>
- * @author Nils Adermann <naderman@naderman.de>
+ * @author Nils Adermann  <naderman@naderman.de>
+ * @author Marco Pivetta  <ocramius@gmail.com>
  *
  * This whole thing is copy & pasted from ORM - should really be slightly
  * refactored to generate
  */
 class ProxyFactory
 {
-    /** The DocumentManager this factory is bound to. */
+    /**
+     * @var DocumentManager The DocumentManager this factory is bound to.
+     */
     private $dm;
+
     /**
      * @var ProxyGenerator
      */
     private $proxyGenerator;
 
-    /** Whether to automatically (re)generate proxy classes. */
+    /**
+     * @var bool Whether to automatically (re)generate proxy classes.
+     */
     private $autoGenerate;
-    /** The namespace that contains all proxy classes. */
+    /**
+     * @var string The namespace that contains all proxy classes.
+     */
     private $proxyNamespace;
-    /** The directory that contains all proxy classes. */
+
+    /**
+     * @var string The directory that contains all proxy classes.
+     */
     private $proxyDir;
+
+    /**
+     * @var array definitions (indexed by requested class name) for the proxy classes.
+     *            Each element is an array containing following items:
+     *            "fqcn" - FQCN of the proxy class
+     *            "initializer" - Closure to be used as proxy __initializer__
+     *            "cloner" - Closure to be used as proxy __cloner__
+     *            "reflectionId" - ReflectionProperty for the ID field
+     */
+    private $definitions = array();
 
     /**
      * Initializes a new instance of the <tt>ProxyFactory</tt> class that is
@@ -77,78 +99,15 @@ class ProxyFactory
      */
     public function getProxy($className, $identifier)
     {
-        $fqn      = ClassUtils::generateProxyClassName($className, $this->proxyNamespace);
-        $dm       = $this->dm;
-        $metadata = $dm->getClassMetadata($className);
-
-        if ( ! class_exists($fqn, false)) {
-            $generator = $this->getProxyGenerator();
-            $fileName = $generator->getProxyFileName($className);
-
-            if ($this->autoGenerate) {
-                $generator->generateProxyClass($metadata);
-            }
-
-            require $fileName;
+        if ( ! isset($this->definitions[$className])) {
+            $this->initProxyDefinitions($className);
         }
 
-        $initializer = function (Proxy $proxy) use ($dm) {
-            $proxy->__setInitializer(function () {});
-            $proxy->__setCloner(function () {});
-
-            if ($proxy->__isInitialized()) {
-                return;
-            }
-
-            $properties = $proxy->__getLazyLoadedPublicProperties();
-
-            foreach ($properties as $propertyName => $property) {
-                if (!isset($proxy->$propertyName)) {
-                    $proxy->$propertyName = $properties[$propertyName];
-                }
-            }
-
-            $proxy->__setInitialized(true);
-
-            if (method_exists($proxy, '__wakeup')) {
-                $proxy->__wakeup();
-            }
-
-            $dm->refresh($proxy);
-        };
-
-        $cloner = function (Proxy $cloned) use ($dm, $identifier) {
-            if ($cloned->__isInitialized()) {
-                return;
-            }
-
-            $cloned->__setInitialized(true);
-            $cloned->__setInitializer(function () {});
-            $className = get_class($cloned);
-            $class = $dm->getClassMetadata($className);
-            $original = $dm->find($className, $identifier);
-
-            if (null === $original) {
-                throw new UnexpectedValueException(sprintf('Proxy could with ID "%s"not be loaded', $identifier));
-            }
-
-            foreach ($class->getReflectionClass()->getProperties() as $reflectionProperty) {
-                $propertyName = $reflectionProperty->getName();
-
-                if ($class->hasField($propertyName) || $class->hasAssociation($propertyName)) {
-                    $reflectionProperty->setAccessible(true);
-                    $reflectionProperty->setValue($cloned, $reflectionProperty->getValue($original));
-                }
-            }
-        };
-
-        $proxy = new $fqn($initializer, $cloner);
-
-        foreach ($metadata->getIdentifierFieldNames() as $idField) {
-            $metadata->setFieldValue($proxy, $idField, $identifier);
-
-            break; // CouchDB supports only a single identifier field
-        }
+        $definition   = $this->definitions[$className];
+        $fqcn         = $definition['fqcn'];
+        $reflectionId = $definition['reflectionId'];
+        $proxy        = new $fqcn($definition['initializer'], $definition['cloner']);
+        $reflectionId->setValue($proxy, $identifier);
 
         return $proxy;
     }
@@ -200,6 +159,104 @@ class ProxyFactory
         }
 
         return $this->proxyGenerator;
+    }
+
+    /**
+     * @param string $className
+     */
+    private function initProxyDefinitions($className)
+    {
+        $fqcn = ClassUtils::generateProxyClassName($className, $this->proxyNamespace);
+        $classMetadata = $this->dm->getClassMetadata($className);
+
+        if ( ! class_exists($fqcn, false)) {
+            $generator = $this->getProxyGenerator();
+            $fileName = $generator->getProxyFileName($className);
+
+            if ($this->autoGenerate) {
+                $generator->generateProxyClass($classMetadata);
+            }
+
+            require $fileName;
+        }
+
+        /* @var $reflectionId \ReflectionProperty */
+        $reflectionId = $classMetadata->reflFields[$classMetadata->identifier];
+        $dm           = $this->dm;
+
+        if ($classMetadata->getReflectionClass()->hasMethod('__wakeup')) {
+            $initializer = function (Proxy $proxy) use ($dm) {
+                $proxy->__setInitializer(null);
+                $proxy->__setCloner(null);
+
+                if ($proxy->__isInitialized()) {
+                    return;
+                }
+
+                $properties = $proxy->__getLazyLoadedPublicProperties();
+
+                foreach ($properties as $propertyName => $property) {
+                    if (!isset($proxy->$propertyName)) {
+                        $proxy->$propertyName = $properties[$propertyName];
+                    }
+                }
+
+                $proxy->__setInitialized(true);
+                $proxy->__wakeup();
+                $dm->refresh($proxy);
+            };
+        } else {
+            $initializer = function (Proxy $proxy) use ($dm) {
+                $proxy->__setInitializer(null);
+                $proxy->__setCloner(null);
+
+                if ($proxy->__isInitialized()) {
+                    return;
+                }
+
+                $properties = $proxy->__getLazyLoadedPublicProperties();
+
+                foreach ($properties as $propertyName => $property) {
+                    if (!isset($proxy->$propertyName)) {
+                        $proxy->$propertyName = $properties[$propertyName];
+                    }
+                }
+
+                $proxy->__setInitialized(true);
+                $dm->refresh($proxy);
+            };
+        }
+
+        $cloner = function (Proxy $proxy) use ($dm, $classMetadata, $reflectionId, $fqcn) {
+            if ($proxy->__isInitialized()) {
+                return;
+            }
+
+            $proxy->__setInitialized(true);
+            $proxy->__setInitializer(null);
+            $id       = $reflectionId->getValue($proxy);
+            $original = $dm->find($fqcn, $id);
+
+            if (null === $original) {
+                throw new UnexpectedValueException(sprintf('Proxy could with ID "%s"not be loaded', $id));
+            }
+
+            foreach ($classMetadata->getReflectionClass()->getProperties() as $reflectionProperty) {
+                $propertyName = $reflectionProperty->getName();
+
+                if ($classMetadata->hasField($propertyName) || $classMetadata->hasAssociation($propertyName)) {
+                    $reflectionProperty->setAccessible(true);
+                    $reflectionProperty->setValue($proxy, $reflectionProperty->getValue($original));
+                }
+            }
+        };
+
+        $this->definitions[$className] = array(
+            'fqcn'                        => $fqcn,
+            'initializer'                 => $initializer,
+            'cloner'                      => $cloner,
+            'reflectionId'                => $reflectionId,
+        );
     }
 }
 
