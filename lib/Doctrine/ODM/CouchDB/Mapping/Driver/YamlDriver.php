@@ -115,7 +115,7 @@ class YamlDriver extends FileDriver
         if (isset($element['referenceOne'])) {
             foreach ($element['referenceOne'] AS $field => $referenceOneElement) {
                 $class->mapManyToOne(array(
-                    'cascade'           => (isset($referenceManyElement->cascade)) ? $this->getCascadeMode($referenceManyElement->cascade) : 0,
+                    'cascade'           => (isset($referenceOneElement['cascade'])) ? $this->getCascadeMode($referenceOneElement['cascade']) : 0,
                     'targetDocument'    => (string)$referenceOneElement['targetDocument'],
                     'fieldName'         => $field,
                     'jsonName'          => (isset($referenceOneElement['jsonName'])) ? (string)$referenceOneElement['jsonName'] : null,
@@ -126,7 +126,7 @@ class YamlDriver extends FileDriver
         if (isset($element['referenceMany'])) {
             foreach ($element['referenceMany'] AS $field => $referenceManyElement) {
                 $class->mapManyToMany(array(
-                    'cascade'           => (isset($referenceManyElement->cascade)) ? $this->getCascadeMode($referenceManyElement->cascade) : 0,
+                    'cascade'           => (isset($referenceManyElement['cascade'])) ? $this->getCascadeMode($referenceManyElement['cascade']) : 0,
                     'targetDocument'    => (string)$referenceManyElement['targetDocument'],
                     'fieldName'         => $field,
                     'jsonName'          => (isset($referenceManyElement['jsonName'])) ? (string)$referenceManyElement['jsonName'] : null,
@@ -165,5 +165,25 @@ class YamlDriver extends FileDriver
     protected function loadMappingFile($file)
     {
         return Yaml::parse($file);
+    }
+
+    /**
+     * Gathers a list of cascade options found in the given cascade element.
+     *
+     * @param array $cascadeElement The cascade element.
+     * @return integer a bitmask of cascade options.
+     */
+    private function getCascadeMode(array $cascadeElement)
+    {
+        $cascade = 0;
+        foreach ($cascadeElement as $cascadeMode) {
+            $constantName = 'Doctrine\ODM\CouchDB\Mapping\ClassMetadata::CASCADE_' . strtoupper($cascadeMode);
+            if (!defined($constantName)) {
+                throw new MappingException("Cascade mode '$cascadeMode' not supported.");
+            }
+            $cascade |= constant($constantName);
+        }
+
+        return $cascade;
     }
 }

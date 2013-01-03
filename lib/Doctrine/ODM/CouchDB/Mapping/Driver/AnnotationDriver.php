@@ -94,23 +94,13 @@ class AnnotationDriver extends AbstractAnnotationDriver
                 } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Index) {
                     $mapping['indexed'] = true;
                 } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\ReferenceOne) {
-                    $cascade = 0;
-                    foreach ($fieldAnnot->cascade AS $cascadeMode) {
-                        $cascade += constant('Doctrine\ODM\CouchDB\Mapping\ClassMetadata::CASCADE_' . strtoupper($cascadeMode));
-                    }
-                    $fieldAnnot->cascade = $cascade;
-
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
+                    $mapping['cascade'] = $this->getCascadeMode($fieldAnnot->cascade);
                     unset($mapping['value']);
                     $class->mapManyToOne($mapping);
                 } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\ReferenceMany) {
-                    $cascade = 0;
-                    foreach ($fieldAnnot->cascade AS $cascadeMode) {
-                        $cascade += constant('Doctrine\ODM\CouchDB\Mapping\ClassMetadata::CASCADE_' . strtoupper($cascadeMode));
-                    }
-                    $fieldAnnot->cascade = $cascade;
-
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
+                    $mapping['cascade'] = $this->getCascadeMode($fieldAnnot->cascade);
                     unset($mapping['value']);
                     $class->mapManyToMany($mapping);
                 } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Attachments) {
@@ -126,5 +116,24 @@ class AnnotationDriver extends AbstractAnnotationDriver
                 $class->mapField($mapping);
             }
         }
+    }
+
+    /**
+     * Gathers a list of cascade options found in the given cascade element.
+     *
+     * @param $cascadeList cascade list
+     * @return integer a bitmask of cascade options.
+     */
+    private function getCascadeMode(array $cascadeList)
+    {
+        $cascade = 0;
+        foreach ($cascadeList as $cascadeMode) {
+            $constantName = 'Doctrine\ODM\CouchDB\Mapping\ClassMetadata::CASCADE_' . strtoupper($cascadeMode);
+            if (!defined($constantName)) {
+                throw new MappingException("Cascade mode '$cascadeMode' not supported.");
+            }
+            $cascade |= constant($constantName);
+        }
+        return $cascade;
     }
 }
