@@ -20,10 +20,11 @@
 namespace Doctrine\ODM\CouchDB\Proxy;
 
 use Doctrine\ODM\CouchDB\DocumentManager;
-use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
+use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\Common\Proxy\ProxyGenerator;
 use Doctrine\Common\Proxy\Exception\UnexpectedValueException;
+use ReflectionProperty;
 
 /**
  * This factory is used to create proxy objects for entities at runtime.
@@ -39,12 +40,12 @@ use Doctrine\Common\Proxy\Exception\UnexpectedValueException;
 class ProxyFactory
 {
     /**
-     * @var DocumentManager The DocumentManager this factory is bound to.
+     * @var \Doctrine\ODM\CouchDB\DocumentManager The DocumentManager this factory is bound to.
      */
     private $dm;
 
     /**
-     * @var ProxyGenerator
+     * @var \Doctrine\Common\Proxy\ProxyGenerator
      */
     private $proxyGenerator;
 
@@ -65,9 +66,9 @@ class ProxyFactory
     /**
      * @var array definitions (indexed by requested class name) for the proxy classes.
      *            Each element is an array containing following items:
-     *            "fqcn" - FQCN of the proxy class
-     *            "initializer" - Closure to be used as proxy __initializer__
-     *            "cloner" - Closure to be used as proxy __cloner__
+     *            "fqcn"         - FQCN of the proxy class
+     *            "initializer"  - Closure to be used as proxy __initializer__
+     *            "cloner"       - Closure to be used as proxy __cloner__
      *            "reflectionId" - ReflectionProperty for the ID field
      */
     private $definitions = array();
@@ -76,16 +77,16 @@ class ProxyFactory
      * Initializes a new instance of the <tt>ProxyFactory</tt> class that is
      * connected to the given <tt>DocumentManager</tt>.
      *
-     * @param DocumentManager $dm The DocumentManager the new factory works for.
+     * @param \Doctrine\ODM\CouchDB\DocumentManager $dm The DocumentManager the new factory works for.
      * @param string $proxyDir The directory to use for the proxy classes. It must exist.
      * @param string $proxyNs The namespace to use for the proxy classes.
      * @param boolean $autoGenerate Whether to automatically generate proxy classes.
      */
     public function __construct(DocumentManager $dm, $proxyDir, $proxyNs, $autoGenerate = false)
     {
-        $this->dm = $dm;
-        $this->proxyDir = $proxyDir;
-        $this->autoGenerate = $autoGenerate;
+        $this->dm             = $dm;
+        $this->proxyDir       = $proxyDir;
+        $this->autoGenerate   = $autoGenerate;
         $this->proxyNamespace = $proxyNs;
     }
 
@@ -107,6 +108,7 @@ class ProxyFactory
         $fqcn         = $definition['fqcn'];
         $reflectionId = $definition['reflectionId'];
         $proxy        = new $fqcn($definition['initializer'], $definition['cloner']);
+
         $reflectionId->setValue($proxy, $identifier);
 
         return $proxy;
@@ -115,7 +117,7 @@ class ProxyFactory
     /**
      * Generates proxy classes for all given classes.
      *
-     * @param ClassMetadata[] $classes The classes for which to generate proxies.
+     * @param \Doctrine\Common\Persistence\Mapping\ClassMetadata[] $classes The classes for which to generate proxies.
      * @param string $toDir The target directory of the proxy classes. If not specified, the
      *                      directory configured on the Configuration of the DocumentManager used
      *                      by this factory is used.
@@ -130,10 +132,11 @@ class ProxyFactory
                 continue;
             }
 
-            $generator = $this->getProxyGenerator();
-
+            $generator     = $this->getProxyGenerator();
             $proxyFileName = $generator->getProxyFileName($class->getName(), $toDir);
+
             $generator->generateProxyClass($class, $proxyFileName);
+
             $generated += 1;
         }
 
@@ -141,7 +144,7 @@ class ProxyFactory
     }
 
     /**
-     * @param ProxyGenerator $proxyGenerator
+     * @param \Doctrine\Common\Proxy\ProxyGenerator $proxyGenerator
      */
     public function setProxyGenerator(ProxyGenerator $proxyGenerator)
     {
@@ -149,12 +152,13 @@ class ProxyFactory
     }
 
     /**
-     * @return ProxyGenerator
+     * @return \Doctrine\Common\Proxy\ProxyGenerator
      */
     public function getProxyGenerator()
     {
         if (null === $this->proxyGenerator) {
             $this->proxyGenerator = new ProxyGenerator($this->proxyDir, $this->proxyNamespace);
+
             $this->proxyGenerator->setPlaceholder('<baseProxyInterface>', 'Doctrine\ODM\CouchDB\Proxy\Proxy');
         }
 
@@ -171,7 +175,7 @@ class ProxyFactory
 
         if ( ! class_exists($fqcn, false)) {
             $generator = $this->getProxyGenerator();
-            $fileName = $generator->getProxyFileName($className);
+            $fileName  = $generator->getProxyFileName($className);
 
             if ($this->autoGenerate) {
                 $generator->generateProxyClass($classMetadata);
@@ -182,10 +186,29 @@ class ProxyFactory
 
         /* @var $reflectionId \ReflectionProperty */
         $reflectionId = $classMetadata->reflFields[$classMetadata->identifier];
-        $dm           = $this->dm;
 
+        $this->definitions[$className] = array(
+            'fqcn'         => $fqcn,
+            'initializer'  => $this->createInitializer($classMetadata, $this->dm),
+            'cloner'       => $this->createCloner($classMetadata, $this->dm, $reflectionId, $fqcn),
+            'reflectionId' => $reflectionId,
+        );
+    }
+
+    /**
+     * Generates a closure capable of initializing a proxy
+     *
+     * @param \Doctrine\Common\Persistence\Mapping\ClassMetadata $classMetadata
+     * @param \Doctrine\ODM\CouchDB\DocumentManager              $documentManager
+     *
+     * @return callable
+     */
+    private function createInitializer(
+        ClassMetadata $classMetadata,
+        DocumentManager $documentManager
+    ) {
         if ($classMetadata->getReflectionClass()->hasMethod('__wakeup')) {
-            $initializer = function (Proxy $proxy) use ($dm) {
+            return function (Proxy $proxy) use ($documentManager) {
                 $proxy->__setInitializer(null);
                 $proxy->__setCloner(null);
 
@@ -193,7 +216,7 @@ class ProxyFactory
                     return;
                 }
 
-                $properties = $proxy->__getLazyLoadedPublicProperties();
+                $properties = $proxy->__getLazyProperties();
 
                 foreach ($properties as $propertyName => $property) {
                     if (!isset($proxy->$propertyName)) {
@@ -203,39 +226,58 @@ class ProxyFactory
 
                 $proxy->__setInitialized(true);
                 $proxy->__wakeup();
-                $dm->refresh($proxy);
-            };
-        } else {
-            $initializer = function (Proxy $proxy) use ($dm) {
-                $proxy->__setInitializer(null);
-                $proxy->__setCloner(null);
-
-                if ($proxy->__isInitialized()) {
-                    return;
-                }
-
-                $properties = $proxy->__getLazyLoadedPublicProperties();
-
-                foreach ($properties as $propertyName => $property) {
-                    if (!isset($proxy->$propertyName)) {
-                        $proxy->$propertyName = $properties[$propertyName];
-                    }
-                }
-
-                $proxy->__setInitialized(true);
-                $dm->refresh($proxy);
+                $documentManager->refresh($proxy);
             };
         }
 
-        $cloner = function (Proxy $proxy) use ($dm, $classMetadata, $reflectionId, $fqcn) {
+        return function (Proxy $proxy) use ($documentManager) {
+            $proxy->__setInitializer(null);
+            $proxy->__setCloner(null);
+
+            if ($proxy->__isInitialized()) {
+                return;
+            }
+
+            $properties = $proxy->__getLazyProperties();
+
+            foreach ($properties as $propertyName => $property) {
+                if (!isset($proxy->$propertyName)) {
+                    $proxy->$propertyName = $properties[$propertyName];
+                }
+            }
+
+            $proxy->__setInitialized(true);
+            $documentManager->refresh($proxy);
+        };
+    }
+
+    /**
+     * Generates a closure capable of finalizing a cloned proxy
+     *
+     * @param \Doctrine\Common\Persistence\Mapping\ClassMetadata $classMetadata
+     * @param \Doctrine\ODM\CouchDB\DocumentManager              $documentManager
+     * @param ReflectionProperty                                 $reflectionId
+     * @param                                                    $fqcn
+     *
+     * @return callable
+     * @throws \Doctrine\Common\Proxy\Exception\UnexpectedValueException
+     */
+    private function createCloner(
+        ClassMetadata $classMetadata,
+        DocumentManager $documentManager,
+        ReflectionProperty $reflectionId,
+        $fqcn
+    ) {
+        return function (Proxy $proxy) use ($documentManager, $classMetadata, $reflectionId, $fqcn) {
             if ($proxy->__isInitialized()) {
                 return;
             }
 
             $proxy->__setInitialized(true);
             $proxy->__setInitializer(null);
+
             $id       = $reflectionId->getValue($proxy);
-            $original = $dm->find($fqcn, $id);
+            $original = $documentManager->find($fqcn, $id);
 
             if (null === $original) {
                 throw new UnexpectedValueException(sprintf('Proxy could with ID "%s"not be loaded', $id));
@@ -250,13 +292,6 @@ class ProxyFactory
                 }
             }
         };
-
-        $this->definitions[$className] = array(
-            'fqcn'                        => $fqcn,
-            'initializer'                 => $initializer,
-            'cloner'                      => $cloner,
-            'reflectionId'                => $reflectionId,
-        );
     }
 }
 
