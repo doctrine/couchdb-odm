@@ -19,6 +19,8 @@
 
 namespace Doctrine\ODM\CouchDB\Mapping\Driver;
 
+use Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain;
+
 /**
  * The DriverChain allows you to add multiple other mapping drivers for
  * certain namespaces
