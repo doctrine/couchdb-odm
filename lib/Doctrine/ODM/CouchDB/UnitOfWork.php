@@ -271,6 +271,9 @@ class UnitOfWork
             }
         }
 
+        if (isset($class->lifecycleCallbacks[Event::postLoad])) {
+            $class->invokeLifecycleCallbacks(Event::postLoad, $document);
+        }
         if ($this->evm->hasListeners(Event::postLoad)) {
             $this->evm->dispatchEvent(Event::postLoad, new Event\LifecycleEventArgs($document, $this->dm));
         }
@@ -409,6 +412,11 @@ class UnitOfWork
         $this->scheduledRemovals[$oid] = $document;
         $this->documentState[$oid] = self::STATE_REMOVED;
 
+        $class = $this->dm->getClassMetadata(get_class($document));
+
+        if (isset($class->lifecycleCallbacks[Event::preRemove])) {
+            $class->invokeLifecycleCallbacks(Event::preRemove, $document);
+        }
         if ($this->evm->hasListeners(Event::preRemove)) {
             $this->evm->dispatchEvent(Event::preRemove, new Event\LifecycleEventArgs($document, $this->dm));
         }
@@ -993,12 +1001,15 @@ class UnitOfWork
      * @param object $document
      * @return void
      */
-    public function persistNew($class, $document)
+    private function persistNew($class, $document)
     {
         $id = $this->getIdGenerator($class->idGenerator)->generate($document, $class, $this->dm);
 
         $this->registerManaged($document, $id, null);
 
+        if (isset($class->lifecycleCallbacks[Event::prePersist])) {
+            $class->invokeLifecycleCallbacks(Event::prePersist, $document);
+        }
         if ($this->evm->hasListeners(Event::prePersist)) {
             $this->evm->dispatchEvent(Event::prePersist, new Event\LifecycleEventArgs($document, $this->dm));
         }
@@ -1042,6 +1053,10 @@ class UnitOfWork
             $bulkUpdater->deleteDocument($this->documentIdentifiers[$oid], $this->documentRevisions[$oid]);
             $this->removeFromIdentityMap($document);
 
+            $class = $this->dm->getClassMetadata(get_class($document));
+            if (isset($class->lifecycleCallbacks[Event::postRemove])) {
+                $class->invokeLifecycleCallbacks(Event::postRemove, $document);
+            }
             if ($this->evm->hasListeners(Event::postRemove)) {
                 $this->evm->dispatchEvent(Event::postRemove, new Event\LifecycleEventArgs($document, $this->dm));
             }
@@ -1050,6 +1065,9 @@ class UnitOfWork
         foreach ($this->scheduledUpdates AS $oid => $document) {
             $class = $this->dm->getClassMetadata(get_class($document));
 
+            if (isset($class->lifecycleCallbacks[Event::preUpdate])) {
+                $class->invokeLifecycleCallbacks(Event::preUpdate, $document);
+            }
             if ($this->evm->hasListeners(Event::preUpdate)) {
                 $this->evm->dispatchEvent(Event::preUpdate, new Event\LifecycleEventArgs($document, $this->dm));
                 $this->computeChangeSet($class, $document); // TODO: prevent association computations in this case?
@@ -1131,16 +1149,20 @@ class UnitOfWork
                 }
 
                 $document = $this->identityMap[$docResponse['id']];
+                $class = $this->dm->getClassMetadata(get_class($document));
+
                 if (isset($docResponse['error'])) {
                     $updateConflictDocuments[] = $document;
                 } else {
                     $this->documentRevisions[spl_object_hash($document)] = $docResponse['rev'];
-                    $class = $this->dm->getClassMetadata(get_class($document));
                     if ($class->isVersioned) {
                         $class->reflFields[$class->versionField]->setValue($document, $docResponse['rev']);
                     }
                 }
 
+                if (isset($class->lifecycleCallbacks[Event::postUpdate])) {
+                    $class->invokeLifecycleCallbacks(Event::postUpdate, $document);
+                }
                 if ($this->evm->hasListeners(Event::postUpdate)) {
                     $this->evm->dispatchEvent(Event::postUpdate, new Event\LifecycleEventArgs($document, $this->dm));
                 }
