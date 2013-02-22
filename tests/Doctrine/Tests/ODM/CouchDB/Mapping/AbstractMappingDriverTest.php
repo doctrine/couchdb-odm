@@ -114,7 +114,7 @@ abstract class AbstractMappingDriverTest extends \PHPUnit_Framework_TestCase
 
         return $class;
     }
-    
+
     /**
      * @depends testManyToManyAssociationMapping
      * @param ClassMetadata $class
@@ -129,5 +129,30 @@ abstract class AbstractMappingDriverTest extends \PHPUnit_Framework_TestCase
             'targetDocument' => '',
             'type' => 'mixed',
         ), $class->fieldMappings['address']);
+    }
+
+    /**
+     * @depends testFieldMappings
+     * @param ClassMetadata $class
+     */
+    public function testLifecycleCallbacks($class)
+    {
+        $this->assertEquals(count($class->lifecycleCallbacks), 2);
+        $this->assertEquals($class->lifecycleCallbacks['prePersist'][0], 'doStuffOnPrePersist');
+        $this->assertEquals($class->lifecycleCallbacks['postPersist'][0], 'doStuffOnPostPersist');
+
+        return $class;
+    }
+
+    /**
+     * @depends testFieldMappings
+     * @param ClassMetadata $class
+     */
+    public function testLifecycleCallbacksSupportMultipleMethodNames($class)
+    {
+        $this->assertEquals(count($class->lifecycleCallbacks['prePersist']), 2);
+        $this->assertEquals($class->lifecycleCallbacks['prePersist'][1], 'doOtherStuffOnPrePersistToo');
+
+        return $class;
     }
 }
