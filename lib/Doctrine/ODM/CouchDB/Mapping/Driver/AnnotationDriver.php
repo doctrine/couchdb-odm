@@ -67,10 +67,13 @@ class AnnotationDriver extends AbstractAnnotationDriver
                 $class->indexed = true;
             } else if ($classAnnotation instanceof ODM\InheritanceRoot) {
                 $class->markInheritanceRoot();
-            } else if ($classAnnotation instanceof ODM\HasLifecycleCallbacks) {
+            }
+
+            if ($classAnnotation instanceof ODM\HasLifecycleCallbacks) {
 
                 /* @var $method \ReflectionMethod */
                 foreach ($reflClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+
                     // filter for the declaring class only, callbacks from parents will already be registered.
                     if ($method->getDeclaringClass()->name !== $reflClass->name) {
                         continue;
