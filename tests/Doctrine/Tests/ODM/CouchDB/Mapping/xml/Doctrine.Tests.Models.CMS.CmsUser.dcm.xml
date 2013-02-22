@@ -5,13 +5,18 @@
         <field name="status" type="string" index="true" />
         <field name="username" type="string" index="true" />
         <field name="name" type="string" index="true" />
-        
+
         <embed-one field="address" />
-        
+
         <reference-one field="rights" target-document="CmsUserRights" />
         <reference-many field="articles" target-document="CmsArticle" mapped-by="user" />
         <reference-many field="groups" target-document="CmsGroup" />
-        
+
         <attachments field="attachments" />
+        <lifecycle-callbacks>
+            <lifecycle-callback method="doStuffOnPrePersist" type="prePersist" />
+            <lifecycle-callback method="doOtherStuffOnPrePersistToo" type="prePersist" />
+            <lifecycle-callback method="doStuffOnPostPersist" type="postPersist" />
+        </lifecycle-callbacks>
     </document>
 </doctrine-mapping>

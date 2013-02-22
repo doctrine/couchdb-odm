@@ -161,6 +161,15 @@ class YamlDriver extends FileDriver
                 ));
             }
         }
+
+        // Evaluate lifeCycleCallbacks
+        if (isset($element['lifecycleCallbacks'])) {
+            foreach ($element['lifecycleCallbacks'] as $type => $methods) {
+                foreach ($methods as $method) {
+                    $class->addLifecycleCallback($method, constant('Doctrine\ODM\CouchDB\Event::' . $type));
+                }
+            }
+        }
     }
 
     protected function loadMappingFile($file)

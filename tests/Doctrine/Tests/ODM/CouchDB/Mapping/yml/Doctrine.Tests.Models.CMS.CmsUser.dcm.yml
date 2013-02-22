@@ -21,3 +21,6 @@ Doctrine\Tests\Models\CMS\CmsUser:
   embedOne:
     address: ~
   attachments: attachments
+  lifecycleCallbacks:
+      prePersist: [ doStuffOnPrePersist, doOtherStuffOnPrePersistToo ]
+      postPersist: [ doStuffOnPostPersist ]

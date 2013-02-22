@@ -325,6 +325,10 @@ class ClassMetadata implements IClassMetadata
             $serialized[] = 'indexes';
         }
 
+        if ($this->lifecycleCallbacks) {
+            $serialized[] = 'lifecycleCallbacks';
+        }
+
         return $serialized;
     }
 
