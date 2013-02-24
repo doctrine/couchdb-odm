@@ -24,6 +24,6 @@ use Doctrine\Common\Annotations\Annotation;
 /**
  * @Annotation
  */
-final class PostUpdate extends Reference
+final class PostUpdate extends Annotation
 {
 }
