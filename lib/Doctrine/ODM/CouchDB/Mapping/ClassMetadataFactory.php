@@ -75,13 +75,16 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
      */
     protected function doLoadMetadata($class, $parent, $rootEntityFound, array $nonSuperclassParents)
     {
-        /** @var $parent ClassMetaData */
+
+        /** @var $class ClassMetadata */
+        /** @var $parent ClassMetadata */
         if ($parent) {
             $this->addAssociationsMapping($class, $parent);
             $this->addFieldMapping($class, $parent);
             $this->addIndexes($class, $parent);
             $parent->deriveChildMetadata($class);
             $class->setParentClasses($nonSuperclassParents);
+            $class->setLifecycleCallbacks($parent->lifecycleCallbacks);
         }
 
         if ($this->getDriver()) {
