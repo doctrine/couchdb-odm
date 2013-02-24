@@ -24,6 +24,6 @@ use Doctrine\Common\Annotations\Annotation;
 /**
  * @Annotation
  */
-final class PostRemove extends Reference
+final class PostRemove extends Annotation
 {
 }

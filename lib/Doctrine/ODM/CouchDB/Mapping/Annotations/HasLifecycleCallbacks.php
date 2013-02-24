@@ -24,6 +24,6 @@ use Doctrine\Common\Annotations\Annotation;
 /**
  * @Annotation
  */
-final class HasLifecycleCallbacks extends Reference
+final class HasLifecycleCallbacks extends Annotation
 {
 }
