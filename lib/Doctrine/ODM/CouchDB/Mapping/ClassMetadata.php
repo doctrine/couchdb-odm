@@ -179,6 +179,10 @@ class ClassMetadata extends ClassMetadataInfo implements IClassMetadata
             $serialized[] = 'indexes';
         }
 
+        if ($this->lifecycleCallbacks) {
+            $serialized[] = 'lifecycleCallbacks';
+        }
+
         return $serialized;
     }
 

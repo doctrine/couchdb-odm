@@ -74,10 +74,15 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
      */
     protected function doLoadMetadata($class, $parent, $rootEntityFound, array $nonSuperclassParents)
     {
-        /** @var $parent ClassMetaData */
+
+        /** @var $class ClassMetadata */
+        /** @var $parent ClassMetadata */
         if ($parent) {
+            $this->addAssociationsMapping($class, $parent);
+            $this->addFieldMapping($class, $parent);
             $parent->deriveChildMetadata($class->getName());
             $class->setParentClasses($nonSuperclassParents);
+            $class->setLifecycleCallbacks($parent->lifecycleCallbacks);
         }
 
         if ($this->getDriver()) {
@@ -185,5 +190,37 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
     protected function isEntity(ClassMetadataInterface $class)
     {
         return isset($class->isMappedSuperclass) && $class->isMappedSuperclass === false;
+    }
+
+    /**
+     *
+     * @param ClassMetadataInterface $class
+     * @param ClassMetadataInterface $parent
+     */
+    private function addFieldMapping(ClassMetadataInterface $class, ClassMetadataInterface $parent)
+    {
+        foreach ($parent->reflFields as $name => $field) {
+            $class->reflFields[$name] = $field;
+        }
+
+        foreach ($parent->fieldMappings as $name => $field) {
+            $class->fieldMappings[$name] = $field;
+        }
+
+        foreach ($parent->jsonNames as $name => $field) {
+            $class->jsonNames[$name] = $field;
+        }
+    }
+
+    /**
+     *
+     * @param ClassMetadataInterface $class
+     * @param ClassMetadataInterface $parent
+     */
+    private function addAssociationsMapping(ClassMetadataInterface $class, ClassMetadataInterface $parent)
+    {
+        foreach ($parent->associationsMappings as $name => $field) {
+            $class->associationsMappings[$name] = $field;
+        }
     }
 }

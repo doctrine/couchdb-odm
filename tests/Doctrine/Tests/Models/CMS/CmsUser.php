@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * @Document @Index
+ * @HasLifecycleCallbacks
  */
 class CmsUser
 {
@@ -34,7 +35,7 @@ class CmsUser
 
     /** @Attachments */
     public $attachments;
-    
+
     public function __construct() {
         $this->articles = new ArrayCollection;
         $this->groups = new ArrayCollection;
@@ -69,13 +70,35 @@ class CmsUser
     public function getGroups() {
         return $this->groups;
     }
-    
+
     public function getAddress() { return $this->address; }
-    
+
     public function setAddress(CmsAddress $address) {
         if ($this->address !== $address) {
             $this->address = $address;
 //            $address->setUser($this);
         }
     }
+
+    /**
+     * @PrePersist
+     */
+    public function doStuffOnPrePersist()
+    {
+    }
+
+    /**
+     * @PrePersist
+     */
+    public function doOtherStuffOnPrePersistToo()
+    {
+    }
+
+    /**
+     * @PostPersist
+     */
+    public function doStuffOnPostPersist()
+    {
+    }
+
 }
