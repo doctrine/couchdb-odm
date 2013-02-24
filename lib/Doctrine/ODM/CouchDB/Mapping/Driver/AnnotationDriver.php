@@ -40,6 +40,13 @@ use Doctrine\Common\Annotations\AnnotationReader,
  */
 class AnnotationDriver extends AbstractAnnotationDriver
 {
+
+    protected $entityAnnotationClasses = array(
+        'Doctrine\\ODM\\CouchDB\\Mapping\\Annotations\\Document' => 1,
+        'Doctrine\\ODM\\CouchDB\\Mapping\\Annotations\\MappedSuperclass' => 2,
+        'Doctrine\\ODM\\CouchDB\\Mapping\\Annotations\\EmbeddedDocument' => 3,
+    );
+
     /**
      * {@inheritdoc}
      */
