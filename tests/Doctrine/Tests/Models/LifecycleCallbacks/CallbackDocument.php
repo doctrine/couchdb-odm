@@ -10,17 +10,17 @@ namespace Doctrine\Tests\Models\LifecycleCallbacks;
 abstract class CallbackDocument
 {
     /**
-     * @String
+     * @Field(type="string")
      */
     public $name;
 
     /**
-     * @Date
+     * @Field(type="datetime")
      */
     public $createdAt;
 
     /**
-     * @Date
+     * @Field(type="datetime")
      */
     public $updatedAt;
 

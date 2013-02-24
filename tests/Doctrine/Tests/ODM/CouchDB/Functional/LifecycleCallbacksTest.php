@@ -9,6 +9,10 @@ use Doctrine\Tests\Models\LifecycleCallbacks\CallbackUser;
 class LifecycleCallbacksTest extends CouchDBFunctionalTestCase
 {
 
+    /**
+     *
+     * @var \Doctrine\ODM\CouchDB\DocumentManager
+     */
     private $dm;
 
     public function setUp()
