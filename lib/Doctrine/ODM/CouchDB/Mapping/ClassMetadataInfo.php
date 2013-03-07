@@ -247,6 +247,15 @@ class ClassMetadataInfo
     }
 
     /**
+     * Check for any possible shortcomings in the class
+     */
+    public function checkUp() {
+        if (!isset($this->identifier)) {
+            throw new MappingException('An identifier field is required.');
+        }
+    }    
+
+    /**
      * Get identifier field names of this class.
      *
      * Since CouchDB only allows exactly one identifier field this is a proxy
