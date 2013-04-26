@@ -57,8 +57,11 @@ class ProxyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
         $proxy = $this->dm->getReference($this->type, 1);
 
         $proxyClass = get_class($proxy);
-        $this->assertTrue($this->dm->getClassMetadataFactory()->hasMetadataFor($proxyClass), "Proxy class '" . $proxyClass . "' should be registered as metadata.");
-        $this->assertSame($this->dm->getClassMetadata($proxyClass), $this->dm->getClassMetadata($this->type), "Metadata instances of proxy class and real instance have to be the same.");
+        $this->assertSame(
+            $this->dm->getClassMetadata($proxyClass),
+            $this->dm->getClassMetadata($this->type),
+            'Metadata instances of proxy class and real instance have to be the same.'
+        );
     }
 }
 

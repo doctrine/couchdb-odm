@@ -154,7 +154,7 @@ class DocumentManager implements ObjectManager
 
     /**
      * @param  string $class
-     * @return ClassMetadata
+     * @return \Doctrine\ODM\CouchDB\Mapping\ClassMetadata
      */
     public function getClassMetadata($class)
     {

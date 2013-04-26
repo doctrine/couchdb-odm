@@ -59,7 +59,7 @@ class ProxyFactoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCase
 
         $this->proxyFactory = new ProxyFactory($dmMock, __DIR__ . '/generated', 'Proxies', true);
 
-        $proxy = $this->proxyFactory->getProxy($modelClass, $query['id'], $query['documentName']);
+        $proxy = $this->proxyFactory->getProxy($modelClass, $query['id']);
 
         $this->assertInstanceOf('Doctrine\ODM\CouchDB\Proxy\Proxy', $proxy);
 
@@ -78,7 +78,13 @@ class DocumentManagerMock extends \Doctrine\ODM\CouchDB\DocumentManager
 
     public function getClassMetadata($class)
     {
-        return new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata($class);
+        $metadata = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata($class);
+        $metadata->identifier = 'id';
+        $reflId = new \ReflectionProperty($class, 'id');
+        $reflId->setAccessible(true);
+        $metadata->reflFields['id'] = $reflId;
+
+        return $metadata;
     }
 
     public function getMetadataFactory()
