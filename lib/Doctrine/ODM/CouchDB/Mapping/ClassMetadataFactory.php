@@ -85,6 +85,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
         if ($this->getDriver()) {
             $this->getDriver()->loadMetadataForClass($class->getName(), $class);
         }
+        $class->checkUp();
     }
 
     private function addFieldMapping(ClassMetadataInterface $class, ClassMetadataInterface $parent)
