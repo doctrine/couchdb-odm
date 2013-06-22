@@ -247,11 +247,14 @@ class ClassMetadataInfo
     }
 
     /**
-     * Check for any possible shortcomings in the class
+     * Check for any possible shortcomings in the class:
+     * 
+     *  - The class must have an identifier field unless it's an embedded document.
+     * 
      */
     public function checkUp() {
-        if (!isset($this->identifier)) {
-            throw new MappingException('An identifier field is required.');
+        if (!isset($this->identifier) && !$this->isEmbeddedDocument) {
+            throw new MappingException("An identifier (@Id) field is required in {$this->getName()}.");
         }
     }    
 
