@@ -96,6 +96,10 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
 
         foreach ($parent->fieldMappings as $name => $field) {
             $class->fieldMappings[$name] = $field;
+            
+            if (array_key_exists('indexed', $field) && $field['indexed']) {
+                $class->indexes[] = $field['fieldName'];
+            }
         }
 
         foreach ($parent->jsonNames as $name => $field) {
