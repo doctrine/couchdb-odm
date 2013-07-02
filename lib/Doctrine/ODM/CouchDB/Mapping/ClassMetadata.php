@@ -231,7 +231,7 @@ class ClassMetadata implements IClassMetadata
         }
 
         if ($this->isMappedSuperclass) {
-            $child->rootDocumentName = $cm->name;
+            $child->rootDocumentName = $this->name;
         }
 
         $child->isMappedSuperclass = false;
