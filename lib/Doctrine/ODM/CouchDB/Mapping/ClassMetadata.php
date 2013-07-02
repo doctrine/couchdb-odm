@@ -230,10 +230,6 @@ class ClassMetadata implements IClassMetadata
             throw new \InvalidArgumentException("Only child class names of '".$this->name."' are valid values.");
         }
 
-        if ($this->isMappedSuperclass) {
-            $child->rootDocumentName = $this->name;
-        }
-
         $child->isMappedSuperclass = false;
         $child->isEmbeddedDocument = false;
 
