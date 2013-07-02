@@ -6,6 +6,8 @@ use Doctrine\ODM\CouchDB\UnitOfWork;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 use Doctrine\ODM\CouchDB\Id\idGenerator;
 
+use Doctrine\Common\Persistence\Mapping\RuntimeReflectionService;
+
 class UnitOfWorkTest extends CouchDBTestCase
 {
     private $dm;
@@ -21,6 +23,9 @@ class UnitOfWorkTest extends CouchDBTestCase
         $metadata->mapField(array('fieldName' => 'id', 'id' => true));
         $metadata->mapField(array('fieldName' => 'username', 'type' => 'string'));
         $metadata->idGenerator = \Doctrine\ODM\CouchDB\Mapping\ClassMetadata::IDGENERATOR_ASSIGNED;
+
+        $metadata->initializeReflection(new RuntimeReflectionService());
+        $metadata->wakeupReflection(new RuntimeReflectionService());
 
         $cmf = $this->dm->getClassMetadataFactory();
         $cmf->setMetadataFor($this->type, $metadata);

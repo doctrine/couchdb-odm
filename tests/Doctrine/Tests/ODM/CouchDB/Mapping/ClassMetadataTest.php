@@ -11,7 +11,6 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
         $cm = new ClassMetadata("Doctrine\Tests\ODM\CouchDB\Mapping\Person");
 
         $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $cm->name);
-        $this->assertInstanceOf('ReflectionClass', $cm->reflClass);
 
         return $cm;
     }
@@ -149,7 +148,6 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
         $cm->indexed = true;
 
         $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $cm->name);
-        $this->assertInstanceOf('ReflectionClass', $cm->reflClass);
 
         // property based comparison
         $this->assertEquals($cm, unserialize(serialize($cm)));

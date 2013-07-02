@@ -222,43 +222,36 @@ class ClassMetadata implements IClassMetadata
     /**
      * Used to derive a class metadata of the current instance for a mapped child class.
      *
-     * @param  string $childName
-     * @return ClassMetadata
+     * @param  ClassMetadata $child
      */
-    public function deriveChildMetadata($childName)
+    public function deriveChildMetadata($child)
     {
-        if (!is_subclass_of($childName, $this->name)) {
+        if (!is_subclass_of($child->name, $this->name)) {
             throw new \InvalidArgumentException("Only child class names of '".$this->name."' are valid values.");
         }
 
-        $cm = clone $this;
-        /* @var $cm ClassMetadata */
-        $cm->reflClass = new \ReflectionClass($childName);
-        $cm->name = $cm->reflClass->getName();
-        $cm->namespace = $cm->reflClass->getNamespaceName();
-
         if ($this->isMappedSuperclass) {
-            $cm->rootDocumentName = $cm->name;
+            $child->rootDocumentName = $cm->name;
         }
 
-        $cm->isMappedSuperclass = false;
-        $cm->isEmbeddedDocument = false;
+        $child->isMappedSuperclass = false;
+        $child->isEmbeddedDocument = false;
 
-        foreach ($cm->fieldMappings AS $fieldName => $fieldMapping) {
+        foreach ($child->fieldMappings AS $fieldName => $fieldMapping) {
             if (!isset($fieldMapping['declared'])) {
-                $cm->fieldMappings[$fieldName]['declared'] = $this->name;
+                $child->fieldMappings[$fieldName]['declared'] = $this->name;
             }
-        }
-        foreach ($cm->associationsMappings AS $assocName => $assocMapping) {
-            if (!isset($assocMapping['declared'])) {
-                $cm->associationsMappings[$assocName]['declared'] = $this->name;
-            }
-        }
-        if ($cm->attachmentField && !$cm->attachmentDeclaredClass) {
-            $cm->attachmentDeclaredClass = $this->name;
         }
 
-        return $cm;
+        foreach ($child->associationsMappings AS $assocName => $assocMapping) {
+            if (!isset($assocMapping['declared'])) {
+                $child->associationsMappings[$assocName]['declared'] = $this->name;
+            }
+        }
+
+        if ($child->attachmentField && !$child->attachmentDeclaredClass) {
+            $child->attachmentDeclaredClass = $this->name;
+        }
     }
 
     /**

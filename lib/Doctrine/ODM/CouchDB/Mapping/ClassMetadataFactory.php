@@ -78,7 +78,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
         if ($parent) {
             $this->addAssociationsMapping($class, $parent);
             $this->addFieldMapping($class, $parent);
-            $parent->deriveChildMetadata($class->getName());
+            $parent->deriveChildMetadata($class);
             $class->setParentClasses($nonSuperclassParents);
         }
 
@@ -165,9 +165,11 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
     public function getMetadataFor($className)
     {
         $metadata = parent::getMetadataFor($className);
+
         if ($metadata) {
             return $metadata;
         }
+
         throw MappingException::classNotMapped($className);
     }
 

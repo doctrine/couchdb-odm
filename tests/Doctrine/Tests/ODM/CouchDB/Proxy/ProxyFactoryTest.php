@@ -8,6 +8,7 @@ use Doctrine\ODM\CouchDB\DocumentManager;
 use Doctrine\ODM\CouchDB\UnitOfWork;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadataFactory;
+
 use Doctrine\Tests\Models\ECommerce\ECommerceCart;
 use Doctrine\Tests\Models\ECommerce\ECommerceCustomer;
 use Doctrine\Tests\Models\ECommerce\ECommerceFeature;
