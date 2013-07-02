@@ -2,6 +2,8 @@
 
 namespace Doctrine\Tests\ODM\CouchDB\Functional;
 
+use Doctrine\Common\Persistence\Mapping\RuntimeReflectionService;
+
 class ProxyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 {
     /**
@@ -37,6 +39,8 @@ class ProxyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
         $metadata->mapField(array('fieldName' => 'title', 'type' => 'string'));
         $metadata->mapField(array('fieldName' => 'body', 'type' => 'string'));
         $metadata->idGenerator = \Doctrine\ODM\CouchDB\Mapping\ClassMetadata::IDGENERATOR_UUID;
+        $metadata->initializeReflection(new RuntimeReflectionService());
+        $metadata->wakeupReflection(new RuntimeReflectionService());
         $cmf->setMetadataFor($this->type, $metadata);
     }
 

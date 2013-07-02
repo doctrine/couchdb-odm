@@ -2,6 +2,7 @@
 
 namespace Doctrine\Tests\ODM\CouchDB\Proxy;
 
+use Doctrine\Common\Persistence\Mapping\RuntimeReflectionService;
 use Doctrine\ODM\CouchDB\Proxy\ProxyFactory;
 use Doctrine\ODM\CouchDB\DocumentManager;
 use Doctrine\ODM\CouchDB\UnitOfWork;
@@ -78,7 +79,11 @@ class DocumentManagerMock extends \Doctrine\ODM\CouchDB\DocumentManager
 
     public function getClassMetadata($class)
     {
-        return new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata($class);
+        $metadata = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata($class);
+        $metadata->initializeReflection(new RuntimeReflectionService());
+        $metadata->wakeupReflection(new RuntimeReflectionService());
+
+        return $metadata;
     }
 
     public function getMetadataFactory()
