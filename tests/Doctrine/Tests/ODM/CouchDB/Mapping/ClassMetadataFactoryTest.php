@@ -35,11 +35,11 @@ class ClassMetadataFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $class = $this->dm->getMetadataFactory()->getMetadataFor(__NAMESPACE__ ."\\Child");
         $this->assertFalse($class->isMappedSuperclass, "Child is not a mapped superclass!");
-        $this->assertEquals(__NAMESPACE__ ."\\Super", $class->rootDocumentName);
+        $this->assertEquals(__NAMESPACE__ ."\\Child", $class->rootDocumentName);
 
         $class = $this->dm->getMetadataFactory()->getMetadataFor(__NAMESPACE__ ."\\ChildChild");
         $this->assertFalse($class->isMappedSuperclass, "ChildChild is not a mapped superclass!");
-        $this->assertEquals(__NAMESPACE__ ."\\Super", $class->rootDocumentName);
+        $this->assertEquals(__NAMESPACE__ ."\\Child", $class->rootDocumentName);
 
         $class = $this->dm->getMetadataFactory()->getMetadataFor(__NAMESPACE__ ."\\Super");
         $this->assertTrue($class->isMappedSuperclass);

@@ -15,8 +15,177 @@ use Doctrine\Common\Persistence\Mapping\ClassMetadata AS IClassMetadata,
  * @author      Benjamin Eberlei <kontakt@beberlei.de>
  * @author      Lukas Kahwe Smith <smith@pooteeweet.org>
  */
-class ClassMetadata extends ClassMetadataInfo implements IClassMetadata
+class ClassMetadata implements IClassMetadata
 {
+    const IDGENERATOR_UUID = 1;
+    const IDGENERATOR_ASSIGNED = 2;
+
+    const TO_ONE = 5;
+    const TO_MANY = 10;
+    const ONE_TO_ONE = 1;
+    const ONE_TO_MANY = 2;
+    const MANY_TO_ONE = 4;
+    const MANY_TO_MANY = 8;
+
+    const CASCADE_PERSIST = 1;
+    const CASCADE_REMOVE  = 2;
+    const CASCADE_MERGE   = 4;
+    const CASCADE_DETACH  = 8;
+    const CASCADE_REFRESH = 16;
+    const CASCADE_ALL     = 31;
+
+    public $idGenerator = self::IDGENERATOR_UUID;
+
+    /**
+     * READ-ONLY: The field name of the document identifier.
+     */
+    public $identifier;
+
+    /**
+     * READ-ONLY: The name of the document class.
+     */
+    public $name;
+
+    /**
+     * READ-ONLY: The root document class name.
+     */
+    public $rootDocumentName;
+
+    /**
+     * READ-ONLY: Is this entity in an inheritance hierachy?
+     */
+    public $inInheritanceHierachy = false;
+
+    /**
+     * READ-ONLY: a list of all parent classes.
+     */
+    public $parentClasses = array();
+
+    /**
+     * READ-ONLY: The namespace the document class is contained in.
+     *
+     * @var string
+     * @todo Not really needed. Usage could be localized.
+     */
+    public $namespace;
+
+    /**
+     * The name of the custom repository class used for the document class.
+     * (Optional).
+     *
+     * @var string
+     */
+    public $customRepositoryClassName;
+
+    /**
+     * READ-ONLY: The field mappings of the class.
+     * Keys are field names and values are mapping definitions.
+     *
+     * The mapping definition array has the following values:
+     *
+     * - <b>fieldName</b> (string)
+     * The name of the field in the Document.
+     *
+     * - <b>id</b> (boolean, optional)
+     * Marks the field as the primary key of the document. Multiple fields of an
+     * document can have the id attribute, forming a composite key.
+     *
+     * @var array
+     */
+    public $fieldMappings = array();
+
+    /**
+     * An array of indexed fields, accessible through a generic view shipped with Doctrine.
+     *
+     * @var array
+     */
+    public $indexes = array();
+
+    /**
+     * Is this class indexed? If yes, then a findAll() query can be executed for this type.
+     *
+     * @var bool
+     */
+    public $indexed = false;
+
+    /**
+     * An array of json result-key-names to field-names
+     *
+     * @var array
+     */
+    public $jsonNames = array();
+
+    /**
+     * READ-ONLY: Array of fields to also load with a given method.
+     *
+     * @var array
+     */
+    public $alsoLoadMethods = array();
+
+    /**
+     * READ-ONLY: Whether this class describes the mapping of a mapped superclass.
+     *
+     * @var boolean
+     */
+    public $isMappedSuperclass = false;
+
+    /**
+     * READ-ONLY: Whether this class describes the mapping of a embedded document.
+     *
+     * @var boolean
+     */
+    public $isEmbeddedDocument = false;
+
+    /**
+     * READ-ONLY: Wheather the document or embedded document is read-only and will be skipped in change-tracking.
+     *
+     * This should be set to true for value objects, for example attachments. Replacing the reference with a new
+     * value object will trigger an update.
+     *
+     * @var bool
+     */
+    public $isReadOnly = false;
+
+    /**
+     * READ-ONLY
+     *
+     * @var array
+     */
+    public $associationsMappings = array();
+
+    /**
+     * CouchDB documents are always versioned, this flag determines if this version is exposed to the userland.
+     *
+     * @var bool
+     */
+    public $isVersioned = false;
+
+    /**
+     * Version Field stores the CouchDB Revision
+     *
+     * @var string
+     */
+    public $versionField = null;
+
+    /**
+     * @var bool
+     */
+    public $hasAttachments = false;
+
+    /**
+     * Field that stores the attachments as a key->value array of file-names to attachment objects.
+     *
+     * @var string
+     */
+    public $attachmentField = null;
+
+    /**
+     * If in an inheritance scenario the attachment field is on a super class, this is its name.
+     *
+     * @var string|null
+     */
+    public $attachmentDeclaredClass = null;
+
     /**
      * The ReflectionClass instance of the mapped class.
      *
@@ -46,71 +215,47 @@ class ClassMetadata extends ClassMetadataInfo implements IClassMetadata
      */
     public function __construct($documentName)
     {
-        parent::__construct($documentName);
-        $this->reflClass = new \ReflectionClass($documentName);
-        $this->name = $this->reflClass->getName();
-        $this->namespace = $this->reflClass->getNamespaceName();
+        $this->name = $documentName;
+        $this->rootDocumentName = $documentName;
     }
 
     /**
      * Used to derive a class metadata of the current instance for a mapped child class.
      *
-     * @param  string $childName
-     * @return ClassMetadata
+     * @param  ClassMetadata $child
      */
-    public function deriveChildMetadata($childName)
+    public function deriveChildMetadata($child)
     {
-        if (!is_subclass_of($childName, $this->name)) {
+        if (!is_subclass_of($child->name, $this->name)) {
             throw new \InvalidArgumentException("Only child class names of '".$this->name."' are valid values.");
         }
 
-        $cm = clone $this;
-        /* @var $cm ClassMetadata */
-        $cm->reflClass = new \ReflectionClass($childName);
-        $cm->name = $cm->reflClass->getName();
-        $cm->namespace = $cm->reflClass->getNamespaceName();
+        $child->isMappedSuperclass = false;
+        $child->isEmbeddedDocument = false;
 
-        if ($this->isMappedSuperclass) {
-            $cm->rootDocumentName = $cm->name;
-        }
+        foreach ($this->fieldMappings AS $fieldName => $fieldMapping) {
+            $child->fieldMappings[$fieldName] = $fieldMapping;
 
-        $cm->isMappedSuperclass = false;
-        $cm->isEmbeddedDocument = false;
-
-        foreach ($cm->fieldMappings AS $fieldName => $fieldMapping) {
             if (!isset($fieldMapping['declared'])) {
-                $cm->fieldMappings[$fieldName]['declared'] = $this->name;
+                $child->fieldMappings[$fieldName]['declared'] = $this->name;
             }
         }
-        foreach ($cm->associationsMappings AS $assocName => $assocMapping) {
+
+        foreach ($this->associationsMappings AS $assocName => $assocMapping) {
+            $child->associationsMappings[$assocName] = $assocMapping;
+
             if (!isset($assocMapping['declared'])) {
-                $cm->associationsMappings[$assocName]['declared'] = $this->name;
+                $child->associationsMappings[$assocName]['declared'] = $this->name;
             }
         }
-        if ($cm->attachmentField && !$cm->attachmentDeclaredClass) {
-            $cm->attachmentDeclaredClass = $this->name;
+
+        if ($this->attachmentField) {
+            $child->attachmentField = $this->attachmentField;
+
+            if (!$child->attachmentDeclaredClass) {
+                $child->attachmentDeclaredClass = $this->name;
+            }
         }
-
-        return $cm;
-    }
-
-    protected function validateAndCompleteFieldMapping($mapping)
-    {
-        $mapping = parent::validateAndCompleteFieldMapping($mapping);
-
-        $reflProp = $this->reflClass->getProperty($mapping['fieldName']);
-        $reflProp->setAccessible(true);
-        $this->reflFields[$mapping['fieldName']] = $reflProp;
-
-        return $mapping;
-    }
-
-    public function mapAttachments($fieldName)
-    {
-        parent::mapAttachments($fieldName);
-
-        $this->reflFields[$fieldName] = $this->reflClass->getProperty($fieldName);
-        $this->reflFields[$fieldName]->setAccessible(true);
     }
 
     /**
@@ -187,11 +332,11 @@ class ClassMetadata extends ClassMetadataInfo implements IClassMetadata
      *
      * @return void
      */
-    public function __wakeup()
+    public function wakeupReflection($reflService)
     {
         // Restore ReflectionClass and properties
-        $this->reflClass = new \ReflectionClass($this->name);
-        $this->namespace = $this->reflClass->getNamespaceName();
+        $this->reflClass = $reflService->getClass($this->name);
+        $this->namespace = $reflService->getClassNamespace($this->name);
 
         foreach ($this->fieldMappings as $field => $mapping) {
             if (isset($mapping['declared'])) {
@@ -338,4 +483,385 @@ class ClassMetadata extends ClassMetadataInfo implements IClassMetadata
     {
         return $this->reflFields[$field]->getValue($document);
     }
+
+    /**
+     * Checks whether a field is part of the identifier/primary key field(s).
+     *
+     * @param string $fieldName  The field name
+     * @return boolean  TRUE if the field is part of the table identifier/primary key field(s),
+     *                  FALSE otherwise.
+     */
+    public function isIdentifier($fieldName)
+    {
+        return $this->identifier === $fieldName ? true : false;
+    }
+
+    /**
+     * INTERNAL:
+     * Sets the mapped identifier field of this class.
+     *
+     * @param string $identifier
+     */
+    public function setIdentifier($identifier)
+    {
+        if ($this->isEmbeddedDocument) {
+            throw new MappingException('EmbeddedDocument should not have id field');
+        }
+        $this->identifier = $identifier;
+    }
+
+    /**
+     * Gets the mapped identifier field of this class.
+     *
+     * @return string $identifier
+     */
+    public function getIdentifier()
+    {
+        return $this->identifier;
+    }
+
+    /**
+     * Get identifier field names of this class.;
+     *
+     * Since CouchDB only allows exactly one identifier field this is a proxy
+     * to {@see getIdentifier()} and returns an array.
+     *
+     * @return array
+     */
+    public function getIdentifierFieldNames()
+    {
+        return array($this->identifier);
+    }
+
+    /**
+     * Checks whether the class has a (mapped) field with a certain name.
+     *
+     * @return boolean
+     */
+    public function hasField($fieldName)
+    {
+        return isset($this->fieldMappings[$fieldName]);
+    }
+
+    /**
+     * Registers a custom repository class for the document class.
+     *
+     * @param string $mapperClassName  The class name of the custom mapper.
+     */
+    public function setCustomRepositoryClass($repositoryClassName)
+    {
+        $this->customRepositoryClassName = $repositoryClassName;
+    }
+
+    /**
+     * The name of this Document class.
+     *
+     * @return string $name The Document class name.
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * The namespace this Document class belongs to.
+     *
+     * @return string $namespace The namespace name.
+     */
+    public function getNamespace()
+    {
+        return $this->namespace;
+    }
+
+    /**
+     * Set the field that will contain attachments of this document.
+     *
+     * @param string $fieldName
+     */
+    public function mapAttachments($fieldName)
+    {
+        if (isset($this->fieldMappings[$fieldName]) || isset($this->associationsMappings[$fieldName])) {
+            throw MappingException::duplicateFieldMapping($this->name, $fieldName);
+        }
+
+        $this->hasAttachments = true;
+        $this->attachmentField = $fieldName;
+    }
+
+    /**
+     * Map an embedded object
+     *
+     * - fieldName - The name of the property/field on the mapped php class
+     * - jsonName - JSON key name of this field in CouchDB.
+     * - targetDocument - Name of the target document
+     * - embedded - one or many embedded objects?
+     *
+     * @param array $mapping
+     */
+    public function mapEmbedded(array $mapping)
+    {
+        $mapping = $this->validateAndCompleteReferenceMapping($mapping);
+
+        $this->mapField($mapping);
+    }
+
+    /**
+     * Map a field.
+     *
+     * - type - The Doctrine Type of this field.
+     * - fieldName - The name of the property/field on the mapped php class
+     * - jsonName - JSON key name of this field in CouchDB.
+     * - name - The JSON key of this field in the CouchDB document
+     * - id - True for an ID field.
+     * - strategy - ID Generator strategy when the field is an id-field.
+     * - indexed - Is this field indexed for the Doctrine CouchDB repository view
+     * - isVersionField - Is this field containing the revision number of this document?
+     *
+     * @param array $mapping The mapping information.
+     */
+    public function mapField(array $mapping)
+    {
+        $mapping = $this->validateAndCompleteFieldMapping($mapping);
+
+        if (!isset($mapping['type'])) {
+            $mapping['type'] = "mixed";
+        }
+
+        if (isset($mapping['id']) && $mapping['id'] === true) {
+            $mapping['type'] = 'string';
+            $mapping['jsonName'] = '_id';
+            $this->setIdentifier($mapping['fieldName']);
+            if (isset($mapping['strategy'])) {
+                $this->idGenerator = constant('Doctrine\ODM\CouchDB\Mapping\ClassMetadata::IDGENERATOR_' . strtoupper($mapping['strategy']));
+                unset($mapping['strategy']);
+            }
+        } else if (isset($mapping['isVersionField'])) {
+            $this->isVersioned = true;
+            $this->versionField = $mapping['fieldName'];
+        }
+
+        if (isset($mapping['indexed']) && $mapping['indexed']) {
+            $this->indexes[] = $mapping['fieldName'];
+        }
+
+        $this->fieldMappings[$mapping['fieldName']] = $mapping;
+        $this->jsonNames[$mapping['jsonName']] = $mapping['fieldName'];
+    }
+
+    protected function validateAndCompleteFieldMapping($mapping)
+    {
+        if ( ! isset($mapping['fieldName']) || !$mapping['fieldName']) {
+            throw new MappingException("Mapping a property requires to specify the name.");
+        }
+        if ( ! isset($mapping['jsonName'])) {
+            $mapping['jsonName'] = $mapping['fieldName'];
+        }
+        if (isset($this->fieldMappings[$mapping['fieldName']]) || isset($this->associationsMappings[$mapping['fieldName']])) {
+            throw MappingException::duplicateFieldMapping($this->name, $mapping['fieldName']);
+        }
+
+        return $mapping;
+    }
+
+    protected function validateAndCompleteReferenceMapping($mapping)
+    {
+        if (isset($mapping['targetDocument']) && $mapping['targetDocument'] && strpos($mapping['targetDocument'], '\\') === false && strlen($this->namespace)) {
+            $mapping['targetDocument'] = $this->namespace . '\\' . $mapping['targetDocument'];
+        }
+        return $mapping;
+    }
+
+    protected function validateAndCompleteAssociationMapping($mapping)
+    {
+        $mapping = $this->validateAndCompleteFieldMapping($mapping);
+
+        $mapping['sourceDocument'] = $this->name;
+        $mapping = $this->validateAndCompleteReferenceMapping($mapping);
+        return $mapping;
+    }
+
+    public function mapManyToOne($mapping)
+    {
+        $mapping = $this->validateAndCompleteAssociationMapping($mapping);
+
+        $mapping['isOwning'] = true;
+        $mapping['type'] = self::MANY_TO_ONE;
+
+        $this->storeAssociationMapping($mapping);
+    }
+
+    public function mapManyToMany($mapping)
+    {
+        $mapping = $this->validateAndCompleteAssociationMapping($mapping);
+
+        if (!empty($mapping['mappedBy'])) {
+            $mapping['isOwning'] = false;
+        } else {
+            $mapping['isOwning'] = true;
+        }
+        $mapping['type'] = self::MANY_TO_MANY;
+
+        $this->storeAssociationMapping($mapping);
+    }
+
+    private function storeAssociationMapping($mapping)
+    {
+        $this->associationsMappings[$mapping['fieldName']] = $mapping;
+        $this->jsonNames[$mapping['jsonName']] = $mapping['fieldName'];
+    }
+
+    /**
+     * A numerically indexed list of field names of this persistent class.
+     *
+     * This array includes identifier fields if present on this class.
+     *
+     * @return array
+     */
+    public function getFieldNames()
+    {
+        return array_keys($this->fieldMappings);
+    }
+
+    /**
+     * Gets the mapping of a field.
+     *
+     * @param string $fieldName  The field name.
+     * @return array  The field mapping.
+     */
+    public function getFieldMapping($fieldName)
+    {
+        if ( ! isset($this->fieldMappings[$fieldName])) {
+            throw MappingException::mappingNotFound($this->name, $fieldName);
+        }
+        return $this->fieldMappings[$fieldName];
+    }
+
+    /**
+     * Gets the type of a field.
+     *
+     * @param string $fieldName
+     * @return Type
+     */
+    public function getTypeOfField($fieldName)
+    {
+        return isset($this->fieldMappings[$fieldName]) ?
+                $this->fieldMappings[$fieldName]['type'] : null;
+    }
+
+    /**
+     * Checks if the given field is a mapped association for this class.
+     *
+     * @param string $fieldName
+     * @return boolean
+     */
+    public function hasAssociation($fieldName)
+    {
+        return isset($this->associationsMappings[$fieldName]);
+    }
+
+    public function isCollectionValuedAssociation($name)
+    {
+        // TODO: included @EmbedMany here also?
+        return isset($this->associationsMappings[$name]) && ($this->associationsMappings[$name]['type'] & self::TO_MANY);
+    }
+
+    /**
+     * Checks if the given field is a mapped single valued association for this class.
+     *
+     * @param string $fieldName
+     * @return boolean
+     */
+    public function isSingleValuedAssociation($fieldName)
+    {
+        return isset($this->associationsMappings[$fieldName]) &&
+                ($this->associationsMappings[$fieldName]['type'] & self::TO_ONE);
+    }
+
+    /**
+     * A numerically indexed list of association names of this persistent class.
+     *
+     * This array includes identifier associations if present on this class.
+     *
+     * @return array
+     */
+    public function getAssociationNames()
+    {
+        return array_keys($this->associationsMappings);
+    }
+
+    /**
+     * Returns the target class name of the given association.
+     *
+     * @param string $assocName
+     * @return string
+     */
+    public function getAssociationTargetClass($assocName)
+    {
+        if (!isset($this->associationsMappings[$assocName])) {
+            throw new \InvalidArgumentException("Association name expected, '" . $assocName ."' is not an association.");
+        }
+        return $this->associationsMappings[$assocName]['targetDocument'];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAssociationMappedByTargetField($assocName)
+    {
+        return $this->associationsMappings[$assocName]['mappedBy'];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isAssociationInverseSide($assocName)
+    {
+        return isset($this->associationsMappings[$assocName]) && ! $this->associationsMappings[$assocName];
+    }
+
+    public function isInheritedField($field)
+    {
+        return isset($this->fieldMappings[$field]['declared']);
+    }
+
+    public function isInheritedAssociation($field)
+    {
+        return isset($this->associationsMappings[$field]['declared']);
+    }
+
+    public function setParentClasses($classes)
+    {
+        $this->parentClasses         = $classes;
+        $this->inInheritanceHierachy = true;
+        if (count($classes) > 0) {
+            $this->rootDocumentName = array_pop($classes);
+        }
+    }
+
+    public function markInheritanceRoot()
+    {
+        if ($this->parentClasses) {
+            throw MappingException::invalidInheritanceRoot($this->name, $this->parentClasses);
+        }
+        $this->inInheritanceHierachy = true;
+    }
+
+    /**
+     * Initializes a new ClassMetadata instance that will hold the object-relational mapping
+     * metadata of the class with the given name.
+     *
+     * @param \Doctrine\Common\Persistence\Mapping\ReflectionService $reflService The reflection service.
+     *
+     * @return void
+     */
+    public function initializeReflection($reflService)
+    {
+        $this->reflClass = $reflService->getClass($this->name);
+        $this->namespace = $reflService->getClassNamespace($this->name);
+
+        if ($this->reflClass) {
+            $this->name = $this->rootDocumentName = $this->reflClass->getName();
+        }
+    }
 }
+

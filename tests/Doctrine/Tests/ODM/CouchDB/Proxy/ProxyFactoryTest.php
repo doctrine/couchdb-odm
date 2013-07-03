@@ -2,11 +2,13 @@
 
 namespace Doctrine\Tests\ODM\CouchDB\Proxy;
 
+use Doctrine\Common\Persistence\Mapping\RuntimeReflectionService;
 use Doctrine\ODM\CouchDB\Proxy\ProxyFactory;
 use Doctrine\ODM\CouchDB\DocumentManager;
 use Doctrine\ODM\CouchDB\UnitOfWork;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadataFactory;
+
 use Doctrine\Tests\Models\ECommerce\ECommerceCart;
 use Doctrine\Tests\Models\ECommerce\ECommerceCustomer;
 use Doctrine\Tests\Models\ECommerce\ECommerceFeature;
@@ -78,7 +80,11 @@ class DocumentManagerMock extends \Doctrine\ODM\CouchDB\DocumentManager
 
     public function getClassMetadata($class)
     {
-        return new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata($class);
+        $metadata = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata($class);
+        $metadata->initializeReflection(new RuntimeReflectionService());
+        $metadata->wakeupReflection(new RuntimeReflectionService());
+
+        return $metadata;
     }
 
     public function getMetadataFactory()

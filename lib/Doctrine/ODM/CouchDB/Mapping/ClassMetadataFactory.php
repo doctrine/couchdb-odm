@@ -78,14 +78,27 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
         if ($parent) {
             $this->addAssociationsMapping($class, $parent);
             $this->addFieldMapping($class, $parent);
-            $parent->deriveChildMetadata($class->getName());
+            $parent->deriveChildMetadata($class);
             $class->setParentClasses($nonSuperclassParents);
         }
 
         if ($this->getDriver()) {
             $this->getDriver()->loadMetadataForClass($class->getName(), $class);
         }
-        $class->checkUp();
+
+        $this->validateMapping($class);
+    }
+
+    /**
+     * Check for any possible shortcomings in the class:
+     *
+     * The class must have an identifier field unless it's an embedded document or mapped superclass.
+     */
+    private function validateMapping(ClassMetadataInterface $class)
+    {
+        if (!$class->identifier && !$class->isEmbeddedDocument && !$class->isMappedSuperclass) {
+            throw new MappingException("An identifier (@Id) field is required in {$class->getName()}.");
+        }
     }
 
     private function addFieldMapping(ClassMetadataInterface $class, ClassMetadataInterface $parent)
@@ -100,6 +113,10 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
 
         foreach ($parent->jsonNames as $name => $field) {
             $class->jsonNames[$name] = $field;
+        }
+
+        if ($parent->identifier) {
+            $class->setIdentifier($parent->identifier);
         }
     }
 
@@ -148,9 +165,11 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
     public function getMetadataFor($className)
     {
         $metadata = parent::getMetadataFor($className);
+
         if ($metadata) {
             return $metadata;
         }
+
         throw MappingException::classNotMapped($className);
     }
 
@@ -200,6 +219,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
      */
     protected function initializeReflection(ClassMetadataInterface $class, ReflectionService $reflService)
     {
+        $class->initializeReflection($reflService);
     }
 
     /**
@@ -207,6 +227,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
      */
     protected function wakeupReflection(ClassMetadataInterface $class, ReflectionService $reflService)
     {
+        $class->wakeupReflection($reflService);
     }
 
     /**

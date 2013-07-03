@@ -11,7 +11,6 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
         $cm = new ClassMetadata("Doctrine\Tests\ODM\CouchDB\Mapping\Person");
 
         $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $cm->name);
-        $this->assertInstanceOf('ReflectionClass', $cm->reflClass);
 
         return $cm;
     }
@@ -61,15 +60,6 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
         $cm->mapField(array());
     }
 
-    /**
-     * @depends testMapField
-     */
-    public function testReflectionProperties($cm)
-    {
-        $this->assertInstanceOf('ReflectionProperty', $cm->reflFields['username']);
-        $this->assertInstanceOf('ReflectionProperty', $cm->reflFields['created']);
-    }
-    
     /**
      * @depends testMapField
      */
@@ -137,7 +127,6 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($cm->hasAttachments);
         $this->assertEquals("attachments", $cm->attachmentField);
-        $this->assertArrayHasKey("attachments", $cm->reflFields);
     }
 
     /**
@@ -149,7 +138,6 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
         $cm->indexed = true;
 
         $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $cm->name);
-        $this->assertInstanceOf('ReflectionClass', $cm->reflClass);
 
         // property based comparison
         $this->assertEquals($cm, unserialize(serialize($cm)));
@@ -173,16 +161,16 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
         $cm->mapAttachments('attachments');
         $cm->mapManyToOne(array('targetDocument' => 'Address', 'fieldName' => 'address'));
 
-        $child = $cm->deriveChildMetadata('Doctrine\Tests\ODM\CouchDB\Mapping\Employee');
+        $child = new ClassMetadata('Doctrine\Tests\ODM\CouchDB\Mapping\Employee');
+        $cm->deriveChildMetadata($child);
+
         $child->mapField(array('fieldName' => 'status', 'type' => 'string'));
 
         $this->assertFalse(isset($child->fieldMappings['status']['declared']));
 
         $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Employee", $child->name);
-        $this->assertInstanceOf('ReflectionClass', $child->reflClass);
-        $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Employee", $child->reflClass->getName());
 
-        $this->assertTrue(isset($child->fieldMappings['id']), "ud field has to be on child metadata");
+        $this->assertTrue(isset($child->fieldMappings['id']), "id field has to be on child metadata");
         $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $child->fieldMappings['id']['declared']);
 
         $this->assertTrue(isset($child->fieldMappings['username']), "Username field has to be on child metadata");
@@ -195,21 +183,6 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $child->attachmentDeclaredClass);
 
         return $child;
-    }
-
-    /**
-     * @depends testDeriveChildMetadata
-     * @param ClassMetadata $child
-     */
-    public function testDeriveChildSerializeUnserialize($child)
-    {
-        $child = unserialize(serialize($child));
-
-        $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $child->reflFields['id']->getDeclaringClass()->getName());
-        $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $child->reflFields['username']->getDeclaringClass()->getName());
-        $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $child->reflFields['address']->getDeclaringClass()->getName());
-        $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $child->reflFields['attachments']->getDeclaringClass()->getName());
-        $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Employee", $child->reflFields['status']->getDeclaringClass()->getName());
     }
 }
 

@@ -1,6 +1,13 @@
 Upgrade from Alpha2 to Alpha3
 =============================
 
+Fixed inconsistencies with Mapped Superclasses
+----------------------------------------------
+
+There have been quite some bugs with mapped superclass handlings in the course of the Alpha3.
+They are now fixed to have the same semantical apperance as in the other Doctrine mappers.
+In the course of this there might be changes that break backwards compatibility.
+
 Changed Annotation Indexing notation
 ------------------------------------
 

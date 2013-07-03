@@ -42,6 +42,7 @@ class ManyToOneAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFuncti
     public function testSaveWithAssociation()
     {
         $article = $this->dm->find('Doctrine\Tests\Models\CMS\CmsArticle', $this->articleId);
+
         $this->assertInstanceOf('Doctrine\Tests\Models\CMS\CmsUser', $article->user);
         $this->assertNull($article->user->username, 'CmsUser is a proxy, username is NULL through public access');
         $this->assertEquals('beberlei', $article->user->getUsername());

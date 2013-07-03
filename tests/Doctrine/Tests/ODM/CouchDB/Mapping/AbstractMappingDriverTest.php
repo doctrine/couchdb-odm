@@ -16,6 +16,7 @@ abstract class AbstractMappingDriverTest extends \PHPUnit_Framework_TestCase
         $mappingDriver = $this->loadDriver();
 
         $class = new ClassMetadata($className);
+        $class->namespace = 'Doctrine\Tests\Models\CMS';
         $mappingDriver->loadMetadataForClass($className, $class);
 
         return $class;
