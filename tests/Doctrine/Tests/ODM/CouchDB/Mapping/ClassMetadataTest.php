@@ -170,7 +170,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Employee", $child->name);
 
-        $this->assertTrue(isset($child->fieldMappings['id']), "ud field has to be on child metadata");
+        $this->assertTrue(isset($child->fieldMappings['id']), "id field has to be on child metadata");
         $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $child->fieldMappings['id']['declared']);
 
         $this->assertTrue(isset($child->fieldMappings['username']), "Username field has to be on child metadata");
@@ -183,21 +183,6 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $child->attachmentDeclaredClass);
 
         return $child;
-    }
-
-    /**
-     * @depends testDeriveChildMetadata
-     * @param ClassMetadata $child
-     */
-    public function testDeriveChildSerializeUnserialize($child)
-    {
-        $child = unserialize(serialize($child));
-
-        $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $child->reflFields['id']->getDeclaringClass()->getName());
-        $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $child->reflFields['username']->getDeclaringClass()->getName());
-        $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $child->reflFields['address']->getDeclaringClass()->getName());
-        $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $child->reflFields['attachments']->getDeclaringClass()->getName());
-        $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Employee", $child->reflFields['status']->getDeclaringClass()->getName());
     }
 }
 

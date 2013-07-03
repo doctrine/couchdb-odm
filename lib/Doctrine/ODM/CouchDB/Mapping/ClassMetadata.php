@@ -233,20 +233,28 @@ class ClassMetadata implements IClassMetadata
         $child->isMappedSuperclass = false;
         $child->isEmbeddedDocument = false;
 
-        foreach ($child->fieldMappings AS $fieldName => $fieldMapping) {
+        foreach ($this->fieldMappings AS $fieldName => $fieldMapping) {
+            $child->fieldMappings[$fieldName] = $fieldMapping;
+
             if (!isset($fieldMapping['declared'])) {
                 $child->fieldMappings[$fieldName]['declared'] = $this->name;
             }
         }
 
-        foreach ($child->associationsMappings AS $assocName => $assocMapping) {
+        foreach ($this->associationsMappings AS $assocName => $assocMapping) {
+            $child->associationsMappings[$assocName] = $assocMapping;
+
             if (!isset($assocMapping['declared'])) {
                 $child->associationsMappings[$assocName]['declared'] = $this->name;
             }
         }
 
-        if ($child->attachmentField && !$child->attachmentDeclaredClass) {
-            $child->attachmentDeclaredClass = $this->name;
+        if ($this->attachmentField) {
+            $child->attachmentField = $this->attachmentField;
+
+            if (!$child->attachmentDeclaredClass) {
+                $child->attachmentDeclaredClass = $this->name;
+            }
         }
     }
 
