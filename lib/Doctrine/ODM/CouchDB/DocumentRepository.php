@@ -80,13 +80,13 @@ class DocumentRepository implements ObjectRepository
      */
     public function find($id)
     {
-        $uow = $this->dm->getUnitOfWork();
         $response = $this->dm->getCouchDBClient()->findDocument($id);
 
         if ($response->status == 404) {
             return null;
         }
 
+        $uow = $this->dm->getUnitOfWork();
         $hints = array();
         return $uow->createDocument($this->documentName, $response->body, $hints);
     }
