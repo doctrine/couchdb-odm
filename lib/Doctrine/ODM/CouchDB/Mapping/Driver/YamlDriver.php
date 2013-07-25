@@ -119,6 +119,7 @@ class YamlDriver extends FileDriver
                     'targetDocument'    => (string)$referenceOneElement['targetDocument'],
                     'fieldName'         => $field,
                     'jsonName'          => (isset($referenceOneElement['jsonName'])) ? (string)$referenceOneElement['jsonName'] : null,
+                    'indexed'           => (isset($referenceOneElement['index'])) ? (bool)$referenceOneElement['index'] : false,
                 ));
             }
         }

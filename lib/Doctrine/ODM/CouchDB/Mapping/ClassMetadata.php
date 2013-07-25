@@ -687,6 +687,10 @@ class ClassMetadata implements IClassMetadata
         $mapping['isOwning'] = true;
         $mapping['type'] = self::MANY_TO_ONE;
 
+        if (isset($mapping['indexed']) && $mapping['indexed']) {
+            $this->indexes[] = $mapping['fieldName'];
+        }
+
         $this->storeAssociationMapping($mapping);
     }
 

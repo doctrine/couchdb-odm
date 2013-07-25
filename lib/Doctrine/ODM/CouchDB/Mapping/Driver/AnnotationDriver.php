@@ -84,7 +84,9 @@ class AnnotationDriver extends AbstractAnnotationDriver
                 continue;
             }
 
-            $isField = false;
+            // Since indexed fields have two annotations (@Index and @Field/@ReferenceOne) calling the 
+            // appropriate mapping function must be postponed until all annotations have been handled.
+            $postponeMapping = '';
             $mapping = array();
             $mapping['fieldName'] = $property->name;
 
@@ -96,14 +98,14 @@ class AnnotationDriver extends AbstractAnnotationDriver
 
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
                     unset($mapping['value']);
-                    $isField = true;
+                    $postponeMapping = 'mapField';
                 } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Index) {
                     $mapping['indexed'] = true;
                 } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\ReferenceOne) {
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
                     $mapping['cascade'] = $this->getCascadeMode($fieldAnnot->cascade);
                     unset($mapping['value']);
-                    $class->mapManyToOne($mapping);
+                    $postponeMapping = 'mapManyToOne';
                 } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\ReferenceMany) {
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
                     $mapping['cascade'] = $this->getCascadeMode($fieldAnnot->cascade);
@@ -118,8 +120,8 @@ class AnnotationDriver extends AbstractAnnotationDriver
                 }
             }
 
-            if ($isField) {
-                $class->mapField($mapping);
+            if ($postponeMapping) {
+                $class->{$postponeMapping}($mapping);
             }
         }
     }
