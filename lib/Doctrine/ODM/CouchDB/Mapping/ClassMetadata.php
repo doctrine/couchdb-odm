@@ -698,11 +698,7 @@ class ClassMetadata implements IClassMetadata
     {
         $mapping = $this->validateAndCompleteAssociationMapping($mapping);
 
-        if (!empty($mapping['mappedBy'])) {
-            $mapping['isOwning'] = false;
-        } else {
-            $mapping['isOwning'] = true;
-        }
+        $mapping['isOwning'] = empty($mapping['mappedBy']);
         $mapping['type'] = self::MANY_TO_MANY;
 
         $this->storeAssociationMapping($mapping);
