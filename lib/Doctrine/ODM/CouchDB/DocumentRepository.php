@@ -20,6 +20,7 @@
 namespace Doctrine\ODM\CouchDB;
 
 use Doctrine\Common\Persistence\ObjectRepository;
+use Doctrine\ODM\CouchDB\Types\Type;
 
 /**
  * An DocumentRepository serves as a repository for documents with generic as well as
@@ -197,5 +198,20 @@ class DocumentRepository implements ObjectRepository
     public function getClassName()
     {
         return $this->getDocumentName();
+    }
+    
+    /**
+     * When using a value that is converted when writing to a CouchDB document, mainly
+     * DateTime objects, as the key of a view the value used as index into that view must
+     * also be converted. (Both in user defined views and calls to findBy()). Passing
+     * the field name and value to be used as index to this method returns the converted
+     * value.
+     * 
+     * @param string $fieldName
+     * @param mixed $value
+     * @return string
+     */
+    public function couchDBValue($fieldName, $value) {
+        return Type::getType($this->class->fieldMappings[$fieldName]['type'])->convertToCouchDBValue($value);
     }
 }
