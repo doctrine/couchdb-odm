@@ -115,15 +115,11 @@ class DocumentRepository implements ObjectRepository
 
     public function findAll()
     {
-        $result = $this->dm->createQuery('doctrine_repositories', 'type_constraint')
-                           ->setKey($this->documentType)
-                           ->setIncludeDocs(true)
-                           ->execute();
-        $docs = array();
-        foreach ($result AS $doc) {
-            $docs[] = $doc['doc'];
-        }
-        return $docs;
+        return $this->dm->createQuery('doctrine_repositories', 'type_constraint')
+                        ->setKey($this->documentType)
+                        ->setIncludeDocs(true)
+                        ->toArray(true)
+                        ->execute();
     }
 
     public function findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
