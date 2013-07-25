@@ -140,21 +140,17 @@ class DocumentRepository implements ObjectRepository
             }
         } else {
             $ids = array();
-            $num = 0;
             foreach ($criteria AS $field => $value) {
-                $ids[$num] = array();
+                $critIds = array();
+                $ids[] = &$critIds;
                 $result = $this->dm->createNativeQuery('doctrine_repositories', 'equal_constraint')
                                    ->setKey(array($this->documentType, $field, $value))
                                    ->execute();
-                foreach ($result aS $doc) {
-                    $ids[$num][] = $doc['id'];
+                foreach ($result AS $doc) {
+                    $critIds[] = $doc['id'];
                 }
-                $num++;
             }
-            $mergeIds = $ids[0];
-            for ($i = 1; $i < $num; $i++) {
-                $mergeIds = array_intersect($mergeIds, $ids[$i]);
-            }
+            $mergeIds = call_user_func_array('array_intersect', $ids);
 
             return $this->findMany(array_values($mergeIds), $limit, $offset);
         }
