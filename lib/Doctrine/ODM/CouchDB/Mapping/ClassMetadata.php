@@ -640,7 +640,7 @@ class ClassMetadata implements IClassMetadata
             $this->versionField = $mapping['fieldName'];
         }
 
-        $this->checkAndStoreIndexMapping($mapping);
+        $mapping = $this->checkAndStoreIndexMapping($mapping);
 
         $this->fieldMappings[$mapping['fieldName']] = $mapping;
         $this->jsonNames[$mapping['jsonName']] = $mapping['fieldName'];
@@ -685,7 +685,7 @@ class ClassMetadata implements IClassMetadata
         $mapping['isOwning'] = true;
         $mapping['type'] = self::MANY_TO_ONE;
 
-        $this->checkAndStoreIndexMapping($mapping);
+        $mapping = $this->checkAndStoreIndexMapping($mapping);
 
         $this->storeAssociationMapping($mapping);
     }
@@ -705,6 +705,9 @@ class ClassMetadata implements IClassMetadata
         if (isset($mapping['indexed']) && $mapping['indexed']) {
             $this->indexes[] = $mapping['fieldName'];
         }
+        unset($mapping['indexed']);
+
+        return $mapping;
     }
 
     private function storeAssociationMapping($mapping)

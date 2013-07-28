@@ -84,11 +84,12 @@ class AnnotationDriver extends AbstractAnnotationDriver
                 continue;
             }
 
-            // Since indexed fields have two annotations (@Index and @Field/@ReferenceOne) calling the 
-            // appropriate mapping function must be postponed until all annotations have been handled.
-            $postponeMapping = '';
             $mapping = array();
             $mapping['fieldName'] = $property->name;
+
+            if ($this->reader->getPropertyAnnotation($property, 'Doctrine\ODM\CouchDB\Mapping\Annotations\Index')) {
+                $mapping['indexed'] = true;
+            }
 
             foreach ($this->reader->getPropertyAnnotations($property) as $fieldAnnot) {
                 if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Field) {
@@ -98,14 +99,12 @@ class AnnotationDriver extends AbstractAnnotationDriver
 
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
                     unset($mapping['value']);
-                    $postponeMapping = 'mapField';
-                } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\Index) {
-                    $mapping['indexed'] = true;
+                    $class->mapField($mapping);
                 } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\ReferenceOne) {
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
                     $mapping['cascade'] = $this->getCascadeMode($fieldAnnot->cascade);
                     unset($mapping['value']);
-                    $postponeMapping = 'mapManyToOne';
+                    $class->mapManyToOne($mapping);
                 } else if ($fieldAnnot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\ReferenceMany) {
                     $mapping = array_merge($mapping, (array) $fieldAnnot);
                     $mapping['cascade'] = $this->getCascadeMode($fieldAnnot->cascade);
@@ -118,10 +117,6 @@ class AnnotationDriver extends AbstractAnnotationDriver
                     unset($mapping['value']);
                     $class->mapEmbedded($mapping);
                 }
-            }
-
-            if ($postponeMapping) {
-                $class->{$postponeMapping}($mapping);
             }
         }
     }

@@ -78,6 +78,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
         if ($parent) {
             $this->addAssociationsMapping($class, $parent);
             $this->addFieldMapping($class, $parent);
+            $this->addIndexes($class, $parent);
             $parent->deriveChildMetadata($class);
             $class->setParentClasses($nonSuperclassParents);
         }
@@ -109,10 +110,6 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
 
         foreach ($parent->fieldMappings as $name => $field) {
             $class->fieldMappings[$name] = $field;
-            
-            if (array_key_exists('indexed', $field) && $field['indexed']) {
-                $class->indexes[] = $field['fieldName'];
-            }
         }
 
         foreach ($parent->jsonNames as $name => $field) {
@@ -122,6 +119,11 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
         if ($parent->identifier) {
             $class->setIdentifier($parent->identifier);
         }
+    }
+
+    private function addIndexes(ClassMetadata $class, ClassMetadata $parent)
+    {
+        $class->indexes = $parent->indexes;
     }
 
     /**
