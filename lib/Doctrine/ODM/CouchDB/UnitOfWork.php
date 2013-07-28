@@ -519,6 +519,7 @@ class UnitOfWork
                     }
                 } else {
                     $assoc2 = $class->associationsMappings[$name];
+
                     if ($assoc2['type'] & ClassMetadata::TO_ONE) {
                         $other = $prop->getValue($document);
                         if ($other === null) {
@@ -570,7 +571,6 @@ class UnitOfWork
                             if (!$managedCol->isEmpty()) {
                                 // clear managed collection, in casacadeMerge() the collection is filled again.
                                 $managedCol->unwrap()->clear();
-                                $managedCol->setDirty(true);
                             }
                         }
                     }
