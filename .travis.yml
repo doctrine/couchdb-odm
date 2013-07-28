@@ -1,5 +1,8 @@
 language: php
 
+services:
+  - couchdb
+
 php:
   - 5.3
   - 5.4
