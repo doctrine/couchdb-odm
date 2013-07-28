@@ -221,6 +221,7 @@ class UnitOfWork
             if ( ($document instanceof Proxy && !$document->__isInitialized__) || isset($hints['refresh'])) {
                 $overrideLocalValues = true;
                 $oid = spl_object_hash($document);
+                $this->documentRevisions[$oid] = $rev;
             }
         } else {
             $document = $class->newInstance();
