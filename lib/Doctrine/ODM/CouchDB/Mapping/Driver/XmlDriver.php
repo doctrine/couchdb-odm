@@ -120,6 +120,7 @@ class XmlDriver extends FileDriver
                     'targetDocument'    => (string)$referenceOneElement['target-document'],
                     'fieldName'         => (string)$referenceOneElement['field'],
                     'jsonName'          => (isset($referenceOneElement['json-name'])) ? (string)$referenceOneElement['json-name'] : null,
+                    'indexed'           => (isset($referenceOneElement['index'])) ? (bool)$referenceOneElement['index'] : false,
                 ));
             }
         }
