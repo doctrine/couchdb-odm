@@ -9,6 +9,4 @@ php:
 
 before_script:
   - curl -X PUT localhost:5984/doctrine_test_database
-  - wget http://getcomposer.org/composer.phar
-  - php composer.phar install
-
+  - composer install
