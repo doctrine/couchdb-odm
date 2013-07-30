@@ -167,6 +167,53 @@ class DocumentRepository implements ObjectRepository
     }
 
     /**
+     * Adds support for the magic finders findByXXXX and findOneByXXXX.
+     *
+     * @param string $method
+     * @param array  $arguments
+     *
+     * @return array|object The found document(s).
+     *
+     * @throws CouchDBException
+     * @throws \BadMethodCallException If the method called is an invalid find* method
+     *                                 or no find* method at all and therefore an invalid
+     *                                 method call.
+     */
+    public function __call($method, $arguments)
+    {
+        switch (true) {
+            case (0 === strpos($method, 'findBy')):
+                $by = substr($method, 6);
+                $method = 'findBy';
+                break;
+
+            case (0 === strpos($method, 'findOneBy')):
+                $by = substr($method, 9);
+                $method = 'findOneBy';
+                break;
+
+            default:
+                throw new \BadMethodCallException(
+                    "Undefined method '$method'. The method name must start with ".
+                    "either findBy or findOneBy!"
+                );
+        }
+
+        if (empty($arguments)) {
+            throw CouchDBException::findByRequiresParameter($method . $by);
+        }
+
+        $fieldName = lcfirst(\Doctrine\Common\Util\Inflector::classify($by));
+
+        if (count($arguments) && ($this->class->hasField($fieldName) || $this->class->hasAssociation($fieldName))) {
+            $arguments[0] = array($fieldName => $arguments[0]);
+            return call_user_func_array(array($this, $method), $arguments);
+        }
+
+        throw CouchDBException::invalidFindByCall($this->documentName, $fieldName, $method.$by);
+    }
+
+    /**
      * @return string
      */
     public function getDocumentName()
