@@ -21,7 +21,6 @@ namespace Doctrine\ODM\CouchDB;
 
 use Doctrine\Common\EventManager;
 use Doctrine\Common\Persistence\ObjectManager;
-use Doctrine\CouchDB\HTTP\Client;
 use Doctrine\CouchDB\CouchDBClient;
 use Doctrine\CouchDB\View;
 use Doctrine\CouchDB\View\Query;
@@ -48,7 +47,7 @@ class DocumentManager implements ObjectManager
     private $unitOfWork = null;
 
     /**
-     * @var ProxyFactory
+     * @var \Doctrine\ODM\CouchDB\Proxy\ProxyFactory
      */
     private $proxyFactory = null;
 
@@ -154,7 +153,7 @@ class DocumentManager implements ObjectManager
 
     /**
      * @param  string $class
-     * @return ClassMetadata
+     * @return \Doctrine\ODM\CouchDB\Mapping\ClassMetadata
      */
     public function getClassMetadata($class)
     {
@@ -177,7 +176,7 @@ class DocumentManager implements ObjectManager
 
     /**
      * @param  string $documentName
-     * @return Doctrine\ODM\CouchDB\DocumentRepository
+     * @return \Doctrine\ODM\CouchDB\DocumentRepository
      */
     public function getRepository($documentName)
     {
@@ -199,7 +198,7 @@ class DocumentManager implements ObjectManager
      *
      * @param  string $designDocName
      * @param  string $viewName
-     * @return Doctrine\ODM\CouchDB\View\Query
+     * @return \Doctrine\ODM\CouchDB\View\ODMQuery
      */
     public function createQuery($designDocName, $viewName)
     {
@@ -219,7 +218,7 @@ class DocumentManager implements ObjectManager
      *
      * @param  string $designDocName
      * @param  string $viewName
-     * @return View\NativeQuery
+     * @return \Doctrine\CouchDB\View\Query
      */
     public function createNativeQuery($designDocName, $viewName)
     {
@@ -236,7 +235,7 @@ class DocumentManager implements ObjectManager
      *
      * @param string $designDocName
      * @param string $viewName
-     * @return View\ODMLuceneQuery
+     * @return \Doctrine\ODM\CouchDB\View\ODMLuceneQuery
      */
     public function createLuceneQuery($designDocName, $viewName)
     {
