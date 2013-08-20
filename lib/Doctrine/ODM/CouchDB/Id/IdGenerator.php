@@ -19,7 +19,7 @@ abstract class IdGenerator
     /**
      * @param int $generatorType
      *
-     * @return AssignedIdGenerator|CouchUUIDGenerator
+     * @return IdGenerator
      * @throws \Exception
      */
     static public function create($generatorType)
