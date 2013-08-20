@@ -52,7 +52,7 @@ class DocumentRepository implements ObjectRepository
     protected $dm;
 
     /**
-     * @var Doctrine\ODM\CouchDB\Mapping\ClassMetadata
+     * @var Mapping\ClassMetadata
      */
     protected $class;
 
@@ -60,7 +60,7 @@ class DocumentRepository implements ObjectRepository
      * Initializes a new <tt>DocumentRepository</tt>.
      *
      * @param DocumentManager $dm The DocumentManager to use.
-     * @param ClassMetadata $classMetadata The class descriptor.
+     * @param Mapping\ClassMetadata $class The class descriptor.
      */
     public function __construct($dm, Mapping\ClassMetadata $class)
     {

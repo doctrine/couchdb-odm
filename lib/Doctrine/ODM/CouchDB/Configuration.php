@@ -133,7 +133,7 @@ class Configuration
     /**
      * Set the document alias map
      *
-     * @param array $documentAliasMap
+     * @param array $documentNamespaces
      * @return void
      */
     public function setDocumentNamespaces(array $documentNamespaces)
@@ -271,6 +271,7 @@ class Configuration
     /**
      * @param string $name
      * @param string $className
+     * @param array $options
      */
     public function addDesignDocument($name, $className, $options)
     {
