@@ -17,8 +17,10 @@ use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 abstract class IdGenerator
 {
     /**
-     * @param  int $generatorType
-     * @return IdGenerator
+     * @param int $generatorType
+     *
+     * @return AssignedIdGenerator|CouchUUIDGenerator
+     * @throws \Exception
      */
     static public function create($generatorType)
     {
