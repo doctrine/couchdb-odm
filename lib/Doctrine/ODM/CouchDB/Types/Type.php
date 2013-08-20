@@ -47,7 +47,7 @@ abstract class Type
      * @static
      * @throws TypeException
      * @param string $name The name of the type (as returned by getName()).
-     * @return Doctrine\ODM\CouchDB\Types\Type
+     * @return \Doctrine\ODM\CouchDB\Types\Type
      */
     public static function getType($name)
     {
@@ -67,7 +67,7 @@ abstract class Type
      * @static
      * @param string $name Name of the type. This should correspond to what getName() returns.
      * @param string $className The class name of the custom type.
-     * @throws DBALException
+     * @throws \Doctrine\ODM\CouchDB\CouchDBException
      */
     public static function addType($name, $className)
     {
@@ -96,7 +96,7 @@ abstract class Type
      * @static
      * @param string $name
      * @param string $className
-     * @throws DBALException
+     * @throws \Doctrine\ODM\CouchDB\CouchDBException
      */
     public static function overrideType($name, $className)
     {
