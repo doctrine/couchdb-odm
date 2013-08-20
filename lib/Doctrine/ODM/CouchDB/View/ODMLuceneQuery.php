@@ -86,7 +86,7 @@ class ODMLuceneQuery extends LuceneQuery
 
     /**
      * @param  bool $flag
-     * @return Query
+     * @return LuceneQuery
      */
     public function onlyDocs($flag)
     {
