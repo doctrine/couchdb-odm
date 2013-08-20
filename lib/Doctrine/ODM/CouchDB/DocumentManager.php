@@ -100,9 +100,11 @@ class DocumentManager implements ObjectManager
     /**
      * Factory method for a Document Manager.
      *
-     * @param Configuration $config
-     * @param EventManager $evm
+     * @param array|CouchDBClient $couchParams
+     * @param Configuration       $config
+     * @param EventManager        $evm
      * @return DocumentManager
+     * @throws \InvalidArgumentException
      */
     public static function create($couchParams, Configuration $config = null, EventManager $evm = null)
     {
