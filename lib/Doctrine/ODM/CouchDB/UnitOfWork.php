@@ -116,12 +116,12 @@ class UnitOfWork
     private $idGenerators = array();
 
     /**
-     * @var EventManager
+     * @var \Doctrine\Common\EventManager
      */
     private $evm;
 
     /**
-     * @var MetadataResolver
+     * @var \Doctrine\ODM\CouchDB\Mapping\MetadataResolver\MetadataResolver
      */
     private $metadataResolver;
 
@@ -142,9 +142,12 @@ class UnitOfWork
      * Create a document given class, data and the doc-id and revision
      *
      * @param string $documentName
-     * @param array $documentState
-     * @param array $hints
+     * @param array  $data
+     * @param array  $hints
+     *
      * @return object
+     * @throws \InvalidArgumentException
+     * @throws InvalidDocumentTypeException
      */
     public function createDocument($documentName, $data, array &$hints = array())
     {

@@ -31,7 +31,7 @@ use Doctrine\Common\Collections\Collection;
  */
 abstract class PersistentCollection implements Collection
 {
-    /** @var ArrayCollection */
+    /** @var Collection */
     protected $col;
     protected $changed = false;
     public $isInitialized = false;
@@ -91,13 +91,13 @@ abstract class PersistentCollection implements Collection
         return $this->col->current();
     }
 
-    public function exists(Closure $p)
+    public function exists(\Closure $p)
     {
         $this->initialize();
         return $this->col->exists($p);
     }
 
-    public function filter(Closure $p)
+    public function filter(\Closure $p)
     {
         $this->initialize();
         return $this->col->filter($p);
@@ -109,7 +109,7 @@ abstract class PersistentCollection implements Collection
         return $this->col->first();
     }
 
-    public function forAll(Closure $p)
+    public function forAll(\Closure $p)
     {
         $this->initialize();
         return $this->col->forAll($p);
@@ -163,7 +163,7 @@ abstract class PersistentCollection implements Collection
         return $this->col->last();
     }
 
-    public function map(Closure $func)
+    public function map(\Closure $func)
     {
         $this->initialize();
         return $this->col->map($func);
@@ -201,7 +201,7 @@ abstract class PersistentCollection implements Collection
         return $this->col->offsetUnset($offset);
     }
 
-    public function partition(Closure $p)
+    public function partition(\Closure $p)
     {
         $this->initialize();
         return $this->col->partition($p);
