@@ -127,6 +127,14 @@ class DocumentManager implements ObjectManager
         return $this->metadataFactory;
     }
 
+    /**
+     * @return Proxy\ProxyFactory
+     */
+    public function getProxyFactory()
+    {
+        return $this->proxyFactory;
+    }
+
     public function getHttpClient()
     {
         return $this->couchDBClient->getHttpClient();
