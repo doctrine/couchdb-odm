@@ -152,7 +152,7 @@ class EmbeddedDocumentSerializer
             if (isset($class->jsonNames[$jsonName])) {
                 $fieldName = $class->jsonNames[$jsonName];
                 if (isset($class->fieldMappings[$fieldName])) {
-                    if ($jsonValue == null) {
+                    if ($jsonValue === null) {
                         $fieldValue = null;
                     } else if (isset($class->fieldMappings[$fieldName]['embedded'])) {
                         $fieldValue = $this->createEmbeddedDocument($jsonValue, $class->fieldMappings[$fieldName]);
