@@ -144,7 +144,6 @@ class EmbeddedDocumentSerializer
         $class = $this->metadataFactory->getMetadataFor($type);
         $instance = $class->newInstance();
 
-        $documentState = array();
         foreach ($data as $jsonName => $jsonValue) {
             if ($this->metadataResolver->canResolveJsonField($jsonName)) {
                 continue;
