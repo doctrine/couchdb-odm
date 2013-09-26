@@ -126,6 +126,11 @@ class UnitOfWork
     private $metadataResolver;
 
     /**
+     * @var \Doctrine\ODM\CouchDB\Migrations\DocumentMigration
+     */
+    private $migrations;
+
+    /**
      * @param DocumentManager $dm
      */
     public function __construct(DocumentManager $dm)
@@ -133,6 +138,7 @@ class UnitOfWork
         $this->dm = $dm;
         $this->evm = $dm->getEventManager();
         $this->metadataResolver = $dm->getConfiguration()->getMetadataResolverImpl();
+        $this->migrations = $dm->getConfiguration()->getMigrations();
 
         $this->embeddedSerializer = new Mapping\EmbeddedDocumentSerializer($this->dm->getMetadataFactory(),
                                                                            $this->metadataResolver);
@@ -151,6 +157,8 @@ class UnitOfWork
      */
     public function createDocument($documentName, $data, array &$hints = array())
     {
+        $data = $this->migrations->migrate($data);
+
         if (!$this->metadataResolver->canMapDocument($data)) {
             throw new \InvalidArgumentException("Missing or mismatching metadata description in the Document, cannot hydrate!");
         }

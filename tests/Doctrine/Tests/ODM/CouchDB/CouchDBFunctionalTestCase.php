@@ -53,6 +53,13 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
         $paths = __DIR__ . "/../../Models";
         $metaDriver = new AnnotationDriver($reader, $paths);
 
+        $config = $this->createConfiguration($metaDriver);
+
+        return DocumentManager::create($couchDBClient, $config);
+    }
+
+    public function createConfiguration($metaDriver)
+    {
         $config = new Configuration();
         $config->setProxyDir(\sys_get_temp_dir());
         $config->setAutoGenerateProxyClasses(true);
@@ -60,6 +67,6 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
         $config->setMetadataCacheImpl(new ArrayCache);
         $config->setLuceneHandlerName('_fti');
 
-        return DocumentManager::create($couchDBClient, $config);
+        return $config;
     }
 }

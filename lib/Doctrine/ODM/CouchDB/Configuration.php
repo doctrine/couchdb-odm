@@ -20,12 +20,15 @@
 namespace Doctrine\ODM\CouchDB;
 
 use Doctrine\Common\Cache\Cache;
+use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
+
 use Doctrine\CouchDB\HTTP\Client;
 use Doctrine\CouchDB\HTTP\SocketClient;
 use Doctrine\CouchDB\HTTP\LoggingClient;
-use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
+
 use Doctrine\ODM\CouchDB\Mapping\MetadataResolver\MetadataResolver;
 use Doctrine\ODM\CouchDB\Mapping\MetadataResolver\DoctrineResolver;
+use Doctrine\ODM\CouchDB\Migrations\DocumentMigration;
 
 /**
  * Configuration class
@@ -329,5 +332,25 @@ class Configuration
         }
 
         return $this->attributes['luceneHandlerName'];
+    }
+
+    /**
+     * @return \Doctrine\ODM\CouchDB\Migrations\NullMigration;
+     */
+    public function getMigrations()
+    {
+        if (!isset($this->attributes['migrations'])) {
+            $this->attributes['migrations'] = new Migrations\NullMigration();
+        }
+
+        return $this->attributes['migrations'];
+    }
+
+    /**
+     * @return void
+     */
+    public function setMigrations(DocumentMigration $migration)
+    {
+        $this->attributes['migrations'] = $migration;
     }
 }
