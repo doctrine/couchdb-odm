@@ -144,6 +144,13 @@ class UnitOfWork
                                                                            $this->metadataResolver);
     }
 
+    private function assertValidDocumentType($documentName, $document, $type)
+    {
+        if ($documentName && !($document instanceof $documentName)) {
+            throw new InvalidDocumentTypeException($type, $documentName);
+        }
+    }
+
     /**
      * Create a document given class, data and the doc-id and revision
      *
@@ -229,6 +236,8 @@ class UnitOfWork
             $document = $this->identityMap[$id];
             $overrideLocalValues = false;
 
+            $this->assertValidDocumentType($documentName, $document, $type);
+
             if ( ($document instanceof Proxy && !$document->__isInitialized__) || isset($hints['refresh'])) {
                 $overrideLocalValues = true;
                 $oid = spl_object_hash($document);
@@ -236,6 +245,9 @@ class UnitOfWork
             }
         } else {
             $document = $class->newInstance();
+
+            $this->assertValidDocumentType($documentName, $document, $type);
+
             $this->identityMap[$id] = $document;
 
             $oid = spl_object_hash($document);
@@ -243,10 +255,6 @@ class UnitOfWork
             $this->documentIdentifiers[$oid] = $id;
             $this->documentRevisions[$oid] = $rev;
             $overrideLocalValues = true;
-        }
-
-        if ($documentName && !($document instanceof $documentName)) {
-            throw new InvalidDocumentTypeException($type, $documentName);
         }
 
         if ($overrideLocalValues) {

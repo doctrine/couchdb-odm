@@ -2,6 +2,8 @@
 
 namespace Doctrine\Tests\ODM\CouchDB\Functional;
 
+use Doctrine\ODM\CouchDB\InvalidDocumentTypeException;
+
 class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 {
     /**
@@ -156,6 +158,20 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $pUser1 = $this->dm->find($this->type, 1);
 
         $this->assertNull($pUser1->username);
+    }
+
+    public function testFindWrongTypesDoesNotMessUnitOfWork()
+    {
+        try {
+            $user1 = $this->dm->find(__NAMESPACE__ . '\\User2', 1);
+
+            $this->fail('Expecting InvalidDocumentTypeException');
+        } catch (InvalidDocumentTypeException $e) {
+        }
+
+        $user1 = $this->dm->find(__NAMESPACE__ . '\\User', 1);
+
+        $this->assertEquals('lsmith', $user1->username);
     }
 
     public function testKeepTrackOfUnmappedData()
