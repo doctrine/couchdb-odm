@@ -801,7 +801,7 @@ class UnitOfWork
      */
     public function computeChangeSet(ClassMetadata $class, $document)
     {
-        if ($document instanceof Proxy\Proxy && !$document->__isInitialized__) {
+        if ($document instanceof Proxy && !$document->__isInitialized__) {
             return;
         }
         $oid = \spl_object_hash($document);
@@ -1103,6 +1103,8 @@ class UnitOfWork
             if ($rev) {
                 $data['_rev'] = $rev;
             }
+            $data['_id'] = $this->documentIdentifiers[$oid];
+
             $bulkUpdater->updateDocument($data);
         }
         $response = $bulkUpdater->execute();
