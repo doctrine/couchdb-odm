@@ -24,6 +24,7 @@ use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 use Doctrine\ODM\CouchDB\Types\Type;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Persistence\Proxy;
 use Doctrine\CouchDB\HTTP\HTTPException;
 
 /**
@@ -252,7 +253,7 @@ class UnitOfWork
 
             $oid = spl_object_hash($document);
             $this->documentState[$oid] = self::STATE_MANAGED;
-            $this->documentIdentifiers[$oid] = $id;
+            $this->documentIdentifiers[$oid] = (string)$id;
             $this->documentRevisions[$oid] = $rev;
             $overrideLocalValues = true;
         }
@@ -1014,6 +1015,16 @@ class UnitOfWork
         $bulkUpdater->setAllOrNothing($config->getAllOrNothingFlush());
 
         foreach ($this->scheduledRemovals AS $oid => $document) {
+            if ($document instanceof Proxy && !$document->__isInitialized__) {
+                $response = $this->dm->getCouchDBClient()->findDocument($this->getDocumentIdentifier($document));
+
+                if ($response->status == 404) {
+                    throw new \Doctrine\ODM\CouchDB\DocumentNotFoundException();
+                }
+
+                $this->documentRevisions[$oid] = $response->body['_rev'];
+            }
+
             $bulkUpdater->deleteDocument($this->documentIdentifiers[$oid], $this->documentRevisions[$oid]);
             $this->removeFromIdentityMap($document);
 
@@ -1042,6 +1053,10 @@ class UnitOfWork
                     } else if ($fieldValue !== null) {
                         $fieldValue = Type::getType($class->fieldMappings[$fieldName]['type'])
                             ->convertToCouchDBValue($fieldValue);
+                    }
+
+                    if (isset($class->fieldMappings[$fieldName]['id'])) {
+                        $fieldValue = (string)$fieldValue;
                     }
 
                     $data[$class->fieldMappings[$fieldName]['jsonName']] = $fieldValue;
@@ -1169,7 +1184,7 @@ class UnitOfWork
     {
         $oid = spl_object_hash($document);
         $this->documentState[$oid] = self::STATE_MANAGED;
-        $this->documentIdentifiers[$oid] = $identifier;
+        $this->documentIdentifiers[$oid] = (string)$identifier;
         $this->documentRevisions[$oid] = $revision;
         $this->identityMap[$identifier] = $document;
     }

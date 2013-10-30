@@ -70,6 +70,19 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $this->assertNull($userRemoved, "Have to delete user object!");
     }
 
+    public function testDeleteProxy()
+    {
+        $user = $this->dm->getReference($this->type, 1);
+
+        $this->dm->remove($user);
+        $this->dm->flush();
+        $this->dm->clear();
+
+        $userRemoved = $this->dm->find($this->type, 1);
+
+        $this->assertNull($userRemoved, "Have to delete user object!");
+    }
+
     public function testUpdate1()
     {
         $user = new User();
