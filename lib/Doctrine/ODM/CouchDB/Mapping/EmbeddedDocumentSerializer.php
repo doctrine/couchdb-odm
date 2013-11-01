@@ -85,7 +85,7 @@ class EmbeddedDocumentSerializer
                 $value = $reflProperty->getValue($embeddedValue);
                 $fieldMapping = $embeddedClass->fieldMappings[$fieldName];
 
-                if ($value == null) {
+                if ($value === null) {
                     continue;
                 } else if (isset($fieldMapping['embedded'])) {
                     $data[$fieldMapping['jsonName']] = $this->serializeEmbeddedDocument($value, $fieldMapping);
@@ -219,9 +219,9 @@ class EmbeddedDocumentSerializer
 
             $currentValue = $class->getFieldValue($value, $fieldMapping['fieldName']);
 
-            if ($originalDataValue == null && $currentValue == null) {
+            if ($originalDataValue === null && $currentValue === null) {
                 continue;
-            } else if ($originalDataValue == null || $currentValue == null) {
+            } else if ($originalDataValue === null || $currentValue === null) {
                 return true;
             }
 
