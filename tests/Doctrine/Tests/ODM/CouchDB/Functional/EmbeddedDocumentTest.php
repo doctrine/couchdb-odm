@@ -28,6 +28,7 @@ class EmbeddedAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctio
         $address1->country = "Hungary";
         $address1->zip = "1122";
         $address1->city = "Budapest";
+        $address1->mainAddress = true;
 
         $user1->setAddress($address1);
 
@@ -99,6 +100,41 @@ class EmbeddedAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctio
         $this->assertEquals('Spain', $user->address->country);
         $this->assertEquals('1234', $user->address->zip);
         $this->assertEquals('Cartagena', $user->address->city);
+    }
+
+    /**
+     * @group GH-80
+     */
+    public function testUpdateBooleanToFalseInEmbeddedDocument()
+    {
+        $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $this->userId);
+
+        $this->assertTrue($user->address->mainAddress);
+
+        $user->address->mainAddress = false;
+
+        $this->dm->flush();
+        $this->dm->clear();
+
+        $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $user->id);
+
+        $this->assertFalse($user->address->mainAddress);
+    }
+
+    /**
+     * @group GH-80
+     */
+    public function testEmptyStringInEmbeddedDocument()
+    {
+        $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $this->userId);
+        $user->address->street = "";
+
+        $this->dm->flush();
+        $this->dm->clear();
+
+        $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $user->id);
+
+        $this->assertEquals("", $user->address->street);
     }
 }
 

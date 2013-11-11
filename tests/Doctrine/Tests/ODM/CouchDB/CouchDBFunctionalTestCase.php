@@ -14,6 +14,8 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
 {
     private $httpClient = null;
 
+    protected $logger;
+
     /**
      * @return \Doctrine\CouchDB\HTTP\Client
      */
@@ -25,8 +27,11 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
             } else {
                 $this->httpClient = new SocketClient();
             }
+
+            $this->logger = new \Doctrine\CouchDB\HTTP\LoggingClient($this->httpClient);
         }
-        return $this->httpClient;
+
+        return $this->logger;
     }
 
     public function getTestDatabase()

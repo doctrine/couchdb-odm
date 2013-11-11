@@ -18,6 +18,11 @@ class CmsAddress
     /** @Field(type="string") */
     public $street;
 
+    /**
+     * @Field(type="boolean")
+     */
+    public $mainAddress;
+
     public function getId() {
         return $this->id;
     }
