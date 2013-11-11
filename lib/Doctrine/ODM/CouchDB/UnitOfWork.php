@@ -901,13 +901,18 @@ class UnitOfWork
             // Check embedded documents here, only if there is no change yet
             if (!$changed) {
                 foreach ($embeddedActualData as $fieldName => $fieldValue) {
-                    if (!isset($this->originalEmbeddedData[$oid][$fieldName])
-                        || $this->embeddedSerializer->isChanged(
-                            $actualData[$fieldName],                        /* actual value */
-                            $this->originalEmbeddedData[$oid][$fieldName],  /* original state  */
-                            $class->fieldMappings[$fieldName]
-                            )) {
+                    if (!isset($this->originalEmbeddedData[$oid][$fieldName])) {
                         $changed = true;
+                        break;
+                    }
+
+                    $changed = $this->embeddedSerializer->isChanged(
+                        $actualData[$fieldName],                        /* actual value */
+                        $this->originalEmbeddedData[$oid][$fieldName],  /* original state  */
+                        $class->fieldMappings[$fieldName]
+                    );
+
+                    if ($changed) {
                         break;
                     }
                 }

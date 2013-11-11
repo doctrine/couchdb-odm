@@ -58,9 +58,9 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
     {
         $embedderMetadata =
             $this->metadataFactory->getMetadataFor('Doctrine\Tests\ODM\CouchDB\Mapping\Embedder');
-        
+
         $instance = $this->serializer->createEmbeddedDocument(
-            $this->arrayDataFixture, 
+            $this->arrayDataFixture,
             $embedderMetadata->fieldMappings['embedded']);
 
         $this->assertNotNull($instance);
@@ -74,15 +74,15 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
     {
         $embedderMetadata =
             $this->metadataFactory->getMetadataFor('Doctrine\Tests\ODM\CouchDB\Mapping\Embedder');
-        
+
         $instance = $this->serializer->createEmbeddedDocument(
-            $this->embedOneFixture, 
+            $this->embedOneFixture,
             $embedderMetadata->fieldMappings['embedAnyOne']);
         $this->assertInstanceOf('Doctrine\Tests\ODM\CouchDB\Mapping\Embedded', $instance);
         $this->assertEquals('embeddedAnyOne', $instance->name);
 
         $instance = $this->serializer->createEmbeddedDocument(
-            $this->embedAnyFixture, 
+            $this->embedAnyFixture,
             $embedderMetadata->fieldMappings['embedAny']);
         $this->assertTrue(is_array($instance));
         $this->assertEquals(2, count($instance));
@@ -103,9 +103,9 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
 
         $embedderMetadata =
             $this->metadataFactory->getMetadataFor('Doctrine\Tests\ODM\CouchDB\Mapping\Embedder');
-        
+
         $instance = $this->serializer->createEmbeddedDocument(
-            $this->arrayDataFixture, 
+            $this->arrayDataFixture,
             $embedderMetadata->fieldMappings['embedded']);
         $this->assertNotNull($instance);
         $this->assertEquals('embedded-1', $instance->name);
@@ -126,7 +126,7 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
         $instance = $this->serializer->createEmbeddedDocument(
             $this->arrayDataFixture,
             $embedderMetadata->fieldMappings['embedAny']);
-        
+
     }
 
     public function testCreateMetadataConflict()
@@ -145,13 +145,13 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
     {
         $embedderMetadata =
             $this->metadataFactory->getMetadataFor('Doctrine\Tests\ODM\CouchDB\Mapping\Embedder');
-        
+
         $embedder = new Embedder;
         $embedder->id = 'embedder-1';
-        
+
         $embedded = new Embedded;
         $embedded->name = 'embedded-1';
-        
+
         $nested1 = new Nested;
         $nested1->nestedName = 'a111';
         $embedded->embeds['one'] = $nested1;
@@ -171,13 +171,13 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
     {
         $embedderMetadata =
             $this->metadataFactory->getMetadataFor('Doctrine\Tests\ODM\CouchDB\Mapping\Embedder');
-        
+
         $embedder = new Embedder;
         $embedder->id = 'embedder-1';
-        
+
         $embedded = new Embedded;
         $embedded->name = 'embedded-1';
-        
+
         $nested1 = new Nested;
         $nested1->nestedName = 'a111';
         $embedded->embeds['one'] = $nested1;
@@ -212,7 +212,7 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
 
         $embedderMetadata =
             $this->metadataFactory->getMetadataFor('Doctrine\Tests\ODM\CouchDB\Mapping\Embedder');
-        
+
         $arrayData = $this->serializer->serializeEmbeddedDocument(
             $embedder->embedAny,
             $embedderMetadata->fieldMappings['embedAny']);
@@ -221,7 +221,8 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
             array(
                 array(
                     'type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Embedded',
-                    'name' => 'embeddedMany_1'
+                    'name' => 'embeddedMany_1',
+                    'embeds' => array(),
                     ),
                 array(
                     'type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Nested',
@@ -245,12 +246,12 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
     {
         $embedderMetadata =
             $this->metadataFactory->getMetadataFor('Doctrine\Tests\ODM\CouchDB\Mapping\Embedder');
-        
+
         $fieldMapping = $embedderMetadata->fieldMappings['embedded'];
         $instance = $this->serializer->createEmbeddedDocument(
-            $this->arrayDataFixture, 
+            $this->arrayDataFixture,
             $fieldMapping);
-        
+
         $this->assertFalse($this->serializer->isChanged($instance, $this->arrayDataFixture, $fieldMapping));
 
         $name = $instance->name;
@@ -303,10 +304,10 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
         //  reset things
         // -----------------------------------------------------------------------------
         $instance = $this->serializer->createEmbeddedDocument(
-            $this->arrayDataFixture, 
+            $this->arrayDataFixture,
             $embedderMetadata->fieldMappings['embedded']);
         $this->assertFalse($this->serializer->isChanged($instance, $this->arrayDataFixture, $fieldMapping));
-        
+
 
         // adding an EmbedOne type of embedded document
         // also tesing the no targetDocument case
@@ -362,7 +363,7 @@ class Embedded {
     /**
      * @EmbedMany(targetDocument="Doctrine\Tests\ODM\CouchDB\Mapping\Nested")
      */
-    public $embeds = array();    
+    public $embeds = array();
 
     /**
      * @EmbedOne

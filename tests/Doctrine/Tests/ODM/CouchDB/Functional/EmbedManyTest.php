@@ -9,30 +9,24 @@ class EmbedManyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
 {
     private $dm;
 
-    public function setUp() 
+    public function setUp()
     {
         $this->type = 'Doctrine\Tests\Models\Embedded\Embedder';
         $this->embeddedType = 'Doctrine\Tests\Models\Embedded\Embedded';
         $this->dm = $this->createDocumentManager();
 
-        $httpClient = $this->dm->getHttpClient();
-        $data = json_encode(
-            array(
-                '_id' => "1",
-                'embeds'=> array(
-                    array(
-                        'name' => 'embedded 1',
-                        'type' => str_replace('\\', '.', $this->embeddedType)
-                        ),
-                    array(
-                        'name' => 'embedded 2',
-                        'type' => str_replace('\\', '.', $this->embeddedType)
-                        )
-                    ),
-                'type' => str_replace('\\', '.', $this->type)
-                ));
-        $resp = $httpClient->request('PUT', '/' . $this->dm->getDatabase() . '/1', $data);
-        $this->assertEquals(201, $resp->status);
+        $document = new Embedder();
+        $document->id = 1;
+        $embedded1 = new Embedded();
+        $embedded1->name = 'embedded 1';
+        $embedded2 = new Embedded();
+        $embedded2->name = 'embedded 2';
+
+        $document->embeds[] = $embedded1;
+        $document->embeds[] = $embedded2;
+
+        $this->dm->persist($document);
+        $this->dm->flush();
     }
 
     public function testFind()
@@ -83,21 +77,21 @@ class EmbedManyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $this->assertEquals('changed', $embedder->embeds[0]->name);
         $this->assertEquals(1, count($embedder->embeds[0]->arrayField));
         $this->assertEquals('bar', $embedder->embeds[0]->arrayField[0]);
-        
+
     }
 
     public function testCreate()
     {
         $newOne = new Embedder;
         $newOne->id = '2';
-        
+
         $embedded1 = new Embedded;
         $embedded1->name = 'newly embedded 1';
         $embedded2 = new Embedded;
         $embedded2->name = 'newly embedded 2';
         $newOne->embeds[] = $embedded1;
         $newOne->embeds[] = $embedded2;
-        
+
         $this->dm->persist($newOne);
         $this->dm->flush();
         $this->dm->clear();
@@ -115,14 +109,14 @@ class EmbedManyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
     {
         $newOne = new Embedder;
         $newOne->id = '2';
-        
+
         $embedded1 = new Embedded;
         $embedded1->name = 'newly embedded 1';
         $embedded2 = new Embedded;
         $embedded2->name = 'newly embedded 2';
         $newOne->embeds['one'] = $embedded1;
         $newOne->embeds['two'] = $embedded2;
-        
+
         $this->dm->persist($newOne);
         $this->dm->flush();
         $this->dm->clear();

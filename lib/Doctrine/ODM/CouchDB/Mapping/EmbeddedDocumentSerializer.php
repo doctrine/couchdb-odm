@@ -207,7 +207,7 @@ class EmbeddedDocumentSerializer
 
         // EmbedOne case, or one instance of and EmbedMany
         if ($this->metadataResolver->canMapDocument($originalData)
-            && get_class($value) != $this->metadataResolver->getDocumentType($originalData)) {
+            && get_class($value) !== $this->metadataResolver->getDocumentType($originalData)) {
             return true;
         }
 
