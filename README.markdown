@@ -1,6 +1,7 @@
 # CouchDB ODM
 
 [![Build Status](https://travis-ci.org/doctrine/couchdb-odm.png?branch=master)](https://travis-ci.org/doctrine/couchdb-odm)
+[![Scrutinizer Quality Score](https://scrutinizer-ci.com/g/doctrine/couchdb-odm/badges/quality-score.png?s=dd7c75d0444b1386a17206f346d3910daa8d668b)](https://scrutinizer-ci.com/g/doctrine/couchdb-odm/)
 
 Doctrine CouchDB is a mapper between PHP and CouchDB documents. It uses a metadata mapping
 pattern to map the documents to plain old php objects, no ActiveRecord pattern or base class
