@@ -53,7 +53,9 @@ JS;
         $mapRepositoryTypeConstraint = <<<'JS'
 function (doc)
 {
-    if (doc.type) {
+    if (doc.type
+        && doc.doctrine_metadata
+        && doc.doctrine_metadata.indexed) {
         emit(doc.type, {"_id": doc._id} );
     }
 }

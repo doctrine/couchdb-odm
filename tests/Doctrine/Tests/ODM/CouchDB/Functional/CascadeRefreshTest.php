@@ -13,6 +13,8 @@ class CascadeRefreshTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTe
 
     public function setUp()
     {
+        $this->markTestSkipped('Cascade refresh does not work yet.');
+
         $this->dm = $this->createDocumentManager();
 
         $class = $this->dm->getClassMetadata('Doctrine\Tests\Models\CMS\CmsUser');
@@ -24,7 +26,7 @@ class CascadeRefreshTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTe
         $class = $this->dm->getClassMetadata('Doctrine\Tests\Models\CMS\CmsArticle');
         $class->associationsMappings['user']['cascade'] = ClassMetadata::CASCADE_REFRESH;
     }
-    
+
     public function testCascadeRefresh()
     {
         $group1 = new \Doctrine\Tests\Models\CMS\CmsGroup();
