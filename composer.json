@@ -16,7 +16,8 @@
         "symfony/console": ">=2.0"
     },
     "require-dev": {
-        "symfony/yaml": "~2.0"
+        "symfony/yaml": "~2.0",
+        "phpunit/phpunit": "@stable"
     },
     "suggest": {
         "symfony/yaml": "If you want to use YAML Mappings"
