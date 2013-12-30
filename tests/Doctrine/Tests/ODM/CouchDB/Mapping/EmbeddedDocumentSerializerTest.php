@@ -3,6 +3,7 @@
 
 namespace Doctrine\Tests\ODM\CouchDB\Mapping;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ODM\CouchDB\Mapping\EmbeddedDocumentSerializer;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\CouchDB\Mapping\MetadataResolver\DoctrineResolver;
@@ -65,8 +66,8 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
 
         $this->assertNotNull($instance);
         $this->assertEquals('embedded-1', $instance->name);
-        $this->assertArrayHasKey('one', $instance->embeds);
-        $this->assertArrayHasKey('two', $instance->embeds);
+        $this->assertTrue($instance->embeds->containsKey('one'));
+        $this->assertTrue($instance->embeds->containsKey('two'));
         $this->assertEquals(2, count($instance->embeds));
     }
 
@@ -84,10 +85,10 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
         $instance = $this->serializer->createEmbeddedDocument(
             $this->embedAnyFixture,
             $embedderMetadata->fieldMappings['embedAny']);
-        $this->assertTrue(is_array($instance));
+        $this->assertInstanceOf('Doctrine\Common\Collections\ArrayCollection',$instance);
         $this->assertEquals(2, count($instance));
-        $this->assertArrayHasKey('any_1', $instance);
-        $this->assertArrayHasKey('any_2', $instance);
+        $this->assertTrue($instance->containsKey('any_1'));
+        $this->assertTrue($instance->containsKey('any_2'));
         $this->assertInstanceOf('Doctrine\Tests\ODM\CouchDB\Mapping\Embedded', $instance['any_1']);
         $this->assertInstanceOf('Doctrine\Tests\ODM\CouchDB\Mapping\Nested', $instance['any_2']);
         $this->assertEquals('embedAny_1', $instance['any_1']->name);
@@ -109,8 +110,8 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
             $embedderMetadata->fieldMappings['embedded']);
         $this->assertNotNull($instance);
         $this->assertEquals('embedded-1', $instance->name);
-        $this->assertArrayHasKey('one', $instance->embeds);
-        $this->assertArrayHasKey('two', $instance->embeds);
+        $this->assertTrue($instance->embeds->containsKey('one'));
+        $this->assertTrue($instance->embeds->containsKey('two'));
         $this->assertEquals(2, count($instance->embeds));
     }
 
