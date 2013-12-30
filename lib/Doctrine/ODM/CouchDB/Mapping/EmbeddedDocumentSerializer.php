@@ -186,14 +186,13 @@ class EmbeddedDocumentSerializer
      *
      * @param array $value
      * @param object $originalData
-     * @param array $fieldMapping Mapping of the field that contains the embedded document in the
-     *                            embedder document.
+     * @param array $valueFieldMapping Mapping of the field that contains the embedded document in the embedder document.
      * @return boolean
      */
     public function isChanged($value, $originalData, $valueFieldMapping)
     {
         // EmbedMany case
-        if ('many' == $valueFieldMapping['embedded'] && $value instanceof \Doctrine\Common\Collections\ArrayCollection) {
+        if ('many' == $valueFieldMapping['embedded'] && (is_array($value) || $value instanceof \Doctrine\Common\Collections\ArrayCollection)) {
             if (count($originalData) != count($value)) {
                 return true;
             }
