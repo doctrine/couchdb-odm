@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "eebb1b83e78f39eb36e573c2cc796eb8",
+    "hash": "444faa6a30914f16c15d757d82b33008",
     "packages": [
         {
             "name": "doctrine/common",
@@ -80,12 +80,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/couchdb-client.git",
-                "reference": "bb0eec067232d505974cd83325d7e4500728e15b"
+                "reference": "484531a6459bae10305fe65247ce7981535a59e3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/couchdb-client/zipball/bb0eec067232d505974cd83325d7e4500728e15b",
-                "reference": "bb0eec067232d505974cd83325d7e4500728e15b",
+                "url": "https://api.github.com/repos/doctrine/couchdb-client/zipball/484531a6459bae10305fe65247ce7981535a59e3",
+                "reference": "484531a6459bae10305fe65247ce7981535a59e3",
                 "shasum": ""
             },
             "require": {
@@ -123,7 +123,7 @@
                 "couchdb",
                 "persistence"
             ],
-            "time": "2013-07-28 02:14:44"
+            "time": "2013-10-29 10:52:31"
         },
         {
             "name": "symfony/console",
@@ -132,12 +132,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Console.git",
-                "reference": "v2.3.2"
+                "reference": "251dd20d2f8acaf2f7832300eec9a20e9951393c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Console/zipball/v2.3.2",
-                "reference": "v2.3.2",
+                "url": "https://api.github.com/repos/symfony/Console/zipball/251dd20d2f8acaf2f7832300eec9a20e9951393c",
+                "reference": "251dd20d2f8acaf2f7832300eec9a20e9951393c",
                 "shasum": ""
             },
             "require": {
@@ -554,12 +554,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Yaml.git",
-                "reference": "v2.3.2"
+                "reference": "d7e5b5a1e98c37f5cf4dd35fbaa2bfb03f524477"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Yaml/zipball/v2.3.2",
-                "reference": "v2.3.2",
+                "url": "https://api.github.com/repos/symfony/Yaml/zipball/d7e5b5a1e98c37f5cf4dd35fbaa2bfb03f524477",
+                "reference": "d7e5b5a1e98c37f5cf4dd35fbaa2bfb03f524477",
                 "shasum": ""
             },
             "require": {
