@@ -19,6 +19,7 @@
 
 namespace Doctrine\ODM\CouchDB\Mapping;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 use Doctrine\ODM\CouchDB\Types\Type;
 use Doctrine\Common\Util\ClassUtils;
@@ -124,7 +125,7 @@ class EmbeddedDocumentSerializer
                 $result[$jsonName] = $this->doCreateEmbeddedDocument($jsonValue, $embeddedFieldMapping);
             }
             ksort($result);
-            return $result;
+            return new ArrayCollection($result);
         } else {
             return $this->doCreateEmbeddedDocument($data, $embeddedFieldMapping);
         }
@@ -185,14 +186,13 @@ class EmbeddedDocumentSerializer
      *
      * @param array $value
      * @param object $originalData
-     * @param array $fieldMapping Mapping of the field that contains the embedded document in the
-     *                            embedder document.
+     * @param array $valueFieldMapping Mapping of the field that contains the embedded document in the embedder document.
      * @return boolean
      */
     public function isChanged($value, $originalData, $valueFieldMapping)
     {
         // EmbedMany case
-        if ('many' == $valueFieldMapping['embedded'] && is_array($value)) {
+        if ('many' == $valueFieldMapping['embedded'] && (is_array($value) || $value instanceof \Doctrine\Common\Collections\ArrayCollection)) {
             if (count($originalData) != count($value)) {
                 return true;
             }
