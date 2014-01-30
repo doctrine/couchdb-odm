@@ -73,22 +73,26 @@ class DocumentRepository implements ObjectRepository
     /**
      * Find a single document by its identifier
      *
-     * @param mixed $query A single identifier or an array of criteria.
-     * @param array $select The fields to select.
-     * @return Doctrine\ODM\CouchDB\MongoCursor $cursor
-     * @return object $document
+     * @param mixed $id A single identifier or an array of criteria.
+     * @return object|null $document
      */
     public function find($id)
     {
-        $response = $this->dm->getCouchDBClient()->findDocument($id);
+        $uow = $this->dm->getUnitOfWork();
 
-        if ($response->status == 404) {
-            return null;
+        $document = $uow->tryGetById($id);
+
+        if ($document === false) {
+            $response = $this->dm->getCouchDBClient()->findDocument($id);
+            if ($response->status == 404) {
+                return null;
+            }
+
+            $hints = array();
+            $document = $uow->createDocument($this->documentName, $response->body, $hints);
         }
 
-        $uow = $this->dm->getUnitOfWork();
-        $hints = array();
-        return $uow->createDocument($this->documentName, $response->body, $hints);
+        return $document;
     }
 
     /**
@@ -105,6 +109,8 @@ class DocumentRepository implements ObjectRepository
      * Find Many documents of the given repositories type by id.
      *
      * @param array $ids
+     * @param null|int $limit
+     * @param null|int $offset
      * @return array
      */
     public function findMany(array $ids, $limit = null, $offset = null)

@@ -1004,6 +1004,11 @@ class UnitOfWork
     /**
      * Flush Operation - Write all dirty entries to the CouchDB.
      *
+     * @throws UpdateConflictException
+     * @throws CouchDBException
+     * @throws \Doctrine\CouchDB\HTTP\HTTPException
+     * @throws DocumentNotFoundException
+     *
      * @return void
      */
     public function flush()
@@ -1201,7 +1206,6 @@ class UnitOfWork
      * this UnitOfWork.
      *
      * @param mixed $id The document identifier to look for.
-     * @param string $rootClassName The name of the root class of the mapped document hierarchy.
      * @return mixed Returns the document with the specified identifier if it exists in
      *               this UnitOfWork, FALSE otherwise.
      */
@@ -1270,10 +1274,11 @@ class UnitOfWork
      * Important: Each document is returned with the key it has in the $ids array!
      *
      * @param array $ids
-     * @param string $documentName
-     * @param int $limit
-     * @param int $offset
+     * @param null|string $documentName
+     * @param null|int $limit
+     * @param null|int $offset
      * @return array
+     * @throws \Exception
      */
     public function findMany(array $ids, $documentName = null, $limit = null, $offset = null)
     {
