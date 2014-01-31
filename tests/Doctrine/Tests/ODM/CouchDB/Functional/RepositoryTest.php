@@ -148,4 +148,42 @@ class RepositoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
         $this->assertEquals(1, count($users));
         $this->assertEquals('beberlei0', $users[0]->username);
     }
+
+    public function testFindByIdUsesIdentityMap()
+    {
+        $this->dm = $this->createDocumentManager();
+
+        $user = new \Doctrine\Tests\Models\CMS\CmsUser();
+        $user->username = "beberlei";
+        $user->status = "active";
+        $user->name = "Benjamin";
+
+        $this->dm->persist($user);
+        $this->dm->flush();
+        $this->dm->clear();
+
+        $user1 = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->find($user->id);
+        $user2 = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->find($user->id);
+
+        $this->assertSame($user1, $user2);
+    }
+
+    public function testFindByReusesIdentities()
+    {
+        $this->dm = $this->createDocumentManager();
+
+        $user = new \Doctrine\Tests\Models\CMS\CmsUser();
+        $user->username = "beberlei";
+        $user->status = "active";
+        $user->name = "Benjamin";
+
+        $this->dm->persist($user);
+        $this->dm->flush();
+        $this->dm->clear();
+
+        $user1 = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findOneBy(array('username' => 'beberlei'));
+        $user2 = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findOneBy(array('username' => 'beberlei'));
+
+        $this->assertSame($user1, $user2);
+    }
 }

@@ -40,6 +40,14 @@ class BasicCrudTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $this->assertEquals('lsmith', $user->username);
     }
 
+    public function testFindUsesIdentityMap()
+    {
+        $user1 = $this->dm->find($this->type, 1);
+        $user2 = $this->dm->find($this->type, 1);
+
+        $this->assertSame($user1, $user2);
+    }
+
     public function testInsert()
     {
         $user = new User();
