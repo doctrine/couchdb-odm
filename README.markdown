@@ -63,5 +63,5 @@ $dm->flush();
 ```
 
 You can play around with the sandbox shipped in the sandbox/ folder of every git checkout
-or read the documentation at http://www.doctrine-project.org/docs/couchdb_odm/1.0/en/
+or read the documentation at http://docs.doctrine-project.org/projects/doctrine-couchdb/en/latest/
 
