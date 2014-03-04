@@ -24,7 +24,7 @@ use Doctrine\Common\Annotations\Annotation;
 /**
  * @Annotation
  */
-final class Document
+final class Document extends Annotation
 {
     public $type;
     public $repositoryClass;
