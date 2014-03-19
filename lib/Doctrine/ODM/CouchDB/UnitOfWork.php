@@ -1016,7 +1016,7 @@ class UnitOfWork
         $this->detectChangedDocuments();
 
         if ($this->evm->hasListeners(Event::onFlush)) {
-            $this->evm->dispatchEvent(Event::onFlush, new Event\OnFlushEventArgs($this));
+            $this->evm->dispatchEvent(Event::onFlush, new Event\OnFlushEventArgs($this->dm));
         }
 
         $config = $this->dm->getConfiguration();
