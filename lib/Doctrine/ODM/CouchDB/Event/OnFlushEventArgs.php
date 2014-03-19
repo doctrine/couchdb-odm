@@ -20,20 +20,13 @@
 
 namespace Doctrine\ODM\CouchDB\Event;
 
-class OnFlushEventArgs extends \Doctrine\Common\EventArgs
+class OnFlushEventArgs extends \Doctrine\Common\Persistence\Event\ManagerEventArgs
 {
-    private $documentManager;
-
-    public function __construct($documentManager)
-    {
-        $this->documentManager = $documentManager;
-    }
-
     /**
      * @return \Doctrine\ODM\CouchDB\DocumentManager
      */
     public function getDocumentManager()
     {
-        return $this->documentManager;
+        return $this->getObjectManager();
     }
 }
