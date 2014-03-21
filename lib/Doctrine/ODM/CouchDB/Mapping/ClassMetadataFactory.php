@@ -118,10 +118,10 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
 
         if ($parent->identifier) {
             $class->setIdentifier($parent->identifier);
-			$class->idGenerator = $parent->idGenerator;
+            $class->idGenerator = $parent->idGenerator;
         }
 
-		if ($parent->isVersioned) {
+        if ($parent->isVersioned) {
             $class->isVersioned = $parent->isVersioned;
             $class->versionField = $parent->versionField;
         }
