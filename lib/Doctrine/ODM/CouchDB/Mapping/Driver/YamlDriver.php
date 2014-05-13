@@ -23,20 +23,21 @@ use Doctrine\Common\Persistence\Mapping\Driver\FileDriver,
     Doctrine\Common\Persistence\Mapping\ClassMetadata,
     Doctrine\ODM\CouchDB\Mapping\MappingException,
     Doctrine\Common\Persistence\Mapping\MappingException as DoctrineMappingException,
-    Symfony\Component\Yaml\Yaml;
+    SimpleXmlElement;
 
 /**
- * The YamlDriver reads the mapping metadata from yaml schema files.
+ * XmlDriver is a metadata driver that enables mapping through XML files.
  *
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @link        www.doctrine-project.org
  * @since       1.0
+ * @author      Benjamin Eberlei <kontakt@beberlei.de>
  * @author      Jonathan H. Wage <jonwage@gmail.com>
  * @author      Roman Borschel <roman@code-factory.org>
  */
-class YamlDriver extends FileDriver
+class XmlDriver extends FileDriver
 {
-    const DEFAULT_FILE_EXTENSION = '.dcm.yml';
+    const DEFAULT_FILE_EXTENSION = '.dcm.xml';
 
     /**
      * {@inheritDoc}
@@ -53,110 +54,114 @@ class YamlDriver extends FileDriver
     {
         /** @var $class \Doctrine\ODM\CouchDB\Mapping\ClassMetadata */
         try {
-            $element = $this->getElement($className);
+            $xmlRoot = $this->getElement($className);
         } catch (DoctrineMappingException $e) {
             // Convert Exception type for consistency with other drivers
             throw new MappingException($e->getMessage(), $e->getCode(), $e);
         }
 
-        if (!$element) {
+        if (!$xmlRoot) {
             return;
         }
 
-        if ($element['type'] == 'document') {
+        if ($xmlRoot->getName() == 'document') {
             $class->setCustomRepositoryClass(
-                (isset($element['repositoryClass'])) ? $element['repositoryClass'] : null
+                isset($xmlRoot['repository-class']) ? (string)$xmlRoot['repository-class'] : null
             );
 
-            if (isset($element['indexed']) && $element['indexed'] == true) {
+            if (isset($xmlRoot['indexed']) && $xmlRoot['indexed'] == true) {
                 $class->indexed = true;
             }
 
-            if (isset($element['inheritanceRoot']) && $element['inheritanceRoot']) {
+            if (isset($xmlRoot['inheritance-root']) && $xmlRoot['inheritance-root']) {
                 $class->markInheritanceRoot();
             }
-        } else if ($element['type'] == 'embedded') {
+        } else if ($xmlRoot->getName() == "embedded-document") {
             $class->isEmbeddedDocument = true;
 
-            if (isset($element['inheritanceRoot']) && $element['inheritanceRoot']) {
+            if (isset($xmlRoot['inheritance-root']) && $xmlRoot['inheritance-root']) {
                 $class->markInheritanceRoot();
             }
-        } else if (strtolower($element['type']) == "mappedsuperclass") {
+        } else if ($xmlRoot->getName() == "mapped-superclass") {
             $class->isMappedSuperclass = true;
         } else {
             throw MappingException::classIsNotAValidDocument($className);
         }
 
-        if (isset($element['id'])) {
-            foreach ($element['id'] AS $fieldName => $idElement) {
+        // Evaluate <field ...> mappings
+        if (isset($xmlRoot->field)) {
+            foreach ($xmlRoot->field as $fieldMapping) {
                 $class->mapField(array(
-                    'fieldName' => $fieldName,
-                    'indexed'   => (isset($idElement['index'])) ? (bool)$idElement['index'] : false,
-                    'type'      => (isset($idElement['type'])) ? $idElement['type'] : null,
-                    'id'        => true,
-                    'strategy'  => (isset($idElement['strategy'])) ? $idElement['strategy'] :  null,
+                    'fieldName' => (string)$fieldMapping['name'],
+                    'jsonName'  => (isset($fieldMapping['json-name'])) ? (string)$fieldMapping['json-name'] : null,
+                    'indexed'   => (isset($fieldMapping['index'])) ? (bool)$fieldMapping['index'] : false,
+                    'type'      => (isset($fieldMapping['type'])) ? (string)$fieldMapping['type'] : null,
+                    'isVersionField'   => (isset($fieldMapping['version'])) ? true : null,
                 ));
             }
         }
 
-        if (isset($element['fields'])) {
-            foreach ($element['fields'] AS $fieldName => $fieldElement) {
-                $class->mapField(array(
-                    'fieldName' => $fieldName,
-                    'jsonName'  => (isset($fieldElement['jsonName'])) ? $fieldElement['jsonName'] : null,
-                    'indexed'   => (isset($fieldElement['index'])) ? (bool)$fieldElement['index'] : false,
-                    'type'      => (isset($fieldElement['type'])) ? $fieldElement['type'] : null,
-                    'isVersionField' => (isset($fieldElement['version'])) ? true : null,
-                ));
-            }
+        // Evaluate <id ..> mappings
+        foreach ($xmlRoot->id as $idElement) {
+            $class->mapField(array(
+                'fieldName' => (string)$idElement['name'],
+                'indexed'   => (isset($idElement['index'])) ? (bool)$idElement['index'] : false,
+                'type'      => (isset($idElement['type'])) ? (string)$idElement['type'] : null,
+                'id'        => true,
+                'strategy'  => (isset($idElement['strategy'])) ? (string)$idElement['strategy'] : null,
+            ));
         }
 
-
-        if (isset($element['referenceOne'])) {
-            foreach ($element['referenceOne'] AS $field => $referenceOneElement) {
+        // Evaluate <many-to-one ..> mappings
+        if (isset($xmlRoot->{"reference-one"})) {
+            foreach ($xmlRoot->{"reference-one"} as $referenceOneElement) {
                 $class->mapManyToOne(array(
-                    'cascade'           => (isset($referenceOneElement['cascade'])) ? $this->getCascadeMode($referenceOneElement['cascade']) : 0,
-                    'targetDocument'    => (string)$referenceOneElement['targetDocument'],
-                    'fieldName'         => $field,
-                    'jsonName'          => (isset($referenceOneElement['jsonName'])) ? (string)$referenceOneElement['jsonName'] : null,
+                    'cascade'           => (isset($referenceOneElement->cascade)) ? $this->getCascadeMode($referenceOneElement->cascade) : 0,
+                    'targetDocument'    => (string)$referenceOneElement['target-document'],
+                    'fieldName'         => (string)$referenceOneElement['field'],
+                    'jsonName'          => (isset($referenceOneElement['json-name'])) ? (string)$referenceOneElement['json-name'] : null,
                     'indexed'           => (isset($referenceOneElement['index'])) ? (bool)$referenceOneElement['index'] : false,
                 ));
             }
         }
 
-        if (isset($element['referenceMany'])) {
-            foreach ($element['referenceMany'] AS $field => $referenceManyElement) {
+        // Evaluate <many-to-one ..> mappings
+        if (isset($xmlRoot->{"reference-many"})) {
+            foreach ($xmlRoot->{"reference-many"} as $referenceManyElement) {
                 $class->mapManyToMany(array(
-                    'cascade'           => (isset($referenceManyElement['cascade'])) ? $this->getCascadeMode($referenceManyElement['cascade']) : 0,
-                    'targetDocument'    => (string)$referenceManyElement['targetDocument'],
-                    'fieldName'         => $field,
-                    'jsonName'          => (isset($referenceManyElement['jsonName'])) ? (string)$referenceManyElement['jsonName'] : null,
-                    'mappedBy'          => (isset($referenceManyElement['mappedBy'])) ? (string)$referenceManyElement['mappedBy'] : null,
+                    'cascade'           => (isset($referenceManyElement->cascade)) ? $this->getCascadeMode($referenceManyElement->cascade) : 0,
+                    'targetDocument'    => (string)$referenceManyElement['target-document'],
+                    'fieldName'         => (string)$referenceManyElement['field'],
+                    'jsonName'          => (isset($referenceManyElement['json-name'])) ? (string)$referenceManyElement['json-name'] : null,
+                    'mappedBy'          => (isset($referenceManyElement['mapped-by'])) ? (string)$referenceManyElement['mapped-by'] : null,
                 ));
             }
         }
 
-        if (isset($element['attachments'])) {
-            $class->mapAttachments($element['attachments']);
+        // Evaluate <attachments ..> mapping
+        if (isset($xmlRoot->{"attachments"})) {
+            $class->mapAttachments((string)$xmlRoot->{"attachments"}[0]['field']);
         }
 
-        if (isset($element['embedOne'])) {
-            foreach ($element['embedOne'] AS $field => $embedOneElement) {
+        // Evaluate <embed-one />
+        if (isset($xmlRoot->{'embed-one'})) {
+            foreach ($xmlRoot->{'embed-one'} AS $embedOneElement) {
                 $class->mapEmbedded(array(
-                    'targetDocument'    => (string)$embedOneElement['targetDocument'],
-                    'fieldName'         => $field,
-                    'jsonName'          => (isset($embedOneElement['jsonName'])) ? (string)$embedOneElement['jsonName'] : null,
+                    'targetDocument'    => (string)$embedOneElement['target-document'],
+                    'fieldName'         => (string)$embedOneElement['field'],
+                    'jsonName'          => (isset($embedOneElement['json-name'])) ? (string)$embedOneElement['json-name'] : null,
                     'embedded'          => 'one',
                 ));
             }
         }
 
-        if (isset($element['embedMany'])) {
-            foreach ($element['embedMany'] AS $field => $embedManyElement) {
+        // Evaluate <embed-many />
+        if (isset($xmlRoot->{'embed-many'})) {
+            foreach ($xmlRoot->{'embed-many'} AS $embedManyElement) {
                 $class->mapEmbedded(array(
-                    'targetDocument'    => (string)$embedManyElement['targetDocument'],
-                    'fieldName'         => $field,
-                    'jsonName'          => (isset($embedManyElement['jsonName'])) ? (string)$embedManyElement['jsonName'] : null,
+                    'targetDocument'    => (string)$embedManyElement['target-document'],
+                    'fieldName'         => (string)$embedManyElement['field'],
+                    'jsonName'          => (isset($embedManyElement['json-name'])) ? (string)$embedManyElement['json-name'] : null,
                     'embedded'          => 'many',
                 ));
             }
@@ -165,19 +170,40 @@ class YamlDriver extends FileDriver
 
     protected function loadMappingFile($file)
     {
-        return Yaml::parse($file);
+        $result = array();
+        $entity = libxml_disable_entity_loader(true);
+        $xmlElement = simplexml_load_string(file_get_contents($file));
+        libxml_disable_entity_loader($entity);
+
+        foreach (array('document', 'embedded-document', 'mapped-superclass') as $type) {
+            if (isset($xmlElement->$type)) {
+                foreach ($xmlElement->$type as $documentElement) {
+                    $documentName = (string) $documentElement['name'];
+                    $result[$documentName] = $documentElement;
+                }
+            }
+        }
+
+        return $result;
     }
 
     /**
      * Gathers a list of cascade options found in the given cascade element.
      *
-     * @param array $cascadeElement The cascade element.
+     * @param SimpleXMLElement $cascadeElement cascade element.
      * @return integer a bitmask of cascade options.
+     * @throws MappingException
      */
-    private function getCascadeMode(array $cascadeElement)
+    private function getCascadeMode(SimpleXMLElement $cascadeElement)
     {
         $cascade = 0;
-        foreach ($cascadeElement as $cascadeMode) {
+        foreach ($cascadeElement->children() as $action) {
+            // According to the JPA specifications, XML uses "cascade-persist"
+            // instead of "persist". Here, both variations
+            // are supported because both YAML and Annotation use "persist"
+            // and we want to make sure that this driver doesn't need to know
+            // anything about the supported cascading actions
+            $cascadeMode = str_replace('cascade-', '', $action->getName());
             $constantName = 'Doctrine\ODM\CouchDB\Mapping\ClassMetadata::CASCADE_' . strtoupper($cascadeMode);
             if (!defined($constantName)) {
                 throw new MappingException("Cascade mode '$cascadeMode' not supported.");
