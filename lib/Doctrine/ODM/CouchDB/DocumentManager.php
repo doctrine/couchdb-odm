@@ -341,6 +341,7 @@ class DocumentManager implements ObjectManager
      * by this ObjectManager become detached.
      *
      * @param string $objectName if given, only objects of this type will get detached
+     * @throws CouchDBException
      */
     public function clear($objectName = null)
     {
