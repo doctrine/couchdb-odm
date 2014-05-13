@@ -223,6 +223,7 @@ class ClassMetadata implements IClassMetadata
      * Used to derive a class metadata of the current instance for a mapped child class.
      *
      * @param  ClassMetadata $child
+     * @throws \InvalidArgumentException
      */
     public function deriveChildMetadata($child)
     {
@@ -330,7 +331,7 @@ class ClassMetadata implements IClassMetadata
     /**
      * Restores some state that can not be serialized/unserialized.
      *
-     * @return void
+     * @throws \ReflectionProperty
      */
     public function wakeupReflection($reflService)
     {
@@ -501,6 +502,7 @@ class ClassMetadata implements IClassMetadata
      * Sets the mapped identifier field of this class.
      *
      * @param string $identifier
+     * @throws MappingException
      */
     public function setIdentifier($identifier)
     {
@@ -536,6 +538,7 @@ class ClassMetadata implements IClassMetadata
     /**
      * Checks whether the class has a (mapped) field with a certain name.
      *
+     * @param $fieldName
      * @return boolean
      */
     public function hasField($fieldName)
@@ -546,7 +549,7 @@ class ClassMetadata implements IClassMetadata
     /**
      * Registers a custom repository class for the document class.
      *
-     * @param string $mapperClassName  The class name of the custom mapper.
+     * @param string $repositoryClassName  The class name of the custom mapper.
      */
     public function setCustomRepositoryClass($repositoryClassName)
     {
@@ -577,6 +580,7 @@ class ClassMetadata implements IClassMetadata
      * Set the field that will contain attachments of this document.
      *
      * @param string $fieldName
+     * @throws MappingException
      */
     public function mapAttachments($fieldName)
     {
@@ -733,6 +737,7 @@ class ClassMetadata implements IClassMetadata
      *
      * @param string $fieldName  The field name.
      * @return array  The field mapping.
+     * @throws MappingException
      */
     public function getFieldMapping($fieldName)
     {
@@ -800,6 +805,7 @@ class ClassMetadata implements IClassMetadata
      *
      * @param string $assocName
      * @return string
+     * @throws \InvalidArgumentException
      */
     public function getAssociationTargetClass($assocName)
     {
