@@ -186,7 +186,7 @@ class Configuration
     /**
      * Gets the cache driver implementation that is used for the mapping metadata.
      *
-     * @return Mapping\Driver\AnnotationDriver
+     * @return MappingDriver
      */
     public function getMetadataDriverImpl()
     {
