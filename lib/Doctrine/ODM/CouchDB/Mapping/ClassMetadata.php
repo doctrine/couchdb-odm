@@ -330,8 +330,6 @@ class ClassMetadata implements IClassMetadata
 
     /**
      * Restores some state that can not be serialized/unserialized.
-     *
-     * @throws \ReflectionProperty
      */
     public function wakeupReflection($reflService)
     {
