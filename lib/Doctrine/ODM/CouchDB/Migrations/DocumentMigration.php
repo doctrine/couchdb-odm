@@ -35,6 +35,7 @@ interface DocumentMigration
      * This method has to return the original data, when no migration
      * needs to take place.
      *
+     * @param array $data
      * @return array
      */
     public function migrate(array $data);

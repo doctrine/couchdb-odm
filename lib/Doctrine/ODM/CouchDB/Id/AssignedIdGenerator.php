@@ -13,6 +13,7 @@ class AssignedIdGenerator extends IdGenerator
      * @param ClassMetadata $cm
      * @param DocumentManager $dm
      * @return array
+     * @throws CouchDBException
      */
     public function generate($document, ClassMetadata $cm, DocumentManager $dm)
     {
