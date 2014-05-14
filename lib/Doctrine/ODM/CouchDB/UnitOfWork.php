@@ -451,6 +451,7 @@ class UnitOfWork
         $response = $this->dm->getCouchDBClient()->findDocument($this->getDocumentIdentifier($document));
 
         if ($response->status == 404) {
+            $this->removeFromIdentityMap($document);
             throw new \Doctrine\ODM\CouchDB\DocumentNotFoundException();
         }
 
@@ -1029,6 +1030,7 @@ class UnitOfWork
                 $response = $this->dm->getCouchDBClient()->findDocument($this->getDocumentIdentifier($document));
 
                 if ($response->status == 404) {
+                    $this->removeFromIdentityMap($document);
                     throw new \Doctrine\ODM\CouchDB\DocumentNotFoundException();
                 }
 
