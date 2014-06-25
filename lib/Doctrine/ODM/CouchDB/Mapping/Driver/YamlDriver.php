@@ -173,6 +173,7 @@ class YamlDriver extends FileDriver
      *
      * @param array $cascadeElement The cascade element.
      * @return integer a bitmask of cascade options.
+     * @throws MappingException
      */
     private function getCascadeMode(array $cascadeElement)
     {
