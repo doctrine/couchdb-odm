@@ -73,7 +73,9 @@ class ODMQuery extends Query
      */
     public function onlyDocs($flag)
     {
-        $this->setIncludeDocs(true);
+        if ($flag) {
+            $this->setIncludeDocs(true);
+        }
         $this->onlyDocs = $flag;
         return $this;
     }
