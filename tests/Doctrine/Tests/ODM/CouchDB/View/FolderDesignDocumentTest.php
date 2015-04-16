@@ -22,7 +22,8 @@ class FolderDesignDocumentTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCa
     if (doc.type == 'Doctrine.Tests.Models.CMS.CmsUser') {
         emit(doc.username, doc._id);
     }
-}"))
+}")),
+                "language" => "javascript",
         ), $designDoc->getData());
     }
 }
