@@ -51,6 +51,17 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @depends testMapFieldWithId
+     */
+    public function testGetReflectionProperty()
+    {
+        $cm = new ClassMetadata("Doctrine\Tests\ODM\CouchDB\Mapping\Person");
+        $cm->mapField(array('fieldName' => 'username', 'type' => 'string'));
+
+        $this->assertNotNull($cm->getReflectionProperty('username'));
+    }
+
+    /**
      * @depends testMapField
      */
     public function testmapFieldWithoutNameThrowsException($cm)
