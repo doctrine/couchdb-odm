@@ -3,6 +3,7 @@
 namespace Doctrine\Tests\ODM\CouchDB\Mapping;
 
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
+use Doctrine\Common\Persistence\Mapping\RuntimeReflectionService;
 
 class ClassMetadataTest extends \PHPUnit_Framework_TestCase
 {
@@ -146,12 +147,15 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
     public function testSerializeUnserialize()
     {
         $cm = new ClassMetadata("Doctrine\Tests\ODM\CouchDB\Mapping\Person");
+        $cm->initializeReflection(new RuntimeReflectionService());
         $cm->indexed = true;
 
         $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $cm->name);
 
         // property based comparison
-        $this->assertEquals($cm, unserialize(serialize($cm)));
+        $unserialized = unserialize(serialize($cm));
+        $unserialized->wakeupReflection(new RuntimeReflectionService());
+        $this->assertEquals($cm, $unserialized);
 
         $cm->mapField(array('fieldName' => 'id', 'id' => true));
         $cm->mapField(array('fieldName' => 'username', 'type' => 'string', 'indexed' => true));
@@ -160,8 +164,40 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
         $cm->mapManyToOne(array('fieldName' => 'address', 'targetDocument' => 'Doctrine\Tests\ODM\CouchDB\Mapping\Address'));
         $cm->mapAttachments("attachments");
 
+        // @TODO This is the only way the $reflFields property is initialized
+        // as far as I understand the ClassMetadata code. This seems wrong to
+        // call here, but otherwise the comparison fails. The $reflFields are
+        // accesssed all over the code though – I guess there are some bugs
+        // hidden here.
+        $cm->wakeupReflection(new RuntimeReflectionService());
+
         // property based comparison
-        $this->assertEquals($cm, unserialize(serialize($cm)));
+        $unserialized = unserialize(serialize($cm));
+        $unserialized->wakeupReflection(new RuntimeReflectionService());
+        $this->assertEquals($cm, $unserialized);
+    }
+
+    /**
+     * @depends testClassName
+     */
+    public function testSerializeUnserializeSerializableObject()
+    {
+        $cm = new ClassMetadata("Doctrine\Tests\ODM\CouchDB\Mapping\SerializableObject");
+        $cm->initializeReflection(new RuntimeReflectionService());
+
+        $cm->mapField(array('fieldName' => 'property', 'type' => 'integer'));
+
+        // @TODO This is the only way the $reflFields property is initialized
+        // as far as I understand the ClassMetadata code. This seems wrong to
+        // call here, but otherwise the comparison fails. The $reflFields are
+        // accesssed all over the code though – I guess there are some bugs
+        // hidden here.
+        $cm->wakeupReflection(new RuntimeReflectionService());
+
+        // property based comparison
+        $unserialized = unserialize(serialize($cm));
+        $unserialized->wakeupReflection(new RuntimeReflectionService());
+        $this->assertEquals($cm, $unserialized);
     }
 
     public function testDeriveChildMetadata()
@@ -194,6 +230,23 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $child->attachmentDeclaredClass);
 
         return $child;
+    }
+}
+
+class SerializableObject implements \Serializable
+{
+    public $property;
+
+    public function serialize()
+    {
+        return serialize(array('property' => $this->property));
+    }
+
+    public function unserialize($data)
+    {
+        $values = unserialize($data);
+        $this->property = $data['property'];
+        return $this;
     }
 }
 
