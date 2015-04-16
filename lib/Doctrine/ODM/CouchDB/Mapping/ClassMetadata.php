@@ -3,6 +3,7 @@
 namespace Doctrine\ODM\CouchDB\Mapping;
 
 use Doctrine\Common\Persistence\Mapping\ClassMetadata AS IClassMetadata,
+    Doctrine\Instantiator\Instantiator,
     ReflectionClass,
     ReflectionProperty;
 
@@ -201,11 +202,9 @@ class ClassMetadata implements IClassMetadata
     public $reflFields = array();
 
     /**
-     * The prototype from which new instances of the mapped class are created.
-     *
-     * @var object
+     * @var \Doctrine\Instantiator\InstantiatorInterface
      */
-    private $prototype;
+    private $instantiator;
 
     /**
      * Initializes a new ClassMetadata instance that will hold the object-document mapping
@@ -217,6 +216,7 @@ class ClassMetadata implements IClassMetadata
     {
         $this->name = $documentName;
         $this->rootDocumentName = $documentName;
+        $this->instantiator = new Instantiator();
     }
 
     /**
@@ -335,8 +335,9 @@ class ClassMetadata implements IClassMetadata
     public function wakeupReflection($reflService)
     {
         // Restore ReflectionClass and properties
-        $this->reflClass = $reflService->getClass($this->name);
-        $this->namespace = $reflService->getClassNamespace($this->name);
+        $this->reflClass    = $reflService->getClass($this->name);
+        $this->namespace    = $reflService->getClassNamespace($this->name);
+        $this->instantiator = $this->instantiator ?: new Instantiator();
 
         foreach ($this->fieldMappings as $field => $mapping) {
             if (isset($mapping['declared'])) {
@@ -377,16 +378,7 @@ class ClassMetadata implements IClassMetadata
      */
     public function newInstance()
     {
-        if ($this->prototype === null) {
-            $this->prototype = unserialize(
-                sprintf(
-                    'O:%d:"%s":0:{}',
-                    strlen($this->name),
-                    $this->name
-                )
-            );
-        }
-        return clone $this->prototype;
+        return $this->instantiator->instantiate($this->name);
     }
 
     /**
