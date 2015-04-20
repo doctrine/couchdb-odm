@@ -25,7 +25,6 @@ use Doctrine\Common\Annotations\AnnotationReader,
     Doctrine\Common\Persistence\Mapping\ClassMetadata,
     Doctrine\Common\Persistence\Mapping\Driver\AnnotationDriver as AbstractAnnotationDriver,
     Doctrine\ODM\CouchDB\Mapping\Annotations as ODM,
-    Doctrine\ODM\CouchDB\Mapping\ClassMetadata as ClassMetaDataInfo,
     Doctrine\ODM\CouchDB\Mapping\MappingException;
 
 /**
@@ -124,8 +123,9 @@ class AnnotationDriver extends AbstractAnnotationDriver
     /**
      * Gathers a list of cascade options found in the given cascade element.
      *
-     * @param $cascadeList cascade list
+     * @param array $cascadeList cascade list
      * @return integer a bitmask of cascade options.
+     * @throws MappingException
      */
     private function getCascadeMode(array $cascadeList)
     {

@@ -937,8 +937,10 @@ class UnitOfWork
     /**
      * Computes the changes of an association.
      *
-     * @param AssociationMapping $assoc
+     * @param array $assoc
      * @param mixed $value The value of the association.
+     * @return \InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     private function computeAssociationChanges($assoc, $value)
     {

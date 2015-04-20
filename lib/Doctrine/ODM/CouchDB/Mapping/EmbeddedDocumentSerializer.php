@@ -50,8 +50,9 @@ class EmbeddedDocumentSerializer
      *
      * @param object $embeddedValue
      * @param array $embeddedFieldMapping
+     * @param $embedMany
      * @return array
-     *
+     * @throws \InvalidArgumentException
      */
     public function serializeEmbeddedDocument($embeddedValue, $embeddedFieldMapping, $embedMany = false)
     {
@@ -105,6 +106,7 @@ class EmbeddedDocumentSerializer
      * @param array $data
      * @param object $embeddedFieldMapping
      * @return object
+     * @throws \InvalidArgumentException
      */
     public function createEmbeddedDocument($data, $embeddedFieldMapping)
     {

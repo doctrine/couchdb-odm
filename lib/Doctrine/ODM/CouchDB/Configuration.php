@@ -186,7 +186,7 @@ class Configuration
     /**
      * Gets the cache driver implementation that is used for the mapping metadata.
      *
-     * @return Mapping\Driver\Driver
+     * @return MappingDriver
      */
     public function getMetadataDriverImpl()
     {
@@ -347,7 +347,7 @@ class Configuration
     }
 
     /**
-     * @return void
+     * @param DocumentMigration $migration
      */
     public function setMigrations(DocumentMigration $migration)
     {

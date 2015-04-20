@@ -57,6 +57,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
      * Creates a new factory instance that uses the given DocumentManager instance.
      *
      * @param DocumentManager $dm The DocumentManager instance
+     * @throws \RuntimeException
      */
     public function __construct(DocumentManager $dm)
     {
@@ -167,6 +168,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
      *
      * @param string $className The name of the class.
      * @return ClassMetadata
+     * @throws MappingException
      */
     public function getMetadataFor($className)
     {
@@ -184,6 +186,8 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
      * is still not loaded.
      *
      * @param string $className The name of the class for which the metadata should get loaded.
+     * @return array
+     * @throws MappingException
      */
     protected function loadMetadata($className)
     {
