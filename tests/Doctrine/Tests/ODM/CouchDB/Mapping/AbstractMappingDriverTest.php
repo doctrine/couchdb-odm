@@ -131,4 +131,21 @@ abstract class AbstractMappingDriverTest extends \PHPUnit_Framework_TestCase
             'type' => 'mixed',
         ), $class->fieldMappings['address']);
     }
+
+    public function testVersionMapping()
+    {
+        $className = 'Doctrine\Tests\Models\CMS\CmsArticle';
+        $mappingDriver = $this->loadDriver();
+
+        $class = new ClassMetadata($className);
+        $class->namespace = 'Doctrine\Tests\Models\CMS';
+        $mappingDriver->loadMetadataForClass($className, $class);
+
+        $this->assertEquals(array(
+            'fieldName' => 'version',
+            'jsonName' => '_rev',
+            'type' => 'string',
+            'isVersionField' => true,
+        ), $class->fieldMappings['version']);
+    }
 }
