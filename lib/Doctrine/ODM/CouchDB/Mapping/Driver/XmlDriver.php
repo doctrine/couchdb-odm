@@ -112,6 +112,16 @@ class XmlDriver extends FileDriver
             ));
         }
 
+        // Evaluate <version ..> mappings
+        foreach ($xmlRoot->version as $versionElement) {
+            $class->mapField(array(
+                'fieldName'      => (string)$versionElement['name'],
+                'type'           => 'string',
+                'isVersionField' => true,
+                'jsonName'       => '_rev',
+            ));
+        }
+
         // Evaluate <many-to-one ..> mappings
         if (isset($xmlRoot->{"reference-one"})) {
             foreach ($xmlRoot->{"reference-one"} as $referenceOneElement) {

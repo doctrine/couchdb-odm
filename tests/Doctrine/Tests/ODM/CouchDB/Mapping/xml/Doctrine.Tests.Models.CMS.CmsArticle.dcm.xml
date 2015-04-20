@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping>
+    <document name="Doctrine\Tests\Models\CMS\CmsArticle" index="true">
+        <id name="id" />
+        <!--
+            As an alternative for:
+            <field name="version" version="true" type="string" json-name="_rev" />
+        -->
+        <version name="version" />
+
+        <field name="topic" type="string" index="true" />
+        <field name="text" type="string" index="true" />
+        <field name="name" type="string" index="true" />
+        
+        <reference-one field="user" target-document="CmsUser" />
+        
+        <attachments field="attachments" />
+    </document>
+</doctrine-mapping>
