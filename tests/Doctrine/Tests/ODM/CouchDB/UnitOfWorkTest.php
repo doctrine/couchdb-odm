@@ -102,7 +102,7 @@ class UnitOfWorkTest extends CouchDBTestCase
         );
         $uuidResponse = new \Doctrine\CouchDB\HTTP\Response(200, array(), json_encode(array('uuids' => $uuids)));
 
-        $client = $this->getMock('Doctrine\CouchDB\HTTP\Client', array('request'));
+        $client = $this->getMock('Doctrine\CouchDB\HTTP\Client');
         $client->expects($this->once())
                ->method('request')
                ->with($this->equalTo('GET'), $this->equalTo('/_uuids?count=20'))
