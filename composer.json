@@ -23,6 +23,7 @@
     "suggest": {
         "symfony/yaml": "If you want to use YAML Mappings"
     },
+    "bin": ["bin/doctrine-couchdb.php"],
     "autoload": {
         "psr-0": {
             "Doctrine\\ODM\\CouchDB": "lib/"
