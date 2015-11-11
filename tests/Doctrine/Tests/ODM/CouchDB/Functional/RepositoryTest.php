@@ -111,7 +111,7 @@ class RepositoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
             $this->dm->persist($user);
         }
         $this->dm->flush();
-        
+
         $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findBy(array('status' => 'active'));
 
         $this->assertEquals(5, count($users));

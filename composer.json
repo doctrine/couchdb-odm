@@ -12,12 +12,12 @@
     "require": {
         "php": ">=5.3.2",
         "doctrine/common": "~2.2",
-        "doctrine/couchdb": "dev-master",
-        "symfony/console": ">=2.0",
+        "doctrine/couchdb": "~1.0@beta",
+        "symfony/console": "~2.0|~3.0",
         "doctrine/instantiator": "~1.0"
     },
     "require-dev": {
-        "symfony/yaml": "~2.0",
+        "symfony/yaml": "~2.0|~3.0",
         "phpunit/phpunit": "@stable"
     },
     "suggest": {

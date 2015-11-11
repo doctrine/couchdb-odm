@@ -6,6 +6,8 @@ class LuceneQueryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCase
 {
     public function testExecute()
     {
+        $this->markTestSkipped('Skip Lucene for now');
+
         $jsonResult = <<<JSO
 {
   "q": "+content:enron",
