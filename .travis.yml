@@ -1,19 +1,25 @@
 language: php
 
+sudo: false
+
 services:
   - couchdb
 
 php:
-  - 5.3
   - 5.4
   - 5.5
   - 5.6
   - 7.0
+  - hhvm
 
 matrix:
     allow_failures:
         - php: 7.0
+        - php: hhvm
 
 before_script:
   - curl -X PUT localhost:5984/doctrine_test_database
+  - composer self-update
   - composer install
+
+script: php vendor/bin/phpunit
