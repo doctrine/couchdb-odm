@@ -14,6 +14,15 @@
         <var name="DOCTRINE_COUCHDB_DATABASE" value="doctrine_test_database" />
         <var name="DOCTRINE_COUCHDB_CLIENT" value="Doctrine\CouchDB\HTTP\SocketClient" />
         <var name="DOCTRINE_COUCHDB_PERFORMANCE_COUNT" value="3000" />
+        <var name="DOCTRINE_COUCHDB_HOST" value="localhost" />
+        <var name="DOCTRINE_COUCHDB_PORT" value="5984" />
+        <var name="DOCTRINE_COUCHDB_IP" value="127.0.0.1" />
+        <var name="DOCTRINE_COUCHDB_SSL" value="false" />
+        <var name="DOCTRINE_COUCHDB_TIMEOUT" value="0.01" />
+        <var name="DOCTRINE_COUCHDB_KEEP_ALIVE" value="true" />
+        <var name="DOCTRINE_COUCHDB_USERNAME" value="" />
+        <var name="DOCTRINE_COUCHDB_PASSWORD" value="" />
+        <var name="DOCTRINE_COUCHDB_PATH" value="" />
     </php>
 
     <testsuites>
