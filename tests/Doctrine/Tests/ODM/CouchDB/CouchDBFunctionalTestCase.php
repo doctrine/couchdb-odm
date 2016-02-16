@@ -22,10 +22,22 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
     public function getHttpClient()
     {
         if ($this->httpClient === null) {
-            if (isset($GLOBALS['DOCTRINE_COUCHDB_CLIENT'])) {
+            if (
+                isset($GLOBALS['DOCTRINE_COUCHDB_CLIENT'])
+                && $GLOBALS['DOCTRINE_COUCHDB_CLIENT'] != "Doctrine\CouchDB\HTTP\SocketClient"
+            ) {
                 $this->httpClient = new $GLOBALS['DOCTRINE_COUCHDB_CLIENT'];
             } else {
-                $this->httpClient = new SocketClient();
+                $this->httpClient = new SocketClient(
+                    $GLOBALS['DOCTRINE_COUCHDB_HOST'],
+                    $GLOBALS['DOCTRINE_COUCHDB_PORT'],
+                    $GLOBALS['DOCTRINE_COUCHDB_USERNAME'],
+                    $GLOBALS['DOCTRINE_COUCHDB_PASSWORD'],
+                    $GLOBALS['DOCTRINE_COUCHDB_IP'],
+                    $GLOBALS['DOCTRINE_COUCHDB_SSL'],
+                    $GLOBALS['DOCTRINE_COUCHDB_PATH'],
+                    $GLOBALS['DOCTRINE_COUCHDB_TIMEOUT']
+                );
             }
 
             $this->logger = new \Doctrine\CouchDB\HTTP\LoggingClient($this->httpClient);

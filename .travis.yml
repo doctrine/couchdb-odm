@@ -19,6 +19,7 @@ matrix:
 
 before_script:
   - curl -X PUT localhost:5984/doctrine_test_database
+  - curl -X PUT localhost:5984/_config/uuids/max_count -d "5000"
   - composer self-update
   - composer install
 
