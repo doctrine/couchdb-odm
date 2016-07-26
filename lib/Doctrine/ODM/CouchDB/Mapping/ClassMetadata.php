@@ -561,17 +561,13 @@ class ClassMetadata implements IClassMetadata
      * Dispatches the lifecycle event of the given document to the registered
      * lifecycle callbacks and lifecycle listeners.
      *
-     * @param string   $lifecycleEvent    The lifecycle event.
-     * @param Document $document The Document on which the event occurred.
+     * @param string $lifecycleEvent The lifecycle event.
+     * @param object $document       The Document on which the event occurred.
      */
-    public function invokeLifecycleCallbacks($lifecycleEvent, $document, array $arguments = null)
+    public function invokeLifecycleCallbacks($lifecycleEvent, $document)
     {
         foreach ($this->lifecycleCallbacks[$lifecycleEvent] as $callback) {
-            if ($arguments !== null) {
-                call_user_func_array(array($document, $callback), $arguments);
-            } else {
-                $document->$callback();
-            }
+            $document->$callback();
         }
     }
 

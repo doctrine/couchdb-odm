@@ -2,10 +2,20 @@
 
 namespace Doctrine\Tests\Models\LifecycleCallbacks;
 
+use Doctrine\ODM\CouchDB\Mapping\Annotations\Field;
+use Doctrine\ODM\CouchDB\Mapping\Annotations\HasLifecycleCallbacks;
+use Doctrine\ODM\CouchDB\Mapping\Annotations\MappedSuperclass;
+use Doctrine\ODM\CouchDB\Mapping\Annotations\PostLoad;
+use Doctrine\ODM\CouchDB\Mapping\Annotations\PostPersist;
+use Doctrine\ODM\CouchDB\Mapping\Annotations\PostRemove;
+use Doctrine\ODM\CouchDB\Mapping\Annotations\PostUpdate;
+use Doctrine\ODM\CouchDB\Mapping\Annotations\PrePersist;
+use Doctrine\ODM\CouchDB\Mapping\Annotations\PreRemove;
+use Doctrine\ODM\CouchDB\Mapping\Annotations\PreUpdate;
+
 /**
- *
- * @MappedSuperclass
- * @HasLifecycleCallbacks
+ * @MappedSuperclass()
+ * @HasLifecycleCallbacks()
  */
 abstract class CallbackDocument
 {
@@ -35,7 +45,7 @@ abstract class CallbackDocument
     public $preFlush = false;
 
     /**
-     * @PrePersist
+     * @PrePersist()
      */
     public function prePersist()
     {
@@ -44,7 +54,7 @@ abstract class CallbackDocument
     }
 
     /**
-     * @PostPersist
+     * @PostPersist()
      */
     public function postPersist()
     {
@@ -52,7 +62,7 @@ abstract class CallbackDocument
     }
 
     /**
-     *  @PreUpdate
+     * @PreUpdate()
      */
     public function preUpdate()
     {
@@ -61,7 +71,7 @@ abstract class CallbackDocument
     }
 
     /**
-     * @PostUpdate
+     * @PostUpdate()
      */
     public function postUpdate()
     {
@@ -69,7 +79,7 @@ abstract class CallbackDocument
     }
 
     /**
-     * @PreRemove
+     * @PreRemove()
      */
     public function preRemove()
     {
@@ -77,7 +87,7 @@ abstract class CallbackDocument
     }
 
     /**
-     * @PostRemove
+     * @PostRemove()
      */
     public function postRemove()
     {
@@ -85,7 +95,7 @@ abstract class CallbackDocument
     }
 
     /**
-     *  @PreLoad
+     * @PreLoad
      */
     public function preLoad()
     {
@@ -93,7 +103,7 @@ abstract class CallbackDocument
     }
 
     /**
-     *  @PostLoad
+     * @PostLoad()
      */
     public function postLoad()
     {
@@ -107,5 +117,4 @@ abstract class CallbackDocument
     {
         $this->preFlush = true;
     }
-
 }

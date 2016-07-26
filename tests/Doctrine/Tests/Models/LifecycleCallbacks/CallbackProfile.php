@@ -2,9 +2,11 @@
 
 namespace Doctrine\Tests\Models\LifecycleCallbacks;
 
+use Doctrine\ODM\CouchDB\Mapping\Annotations\EmbeddedDocument;
+use Doctrine\ODM\CouchDB\Mapping\Annotations\EmbedOne;
+
 /**
- *
- * @EmbeddedDocument
+ * @EmbeddedDocument()
  */
 class CallbackProfile extends CallbackDocument
 {

@@ -2,15 +2,20 @@
 
 namespace Doctrine\Tests\Models\LifecycleCallbacks;
 
+use Doctrine\ODM\CouchDB\Mapping\Annotations\Document;
+use Doctrine\ODM\CouchDB\Mapping\Annotations\EmbedMany;
+use Doctrine\ODM\CouchDB\Mapping\Annotations\EmbedOne;
+use Doctrine\ODM\CouchDB\Mapping\Annotations\HasLifecycleCallbacks;
+use Doctrine\ODM\CouchDB\Mapping\Annotations\Id;
+
 /**
- *
- * @Document
- * @HasLifecycleCallbacks
+ * @Document()
+ * @HasLifecycleCallbacks()
  */
 class CallbackUser extends CallbackDocument
 {
     /**
-     * @Id
+     * @Id()
      */
     public $id;
 

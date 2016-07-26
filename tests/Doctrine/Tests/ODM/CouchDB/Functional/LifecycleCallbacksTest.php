@@ -2,16 +2,15 @@
 
 namespace Doctrine\Tests\ODM\CouchDB\Functional;
 
-use Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase;
+use Doctrine\ODM\CouchDB\DocumentManager;
 use Doctrine\Tests\Models\LifecycleCallbacks\CallbackProfile;
 use Doctrine\Tests\Models\LifecycleCallbacks\CallbackUser;
+use Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase;
 
 class LifecycleCallbacksTest extends CouchDBFunctionalTestCase
 {
-
     /**
-     *
-     * @var \Doctrine\ODM\CouchDB\DocumentManager
+     * @var DocumentManager
      */
     private $dm;
 
@@ -28,6 +27,7 @@ class LifecycleCallbacksTest extends CouchDBFunctionalTestCase
         $user->profile->name = 'Jonathan H. Wage';
         $this->dm->persist($user);
         $this->dm->flush();
+
         return $user;
     }
 
@@ -37,6 +37,7 @@ class LifecycleCallbacksTest extends CouchDBFunctionalTestCase
         $this->dm->clear();
 
         $user = $this->dm->find('Doctrine\Tests\Models\LifecycleCallbacks\CallbackUser', $user->id);
+        $this->assertTrue($user->preUpdate);
         $this->assertInstanceOf('DateTime', $user->createdAt);
         $this->assertInstanceOf('DateTime', $user->profile->createdAt);
 
@@ -113,8 +114,9 @@ class LifecycleCallbacksTest extends CouchDBFunctionalTestCase
 
     public function testEmbedManyEvent()
     {
-        $user = new User();
+        $user = new CallbackUser();
         $user->name = 'jon';
+
         $profile = new CallbackProfile();
         $profile->name = 'testing cool ya';
         $user->profiles[] = $profile;
