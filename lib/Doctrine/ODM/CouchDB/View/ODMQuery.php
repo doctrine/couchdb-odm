@@ -44,6 +44,13 @@ class ODMQuery extends Query
         if ($this->dm && $this->getParameter('include_docs') === true) {
             $uow = $this->dm->getUnitOfWork();
             foreach ($response->body['rows'] AS $k => $v) {
+                // Due to some CouchDB bug sometimes 'doc' is empty in the response
+                // In this case we are copying data from 'value'
+                if (empty($v['doc']) && !empty($v['value'])) {
+                    $v['doc'] = $v['value'];
+                    // Unset _conflicts technical field
+                    unset($v['doc']['_conflicts']);
+                }
                 $doc = $uow->createDocument(null, $v['doc']);
                 if ($this->toArray) {
                     $data[] = $doc;
