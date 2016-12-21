@@ -32,7 +32,7 @@ class WarmupAllViewsCommand extends Command
             ->setDescription('Trigger all views and start the indexer.')
             ->setDefinition(
                 array(
-                    new InputOption('allAtOnce', 'a', InputOption::VALUE_NONE, 'Trigger all views at once otherwise sequential', null),
+                    new InputOption('update-after', 'a', InputOption::VALUE_NONE, 'Trigger all views at once otherwise sequential', null),
                 )
             );
     }
@@ -56,7 +56,7 @@ class WarmupAllViewsCommand extends Command
 
                     $query = $dm->createQuery($docName, $view)->setLimit(1);
 
-                    if ($input->getOption('allAtOnce')) {
+                    if ($input->getOption('update-after')) {
                         $query->setStale('update_after');
                     }
 
