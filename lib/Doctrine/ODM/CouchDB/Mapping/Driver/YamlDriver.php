@@ -165,7 +165,7 @@ class YamlDriver extends FileDriver
 
     protected function loadMappingFile($file)
     {
-        return Yaml::parse($file);
+        return Yaml::parse(file_get_contents($file));
     }
 
     /**
