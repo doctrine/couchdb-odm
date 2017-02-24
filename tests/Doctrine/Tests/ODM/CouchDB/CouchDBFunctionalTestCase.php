@@ -10,7 +10,7 @@ use Doctrine\ODM\CouchDB\Mapping\Driver\AnnotationDriver;
 use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Annotations\AnnotationReader;
 
-abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
+abstract class CouchDBFunctionalTestCase extends \PHPUnit\Framework\TestCase
 {
     private $httpClient = null;
 

@@ -5,7 +5,7 @@ namespace Doctrine\Tests\ODM\CouchDB\Mapping;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 use Doctrine\Common\Persistence\Mapping\RuntimeReflectionService;
 
-class ClassMetadataTest extends \PHPUnit_Framework_TestCase
+class ClassMetadataTest extends \PHPUnit\Framework\TestCase
 {
     public function testClassName()
     {
