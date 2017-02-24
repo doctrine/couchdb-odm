@@ -56,7 +56,7 @@ class ClassMetadataTest extends \PHPUnit\Framework\TestCase
      */
     public function testmapFieldWithoutNameThrowsException($cm)
     {
-        $this->setExpectedException('Doctrine\ODM\CouchDB\Mapping\MappingException');
+        $this->expectException('Doctrine\ODM\CouchDB\Mapping\MappingException');
 
         $cm->mapField(array());
     }

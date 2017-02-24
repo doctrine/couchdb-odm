@@ -84,7 +84,7 @@ class UnitOfWorkTest extends CouchDBTestCase
 
     public function testScheduleInsert_ForAssignedIdGenerator_WithoutId()
     {
-        $this->setExpectedException('Doctrine\ODM\CouchDB\CouchDBException');
+        $this->expectException('Doctrine\ODM\CouchDB\CouchDBException');
 
         $object = new UoWUser();
         $object->username = "bar";

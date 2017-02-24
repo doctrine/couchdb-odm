@@ -14,7 +14,7 @@ class ConfigurationTest extends CouchDBTestCase
         $config->setDocumentNamespaces(array('foo' => 'Documents\Bar'));
         $this->assertEquals('Documents\Bar', $config->getDocumentNamespace('foo'));
 
-        $this->setExpectedException('Doctrine\ODM\CouchDB\CouchDBException');
+        $this->expectException('Doctrine\ODM\CouchDB\CouchDBException');
         $config->getDocumentNamespace('bar');
     }
 }

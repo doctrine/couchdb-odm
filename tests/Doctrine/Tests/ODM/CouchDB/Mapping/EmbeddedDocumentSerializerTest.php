@@ -123,7 +123,7 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
         $this->arrayDataFixture['embedAny'] = $this->embedAnyFixture;
         unset($this->arrayDataFixture['embedAny']['any_2']['doctrine_metadata']);
 
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         $instance = $this->serializer->createEmbeddedDocument(
             $this->arrayDataFixture,
             $embedderMetadata->fieldMappings['embedAny']);
@@ -136,7 +136,7 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
             $this->metadataFactory->getMetadataFor('Doctrine\Tests\ODM\CouchDB\Mapping\Embedder');
 
         $this->arrayDataFixture['embeds']['two']['type'] = 'Doctrine.Tests.ODM.CouchDB.Mapping.Embedded';
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         $instance = $this->serializer->createEmbeddedDocument(
             $this->arrayDataFixture,
             $embedderMetadata->fieldMappings['embedAny']);
@@ -188,7 +188,7 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
 
         $embedder->embedded = $embedded;
 
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         $arrayData = $this->serializer->serializeEmbeddedDocument(
             $embedded,
             $embedderMetadata->fieldMappings['embedded']);

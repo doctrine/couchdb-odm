@@ -15,7 +15,7 @@ class ClassMetadataFactoryTest extends \PHPUnit\Framework\TestCase
     {
         $cmf = new ClassMetadataFactory($this->dm);
 
-        $this->setExpectedException('Doctrine\ODM\CouchDB\Mapping\MappingException');
+        $this->expectException('Doctrine\ODM\CouchDB\Mapping\MappingException');
         $cmf->getMetadataFor('unknown');
     }
 

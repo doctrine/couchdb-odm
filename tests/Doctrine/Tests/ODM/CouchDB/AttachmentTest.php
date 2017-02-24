@@ -72,7 +72,7 @@ class AttachmentTest extends CouchDBTestCase
                    ->will($this->returnValue( $errorResponse ));
         $attachment = Attachment::createStub('plain/text', 28, 2, $httpClient, $path);
 
-        $this->setExpectedException('Doctrine\CouchDB\HTTP\HTTPException');
+        $this->expectException('Doctrine\CouchDB\HTTP\HTTPException');
         $attachment->getRawData();
     }
 

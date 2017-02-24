@@ -18,7 +18,7 @@ class ReferenceTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $dm = $this->createDocumentManager();
         $user1 = $dm->getReference('Doctrine\Tests\Models\CMS\CmsUser', 1);
 
-        $this->setExpectedException('Doctrine\ODM\CouchDB\DocumentNotFoundException');
+        $this->expectException('Doctrine\ODM\CouchDB\DocumentNotFoundException');
         $user1->getUsername();
     }
 
