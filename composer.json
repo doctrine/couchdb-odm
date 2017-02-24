@@ -18,7 +18,7 @@
     },
     "require-dev": {
         "symfony/yaml": "~2.0|~3.0",
-        "phpunit/phpunit": "@stable"
+        "phpunit/phpunit": "^4.8, <5.0"
     },
     "suggest": {
         "symfony/yaml": "If you want to use YAML Mappings"
