@@ -18,7 +18,7 @@ matrix:
         - php: hhvm
 
 before_script:
-  - curl -X PUT localhost:5984/doctrine_test_database
+  - for i in {1..5}; do curl -X PUT localhost:5984/doctrine_test_database && break || sleep 15; done
   - composer self-update
   - composer install
 
