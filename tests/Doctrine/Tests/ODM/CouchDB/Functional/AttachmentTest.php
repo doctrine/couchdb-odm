@@ -16,6 +16,15 @@ class AttachmentTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
         $this->dm = $this->createDocumentManager();
         $client = $this->dm->getHttpClient();
         $response = $client->request('PUT', '/' . $this->getTestDatabase() . '/user_with_attachment', \file_get_contents(__DIR__ . "/_files/user_with_attachment.json"));
+        $response = $client->request('PUT', '/' . $this->getTestDatabase() . '/attachment_with_spaces_in_name', \file_get_contents(__DIR__ . "/_files/attachment_with_spaces_in_name.json"));
+    }
+
+    public function testGetAttachmentWithSpacesInName()
+    {
+        $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', 'attachment_with_spaces_in_name');
+        $this->assertArrayHasKey('attachment with spaces.txt', $user->attachments);
+        $this->assertInstanceOf('Doctrine\CouchDB\Attachment', $user->attachments['attachment with spaces.txt']);
+        $this->assertEquals('This is a base64 encoded text', $user->attachments['attachment with spaces.txt']->getRawData());
     }
 
     public function testHydrateAttachments()

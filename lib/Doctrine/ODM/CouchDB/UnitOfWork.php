@@ -291,7 +291,7 @@ class UnitOfWork
         $basePath = '/' . $this->dm->getCouchDBClient()->getDatabase() . '/' . $documentId . '/';
         foreach ($data AS $filename => $attachment) {
             if (isset($attachment['stub']) && $attachment['stub']) {
-                $instance = Attachment::createStub($attachment['content_type'], $attachment['length'], $attachment['revpos'], $client, $basePath . $filename);
+                $instance = Attachment::createStub($attachment['content_type'], $attachment['length'], $attachment['revpos'], $client, $basePath . urlencode($filename));
             } else if (isset($attachment['data'])) {
                 $instance = Attachment::createFromBase64Data($attachment['data'], $attachment['content_type'], $attachment['revpos']);
             }
