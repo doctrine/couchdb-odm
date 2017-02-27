@@ -38,10 +38,13 @@ class EmbeddedDocumentSerializer
 
     private $metadataResolver;
 
-    public function __construct($metadataFactory, $metadataResolver)
+    private $documentManager;
+
+    public function __construct($metadataFactory, $metadataResolver, $documentManager = null)
     {
         $this->metadataFactory = $metadataFactory;
         $this->metadataResolver = $metadataResolver;
+        $this->documentManager = $documentManager;
     }
 
     /**
@@ -169,7 +172,19 @@ class EmbeddedDocumentSerializer
                                           $class->fieldMappings[$fieldName]['fieldName'],
                                           $fieldValue);
 
+                } elseif ($this->documentManager !== null && isset($class->associationsMappings) && $class->associationsMappings[$fieldName]) {
+                    if ($jsonValue === null) {
+                        $fieldValue = null;
+                    }
 
+                    // call manager
+                    $associations = $this->metadataResolver->resolveJsonField($class, $this->documentManager, $documentState, 'doctrine_metadata', $data);
+
+                    foreach ($associations as $assoName => $association) {
+                        $class->setFieldValue($instance,
+                            $assoName,
+                            $association);
+                    }
                 }
             } else {
                 //$nonMappedData[$jsonName] = $jsonValue;
