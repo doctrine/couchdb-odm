@@ -1,0 +1,12 @@
+{
+   "_id": "attachment_with_spaces_in_name",
+   "_attachments":
+   {
+        "attachment with spaces.txt":
+        {
+            "content_type":"text\/plain",
+            "data": "VGhpcyBpcyBhIGJhc2U2NCBlbmNvZGVkIHRleHQ="
+        }
+    },
+    "type": "Doctrine.Tests.Models.CMS.CmsUser"
+}
