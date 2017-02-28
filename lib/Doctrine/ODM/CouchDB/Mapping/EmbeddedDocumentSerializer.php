@@ -215,6 +215,34 @@ class EmbeddedDocumentSerializer
 
         $class = $this->metadataFactory->getMetadataFor(get_class($value));
         foreach ($class->reflFields as $fieldName => $fieldValue) {
+
+            if (isset($class->associationsMappings[$fieldName])) {
+
+                $fieldMapping = $class->associationsMappings[$fieldName];
+                $originalDataValue = isset($originalData[$fieldMapping['jsonName']])
+                    ? $originalData[$fieldMapping['jsonName']]
+                    : null;
+
+                $currentValueObject = $class->getFieldValue($value, $fieldMapping['fieldName']);
+                $currentValue = null;
+                if ($currentValueObject !== null) {
+                    $fieldValueMetadata = $this->metadataFactory->getMetadataFor(get_class($currentValueObject));
+                    $currentValue = $fieldValueMetadata->getIdentifierValue($currentValueObject);
+                }
+
+                if ($originalDataValue === null && $currentValue === null) {
+                    continue;
+                } else if ($originalDataValue === null || $currentValue === null) {
+                    return true;
+                }
+
+                if ($originalDataValue !== $currentValue) {
+                    return true;
+                }
+
+                continue;
+            }
+
             $fieldMapping = $class->fieldMappings[$fieldName];
             $originalDataValue = isset($originalData[$fieldMapping['jsonName']])
                 ? $originalData[$fieldMapping['jsonName']]
