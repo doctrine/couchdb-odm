@@ -227,7 +227,11 @@ class ProxyFactory
 
                 $return = '';
                 if (method_exists($method, 'getReturnType') && (null !== $r = $method->getReturnType()) && $r !== 'void') {
-                    $return = ': \\' . $r;
+                    $return .= ': ';
+                    if (!$r->isBuiltin()) {
+                        $return .= '\\';
+                    }
+                    $return .= $r;
                 }
 
                 $methods .= $parameterString . ')' . $return;
