@@ -22,7 +22,7 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
         $dm = $this->createDocumentManager();
         $this->metadataFactory = new ClassMetadataFactory($dm);
         $resolver = new DoctrineResolver();
-        $this->serializer = new EmbeddedDocumentSerializer($this->metadataFactory, $resolver);
+        $this->serializer = new EmbeddedDocumentSerializer($this->metadataFactory, $resolver, $dm);
 
         $this->arrayDataFixture = array(
             'type' => 'Doctrine.Tests.ODM.CouchDB.Mapping.Embedded',

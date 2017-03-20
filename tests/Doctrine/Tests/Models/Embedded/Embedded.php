@@ -16,9 +16,17 @@ class Embedded {
      * @EmbedMany
      */
     public $embeds = array();
-    
+
     /**
      * @Field
      */
-    public $arrayField;
+    public $arrayField;    
+
+    /** 
+     * @ReferenceOne(targetDocument="EmbeddedReference") 
+     * @var EmbeddedReference
+     */
+    public $reference;
+    
+    
 }
