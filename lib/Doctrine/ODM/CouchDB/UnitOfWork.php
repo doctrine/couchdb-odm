@@ -825,6 +825,7 @@ class UnitOfWork
                         $this->dm,
                         array()
                     );
+                    $coll->setChanged( ! $value->isEmpty());
                 } else {
                     $coll = new PersistentViewCollection(
                         $value,

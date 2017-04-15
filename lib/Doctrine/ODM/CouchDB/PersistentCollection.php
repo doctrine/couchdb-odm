@@ -47,6 +47,11 @@ abstract class PersistentCollection implements Collection
     {
         $this->changed = false;
     }
+    
+    public function setChanged($changed)
+    {
+        $this->changed = $changed;
+    }
 
     public function unwrap()
     {
