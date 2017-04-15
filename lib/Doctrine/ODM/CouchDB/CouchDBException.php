@@ -57,6 +57,19 @@ class CouchDBException extends \Exception
         return new self("Trying to persist document that is scheduled for removal.");
     }
 
+    public static function findByRequiresParameter($methodName)
+    {
+        return new self("You need to pass a parameter to '".$methodName."'");
+    }
+
+    public static function invalidFindByCall($documentName, $fieldName, $method)
+    {
+        return new self(
+            "Document '".$documentName."' has no field '".$fieldName."'. ".
+            "You can therefore not call '".$method."' on the documents' repository."
+        );
+    }
+
     public static function luceneNotConfigured()
     {
         return  new self("CouchDB Lucene is not configured. You have to configure the handler name to enable support for Lucene Queries.");
