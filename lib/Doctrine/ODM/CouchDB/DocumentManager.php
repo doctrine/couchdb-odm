@@ -364,7 +364,7 @@ class DocumentManager implements ObjectManager
         if ($obj instanceof PersistentCollection) {
             $obj->initialize();
         } else if ($obj instanceof Proxy\Proxy) {
-            $obj->__doctrineLoad__();
+            $obj->__load();
         }
     }
 }
