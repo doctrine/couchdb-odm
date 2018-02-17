@@ -192,6 +192,8 @@ class ProxyFactory
                         $parameterString .= '\\' . $paramClass->getName() . ' ';
                     } else if ($param->isArray()) {
                         $parameterString .= 'array ';
+                    } else if (method_exists($param, 'getType')) {
+                        $parameterString .= (null===$param->getType() ? '' : $param->getType()) . ' ';
                     }
 
                     if ($param->isPassedByReference()) {
@@ -206,7 +208,16 @@ class ProxyFactory
                     }
                 }
 
-                $methods .= $parameterString . ')';
+                $return = '';
+                if (method_exists($method, 'getReturnType') && (null !== $r = $method->getReturnType()) && $r !== 'void') {
+                    $return .= ': ';
+                    if (!$r->isBuiltin()) {
+                        $return .= '\\';
+                    }
+                    $return .= $r;
+                }
+
+                $methods .= $parameterString . ')' . $return;
                 $methods .= PHP_EOL . '    {' . PHP_EOL;
                 $methods .= '        $this->__load();' . PHP_EOL;
                 $methods .= '        return parent::' . $method->getName() . '(' . $argumentString . ');';

@@ -21,10 +21,13 @@ class EmbeddedDocumentSerializer
 
     private $metadataResolver;
 
-    public function __construct($metadataFactory, $metadataResolver)
+    private $documentManager;
+
+    public function __construct($metadataFactory, $metadataResolver, $documentManager = null)
     {
         $this->metadataFactory = $metadataFactory;
         $this->metadataResolver = $metadataResolver;
+        $this->documentManager = $documentManager;
     }
 
     /**
@@ -68,7 +71,40 @@ class EmbeddedDocumentSerializer
             $data = $this->metadataResolver->createDefaultDocumentStruct($embeddedClass);
             foreach($embeddedClass->reflFields AS $fieldName => $reflProperty) {
                 $value = $reflProperty->getValue($embeddedValue);
-                $fieldMapping = $embeddedClass->fieldMappings[$fieldName];
+                
+                if (isset($fieldName, $embeddedClass->fieldMappings[$fieldName])) {
+                    $fieldMapping = $embeddedClass->fieldMappings[$fieldName];
+                } elseif (isset($embeddedClass->associationsMappings, $embeddedClass->associationsMappings[$fieldName])) {
+                    /** @see UnitOfWork::flush() */
+                    if ($embeddedClass->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE) {
+                        $fieldValue = null;
+                        if (\is_object($value)) {
+                            $fieldValueMetadata = $this->metadataFactory->getMetadataFor(get_class($value));
+                            $fieldValue = $fieldValueMetadata->getIdentifierValue($value);
+                        }
+                        $data['doctrine_metadata']['associations'][] = $fieldName;
+                        $data[$fieldName] = $fieldValue;
+                    } else if ($embeddedClass->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_MANY) {
+
+                        if ($embeddedClass->associationsMappings[$fieldName]['isOwning']) {
+                            // TODO: Optimize when not initialized yet! In ManyToMany case we can keep track of ALL ids
+                            $ids = array();
+                            if (is_array($value) || $value instanceof \Doctrine\Common\Collections\Collection) {
+                                foreach ($value AS $key => $relatedObject) {
+                                    $fieldValueMetadata = $this->metadataFactory->getMetadataFor(get_class($relatedObject));
+                                    $ids[$key] = $fieldValueMetadata->getIdentifierValue($relatedObject);
+                                }
+                            }
+
+                            $data['doctrine_metadata']['associations'][] = $ids;
+                            $data[$fieldName] = $ids;
+                        }
+                    }
+
+                    continue;
+                } else {
+                    $fieldMapping = [];
+                }
 
                 if ($value === null) {
                     continue;
@@ -80,6 +116,7 @@ class EmbeddedDocumentSerializer
                 }
             }
         }
+        
         return $data;
     }
 
@@ -152,7 +189,19 @@ class EmbeddedDocumentSerializer
                                           $class->fieldMappings[$fieldName]['fieldName'],
                                           $fieldValue);
 
+                } elseif ($this->documentManager !== null && isset($class->associationsMappings) && $class->associationsMappings[$fieldName]) {
+                    if ($jsonValue === null) {
+                        $fieldValue = null;
+                    }
 
+                    // call manager
+                    $associations = $this->metadataResolver->resolveJsonField($class, $this->documentManager, $documentState, 'doctrine_metadata', $data);
+
+                    foreach ($associations as $assoName => $association) {
+                        $class->setFieldValue($instance,
+                            $assoName,
+                            $association);
+                    }
                 }
             } else {
                 //$nonMappedData[$jsonName] = $jsonValue;
@@ -198,6 +247,34 @@ class EmbeddedDocumentSerializer
 
         $class = $this->metadataFactory->getMetadataFor(get_class($value));
         foreach ($class->reflFields as $fieldName => $fieldValue) {
+
+            if (isset($class->associationsMappings[$fieldName])) {
+
+                $fieldMapping = $class->associationsMappings[$fieldName];
+                $originalDataValue = isset($originalData[$fieldMapping['jsonName']])
+                    ? $originalData[$fieldMapping['jsonName']]
+                    : null;
+
+                $currentValueObject = $class->getFieldValue($value, $fieldMapping['fieldName']);
+                $currentValue = null;
+                if ($currentValueObject !== null) {
+                    $fieldValueMetadata = $this->metadataFactory->getMetadataFor(get_class($currentValueObject));
+                    $currentValue = $fieldValueMetadata->getIdentifierValue($currentValueObject);
+                }
+
+                if ($originalDataValue === null && $currentValue === null) {
+                    continue;
+                } else if ($originalDataValue === null || $currentValue === null) {
+                    return true;
+                }
+
+                if ($originalDataValue !== $currentValue) {
+                    return true;
+                }
+
+                continue;
+            }
+
             $fieldMapping = $class->fieldMappings[$fieldName];
             $originalDataValue = isset($originalData[$fieldMapping['jsonName']])
                 ? $originalData[$fieldMapping['jsonName']]

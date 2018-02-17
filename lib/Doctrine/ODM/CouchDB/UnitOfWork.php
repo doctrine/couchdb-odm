@@ -124,8 +124,10 @@ class UnitOfWork
         $this->metadataResolver = $dm->getConfiguration()->getMetadataResolverImpl();
         $this->migrations = $dm->getConfiguration()->getMigrations();
 
-        $this->embeddedSerializer = new Mapping\EmbeddedDocumentSerializer($this->dm->getMetadataFactory(),
-                                                                           $this->metadataResolver);
+        $this->embeddedSerializer = new Mapping\EmbeddedDocumentSerializer(
+            $dm->getMetadataFactory(),
+            $this->metadataResolver,
+            $dm);
     }
 
     private function assertValidDocumentType($documentName, $document, $type)

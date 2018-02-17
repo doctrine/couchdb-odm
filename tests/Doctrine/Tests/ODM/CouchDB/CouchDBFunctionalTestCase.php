@@ -59,8 +59,17 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
         $metaDriver = new AnnotationDriver($reader, $paths);
 
         $config = $this->createConfiguration($metaDriver);
+        
+        if($this->isVersion2($couchDBClient)){
+            $config->setAllOrNothingFlush(false);
+        }
 
         return DocumentManager::create($couchDBClient, $config);
+    }
+
+    protected function isVersion2(CouchDBClient $couchDBClient)
+    {
+        return substr($couchDBClient->getVersion(), 0, 1)==="2";
     }
 
     public function createConfiguration($metaDriver)
