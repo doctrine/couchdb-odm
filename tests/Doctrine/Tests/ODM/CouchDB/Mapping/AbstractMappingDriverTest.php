@@ -127,7 +127,7 @@ abstract class AbstractMappingDriverTest extends \PHPUnit_Framework_TestCase
             'fieldName' => 'address',
             'jsonName' => 'address',
             'embedded' => 'one',
-            'targetDocument' => '',
+            'targetDocument' => null,
             'type' => 'mixed',
         ), $class->fieldMappings['address']);
     }

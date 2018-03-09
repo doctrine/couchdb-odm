@@ -140,7 +140,7 @@ class XmlDriver extends FileDriver
         if (isset($xmlRoot->{'embed-one'})) {
             foreach ($xmlRoot->{'embed-one'} AS $embedOneElement) {
                 $class->mapEmbedded(array(
-                    'targetDocument'    => (string)$embedOneElement['target-document'],
+                    'targetDocument'    => (isset($embedOneElement['target-document']) ? (string)$embedOneElement['target-document'] : null),
                     'fieldName'         => (string)$embedOneElement['field'],
                     'jsonName'          => (isset($embedOneElement['json-name'])) ? (string)$embedOneElement['json-name'] : null,
                     'embedded'          => 'one',
