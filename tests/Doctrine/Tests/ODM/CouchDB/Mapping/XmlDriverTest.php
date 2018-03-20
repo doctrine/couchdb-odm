@@ -11,4 +11,21 @@ class XmlDriverTest extends AbstractMappingDriverTest
     {
         return new XmlDriver(array(__DIR__."/xml"));
     }
+
+    public function testEmbedManyWithoutTargetDocuments()
+    {
+        $className = 'Doctrine\Tests\XML\EmbedMany';
+        $mappingDriver = $this->loadDriver();
+
+        $class = new ClassMetadata($className);
+        $class->namespace = 'Doctrine\Tests\XML';
+        $mappingDriver->loadMetadataForClass($className, $class);
+
+        $this->assertTrue(isset($class->fieldMappings['embeddedField']));
+        $this->assertArrayHasKey(
+            'targetDocument',
+            $class->fieldMappings['embeddedField']
+        );
+        $this->assertNull($class->fieldMappings['embeddedField']['targetDocument']);
+    }
 }
