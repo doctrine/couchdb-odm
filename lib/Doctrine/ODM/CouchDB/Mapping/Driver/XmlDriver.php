@@ -152,7 +152,7 @@ class XmlDriver extends FileDriver
         if (isset($xmlRoot->{'embed-many'})) {
             foreach ($xmlRoot->{'embed-many'} AS $embedManyElement) {
                 $class->mapEmbedded(array(
-                    'targetDocument'    => (string)$embedManyElement['target-document'],
+                    'targetDocument'    => (isset($embedManyElement['target-document']) ? (string)$embedManyElement['target-document'] : null),
                     'fieldName'         => (string)$embedManyElement['field'],
                     'jsonName'          => (isset($embedManyElement['json-name'])) ? (string)$embedManyElement['json-name'] : null,
                     'embedded'          => 'many',
