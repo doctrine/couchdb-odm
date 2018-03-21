@@ -35,6 +35,6 @@ class InsertPerformanceTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctiona
 
         $diff = microtime(true) - $s;
 
-        $this->assertTrue($diff < 1.0, "Inserting " . $n . " documents shouldn't take longer than one second, took " . $diff . " seconds.");
+        $this->assertLessThan(1.0, $diff, "Inserting " . $n . " documents shouldn't take longer than one second, took " . $diff . " seconds.");
     }
 }

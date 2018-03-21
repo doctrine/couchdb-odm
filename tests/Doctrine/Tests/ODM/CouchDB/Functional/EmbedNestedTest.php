@@ -51,7 +51,7 @@ class EmbedNestedTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestC
         $this->assertInstanceOf($this->embeddedType, $embedded);
 
         $nesteds = $embedded->embeds;
-        $this->assertEquals(2, count($nesteds));
+        $this->assertCount(2, $nesteds);
 
         $nested = $nesteds[0];
         $this->assertInstanceOf($this->nestedType, $nested);

@@ -44,7 +44,7 @@ class InheritenceTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestC
 
         $parent = $dm->find(__NAMESPACE__ . '\\CODM25Parent', $parent->id);
 
-        $this->assertEquals(2, count($parent->childs));
+        $this->assertCount(2, $parent->childs);
         $this->assertInstanceOf(__NAMESPACE__ . '\\CODM25ChildA', $parent->childs[0]);
         $this->assertEquals('bar', $parent->childs[0]->foo);
         $this->assertInstanceOf(__NAMESPACE__ . '\\CODM25ChildA', $parent->childs[1]);
@@ -91,7 +91,7 @@ class InheritenceTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestC
 
         $parent = $dm->find(__NAMESPACE__ . '\\CODM25Parent', $parent->id);
 
-        $this->assertEquals(2, count($parent->embeds));
+        $this->assertCount(2, $parent->embeds);
         $this->assertInstanceOf(__NAMESPACE__ . '\\CODM25ChildA', $parent->embeds[0]);
         $this->assertEquals('bar', $parent->embeds[0]->foo);
         $this->assertInstanceOf(__NAMESPACE__ . '\\CODM25ChildA', $parent->embeds[1]);

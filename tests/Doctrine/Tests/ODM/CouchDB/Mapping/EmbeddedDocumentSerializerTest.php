@@ -68,7 +68,7 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
         $this->assertEquals('embedded-1', $instance->name);
         $this->assertTrue($instance->embeds->containsKey('one'));
         $this->assertTrue($instance->embeds->containsKey('two'));
-        $this->assertEquals(2, count($instance->embeds));
+        $this->assertCount(2, $instance->embeds);
     }
 
     public function testCreateEmbeddedNoTargetDocument()
@@ -86,7 +86,7 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
             $this->embedAnyFixture,
             $embedderMetadata->fieldMappings['embedAny']);
         $this->assertInstanceOf('Doctrine\Common\Collections\ArrayCollection',$instance);
-        $this->assertEquals(2, count($instance));
+        $this->assertCount(2, $instance);
         $this->assertTrue($instance->containsKey('any_1'));
         $this->assertTrue($instance->containsKey('any_2'));
         $this->assertInstanceOf('Doctrine\Tests\ODM\CouchDB\Mapping\Embedded', $instance['any_1']);
@@ -112,7 +112,7 @@ class EmbeddedDocumentSerializerTest extends \Doctrine\Tests\ODM\CouchDB\CouchDB
         $this->assertEquals('embedded-1', $instance->name);
         $this->assertTrue($instance->embeds->containsKey('one'));
         $this->assertTrue($instance->embeds->containsKey('two'));
-        $this->assertEquals(2, count($instance->embeds));
+        $this->assertCount(2, $instance->embeds);
     }
 
     public function testCreateThorwsWhenNoTargetNoMetadata()

@@ -48,7 +48,7 @@ class CascadePersistTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTe
         $this->dm->clear();
 
         $pUser = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $user->id);
-        $this->assertEquals(2, count($pUser->groups));
+        $this->assertCount(2, $pUser->groups);
     }
 
     public function testCascadePersistForManagedEntity()
@@ -76,7 +76,7 @@ class CascadePersistTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTe
         $this->dm->clear();
 
         $pUser = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $user->id);
-        $this->assertEquals(2, count($pUser->groups));
+        $this->assertCount(2, $pUser->groups);
     }
 
     public function testCascadePersistSingleDocument()
@@ -127,7 +127,7 @@ class CascadePersistTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTe
         $this->dm->clear();
 
         $pUser = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $user->id);
-        $this->assertEquals(2, count($pUser->groups));
+        $this->assertCount(2, $pUser->groups);
     }
 
     public function testCascadeManagedDocumentReferenceDuringFlush()

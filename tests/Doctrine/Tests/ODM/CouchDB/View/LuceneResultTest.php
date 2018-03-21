@@ -58,7 +58,7 @@ class LuceneResultTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCase
     {
         $result = new LuceneResult(array('limit' => 1, "rows" => array(0 => array("_id" => "foo", "score" => 1234))));
 
-        $this->assertEquals(1, count($result));
+        $this->assertCount(1, $result);
     }
 
     public function testArrayAccessForRows()

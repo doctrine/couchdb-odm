@@ -44,14 +44,9 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
 
         $response = $db->request( 'PUT', '/' . $this->getTestDatabase() );
 
-        $this->assertTrue(
-            $response instanceof HTTP\Response
-        );
+        $this->assertInstanceOf('Doctrine\CouchDB\HTTP\Response', $response);
 
-        $this->assertSame(
-            true,
-            $response->body['ok']
-        );
+        $this->assertTrue($response->body['ok']);
     }
 
     /**
@@ -62,13 +57,11 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
         $db = new HTTP\SocketClient();
 
         $response = $db->request( 'PUT', '/' . $this->getTestDatabase() );
-        $this->assertTrue(
-            $response instanceof HTTP\ErrorResponse
-        );
+        $this->assertInstanceOf('Doctrine\CouchDB\HTTP\ErrorResponse', $response);
 
         $this->assertSame( 412, $response->status );
         $this->assertSame(
-            array( 
+            array(
                 'error'  => 'file_exists',
                 'reason' => 'The database could not be created, the file already exists.',
             ),
@@ -85,9 +78,7 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
 
         $response = $db->request( 'GET', '/' );
 
-        $this->assertTrue(
-            $response instanceof HTTP\Response
-        );
+        $this->assertInstanceOf('Doctrine\CouchDB\HTTP\Response', $response);
 
         $this->assertSame(
             'Welcome',
@@ -104,14 +95,9 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
 
         $response = $db->request( 'PUT', '/' . $this->getTestDatabase() . '/123', '{"_id":"123","data":"Foo"}' );
 
-        $this->assertTrue(
-            $response instanceof HTTP\Response
-        );
+        $this->assertInstanceOf('Doctrine\CouchDB\HTTP\Response', $response);
 
-        $this->assertSame(
-            true,
-            $response->body['ok']
-        );
+        $this->assertTrue($response->body['ok']);
     }
 
     /**
@@ -124,9 +110,7 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
 
         $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/_all_docs' );
 
-        $this->assertTrue(
-            $response instanceof HTTP\Response
-        );
+        $this->assertInstanceOf('Doctrine\CouchDB\HTTP\Response', $response);
 
         $this->assertSame(
             1,
@@ -149,22 +133,16 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
 
         $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/123' );
 
-        $this->assertTrue(
-            $response instanceof HTTP\Response
-        );
+        $this->assertInstanceOf('Doctrine\CouchDB\HTTP\Response', $response);
 
         $this->assertSame(
             '123',
             $response->body['_id']
         );
 
-        $this->assertTrue(
-            isset( $response->body['_id'] )
-        );
+        $this->assertArrayHasKey('_id', $response->body);
 
-        $this->assertFalse(
-            isset( $response->body['unknownProperty'] )
-        );
+        $this->assertArrayNotHasKey('unknownProperty', $response->body);
     }
 
     /**
@@ -175,13 +153,11 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
         $db = new HTTP\SocketClient();
 
         $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/not_existant' );
-        $this->assertTrue(
-            $response instanceof HTTP\ErrorResponse
-        );
+        $this->assertInstanceOf('Doctrine\CouchDB\HTTP\ErrorResponse', $response);
 
         $this->assertSame( 404, $response->status );
         $this->assertSame(
-            array( 
+            array(
                 'error'  => 'not_found',
                 'reason' => 'missing',
             ),
@@ -202,13 +178,11 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
         } catch ( \Exception $e ) { /* Ignore */ }
 
         $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/not_existant' );
-        $this->assertTrue(
-            $response instanceof HTTP\ErrorResponse
-        );
+        $this->assertInstanceOf('Doctrine\CouchDB\HTTP\ErrorResponse', $response);
 
         $this->assertSame( 404, $response->status );
         $this->assertSame(
-            array( 
+            array(
                 'error'  => 'not_found',
                 'reason' => 'no_db_file',
             ),
@@ -225,13 +199,11 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
 
         $db->request( 'PUT', '/' . $this->getTestDatabase() );
         $response = $db->request( 'DELETE', '/' . $this->getTestDatabase() . '/not_existant' );
-        $this->assertTrue(
-            $response instanceof HTTP\ErrorResponse
-        );
+        $this->assertInstanceOf('Doctrine\CouchDB\HTTP\ErrorResponse', $response);
 
         $this->assertSame( 404, $response->status );
         $this->assertSame(
-            array( 
+            array(
                 'error'  => 'not_found',
                 'reason' => 'missing',
             ),
@@ -251,13 +223,11 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
         $db->request( 'DELETE', '/' . $this->getTestDatabase() . '/123?rev=' . $response->body['_rev'] );
 
         $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/123' );
-        $this->assertTrue(
-            $response instanceof HTTP\ErrorResponse
-        );
+        $this->assertInstanceOf('Doctrine\CouchDB\HTTP\ErrorResponse', $response);
 
         $this->assertSame( 404, $response->status );
         $this->assertSame(
-            array( 
+            array(
                 'error'  => 'not_found',
                 'reason' => 'deleted',
             ),
@@ -274,14 +244,9 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
 
         $response = $db->request( 'DELETE', '/' . $this->getTestDatabase() );
 
-        $this->assertTrue(
-            $response instanceof HTTP\Response
-        );
+        $this->assertInstanceOf('Doctrine\CouchDB\HTTP\Response', $response);
 
-        $this->assertSame(
-            true,
-            $response->body['ok']
-        );
+        $this->assertTrue($response->body['ok']);
     }
 
     /**
@@ -294,15 +259,11 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
         $db->request( 'PUT', '/' . $this->getTestDatabase() );
         $response = $db->request( 'GET', '/_all_dbs' );
 
-        $this->assertTrue(
-            $response instanceof HTTP\Response
-        );
+        $this->assertInstanceOf('Doctrine\CouchDB\HTTP\Response', $response);
 
-        $this->assertTrue(
-            is_array( $response->body )
-        );
+        $this->assertInternalType('array', $response->body);
 
-        $this->assertTrue(in_array(\Doctrine\Tests\ODM\CouchDB\TestUtil::getTestDatabase(), $response->body ));
+        $this->assertContains(\Doctrine\Tests\ODM\CouchDB\TestUtil::getTestDatabase(), $response->body);
     }
 
     /**
@@ -320,9 +281,7 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
 
         $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/_all_docs' );
 
-        $this->assertTrue(
-            $response instanceof HTTP\Response
-        );
+        $this->assertInstanceOf('Doctrine\CouchDB\HTTP\Response', $response);
 
         $this->assertSame(
             4,
@@ -345,9 +304,7 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
 
         $response = $db->request( 'GET', '/' . $this->getTestDatabase() . '/_all_docs' );
 
-        $this->assertTrue(
-            $response instanceof HTTP\Response
-        );
+        $this->assertInstanceOf('Doctrine\CouchDB\HTTP\Response', $response);
 
         $this->assertSame(
             4,
@@ -370,4 +327,3 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
         }
     }
 }
-
