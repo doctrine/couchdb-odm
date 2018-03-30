@@ -42,7 +42,7 @@ class CascadeRefreshTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTe
 
         $this->dm->flush();
 
-        $this->assertEquals(1, count($user->groups));
+        $this->assertCount(1, $user->groups);
 
         $group1->name = "Test2";
         $user->username = "beberlei2";

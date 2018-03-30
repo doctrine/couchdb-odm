@@ -33,7 +33,7 @@ class EmbedManyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
     {
         $embedder = $this->dm->find($this->type, 1);
         $this->assertInstanceOf($this->type, $embedder);
-        $this->assertEquals(2, count($embedder->embeds));
+        $this->assertCount(2, $embedder->embeds);
         $this->assertEquals('embedded 1', $embedder->embeds[0]->name);
         $this->assertEquals('embedded 2', $embedder->embeds[1]->name);
     }
@@ -46,7 +46,7 @@ class EmbedManyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $embedder = $this->dm->find($this->type, 1);
         $this->dm->flush();
 
-        $this->assertEquals(0, count($listener->eventArgs));
+        $this->assertCount(0, $listener->eventArgs);
     }
 
     public function testSave()
@@ -62,7 +62,7 @@ class EmbedManyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $this->dm->clear();
 
         $embedder = $this->dm->find($this->type, 1);
-        $this->assertEquals(3, count($embedder->embeds));
+        $this->assertCount(3, $embedder->embeds);
         $this->assertEquals('new one', $embedder->embeds[2]->name);
 
         $embedder->embeds[0]->name = 'changed';
@@ -72,10 +72,10 @@ class EmbedManyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $this->dm->clear();
 
         $embedder = $this->dm->find($this->type, 1);
-        $this->assertEquals(3, count($embedder->embeds));
+        $this->assertCount(3, $embedder->embeds);
         $this->assertEquals('foo', $embedder->name);
         $this->assertEquals('changed', $embedder->embeds[0]->name);
-        $this->assertEquals(1, count($embedder->embeds[0]->arrayField));
+        $this->assertCount(1, $embedder->embeds[0]->arrayField);
         $this->assertEquals('bar', $embedder->embeds[0]->arrayField[0]);
 
     }
@@ -100,7 +100,7 @@ class EmbedManyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $this->assertNull($newOne);
         $newOne = $this->dm->find($this->type, 2);
         $this->assertNotNull($newOne);
-        $this->assertEquals(2, count($newOne->embeds));
+        $this->assertCount(2, $newOne->embeds);
         $this->assertEquals('newly embedded 1', $newOne->embeds[0]->name);
         $this->assertEquals('newly embedded 2', $newOne->embeds[1]->name);
     }
@@ -125,7 +125,7 @@ class EmbedManyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $this->assertNull($newOne);
         $newOne = $this->dm->find($this->type, 2);
         $this->assertNotNull($newOne);
-        $this->assertEquals(2, count($newOne->embeds));
+        $this->assertCount(2, $newOne->embeds);
         $this->assertEquals('newly embedded 1', $newOne->embeds['one']->name);
         $this->assertEquals('newly embedded 2', $newOne->embeds['two']->name);
     }

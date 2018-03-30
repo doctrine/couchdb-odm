@@ -54,7 +54,7 @@ class LuceneQueryTest extends CouchDBFunctionalTestCase
             }
         }
 
-        $this->assertEquals(1, count($result));
+        $this->assertCount(1, $result);
         foreach ($result AS $user) {
             $this->assertEquals($user2->id, $user['id']);
             $this->assertEquals(1, $user['score']);

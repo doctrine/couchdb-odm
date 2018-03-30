@@ -28,12 +28,12 @@ abstract class AbstractMappingDriverTest extends \PHPUnit_Framework_TestCase
      */
     public function testFieldMappings($class)
     {
-        $this->assertEquals(5, count($class->fieldMappings));
-        $this->assertTrue(isset($class->fieldMappings['id']));
-        $this->assertTrue(isset($class->fieldMappings['name']));
-        $this->assertTrue(isset($class->fieldMappings['username']));
-        $this->assertTrue(isset($class->fieldMappings['status']));
-        $this->assertTrue(isset($class->fieldMappings['address']));
+        $this->assertCount(5, $class->fieldMappings);
+        $this->assertArrayHasKey('id', $class->fieldMappings);
+        $this->assertArrayHasKey('name', $class->fieldMappings);
+        $this->assertArrayHasKey('username', $class->fieldMappings);
+        $this->assertArrayHasKey('status', $class->fieldMappings);
+        $this->assertArrayHasKey('address', $class->fieldMappings);
 
         return $class;
     }

@@ -23,7 +23,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
     {
         $cm->mapField(array('fieldName' => 'id', 'id' => true));
 
-        $this->assertTrue(isset($cm->fieldMappings['id']));
+        $this->assertArrayHasKey('id', $cm->fieldMappings);
         $this->assertEquals(array('jsonName' => '_id', 'id' => true, 'type' => 'string', 'fieldName' => 'id'), $cm->fieldMappings['id']);
 
         $this->assertEquals('id', $cm->identifier);
@@ -40,8 +40,8 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
         $cm->mapField(array('fieldName' => 'username', 'type' => 'string'));
         $cm->mapField(array('fieldName' => 'created', 'type' => 'datetime'));
 
-        $this->assertTrue(isset($cm->fieldMappings['username']));
-        $this->assertTrue(isset($cm->fieldMappings['created']));
+        $this->assertArrayHasKey('username', $cm->fieldMappings);
+        $this->assertArrayHasKey('created', $cm->fieldMappings);
 
         $this->assertEquals(array('jsonName' => 'username', 'type' => 'string', 'fieldName' => 'username'), $cm->fieldMappings['username']);
         $this->assertEquals(array('jsonName' => 'created', 'type' => 'datetime', 'fieldName' => 'created'), $cm->fieldMappings['created']);
@@ -102,7 +102,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
     {
         $cm->mapManyToOne(array('fieldName' => 'address', 'targetDocument' => 'Doctrine\Tests\ODM\CouchDB\Mapping\Address'));
 
-        $this->assertTrue(isset($cm->associationsMappings['address']), "No 'address' in associations map.");
+        $this->assertArrayHasKey('address', $cm->associationsMappings, "No 'address' in associations map.");
         $this->assertEquals(array(
             'fieldName' => 'address',
             'targetDocument' => 'Doctrine\Tests\ODM\CouchDB\Mapping\Address',
@@ -202,17 +202,17 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
 
         $child->mapField(array('fieldName' => 'status', 'type' => 'string'));
 
-        $this->assertFalse(isset($child->fieldMappings['status']['declared']));
+        $this->assertArrayNotHasKey('declared', $child->fieldMappings['status']);
 
         $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Employee", $child->name);
 
-        $this->assertTrue(isset($child->fieldMappings['id']), "id field has to be on child metadata");
+        $this->assertArrayHasKey('id', $child->fieldMappings, "id field has to be on child metadata");
         $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $child->fieldMappings['id']['declared']);
 
-        $this->assertTrue(isset($child->fieldMappings['username']), "Username field has to be on child metadata");
+        $this->assertArrayHasKey('username', $child->fieldMappings, "Username field has to be on child metadata");
         $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $child->fieldMappings['username']['declared']);
 
-        $this->assertTrue(isset($child->associationsMappings['address']), "address association has to be on child metadata");
+        $this->assertArrayHasKey('address', $child->associationsMappings, "address association has to be on child metadata");
         $this->assertEquals("Doctrine\Tests\ODM\CouchDB\Mapping\Person", $child->associationsMappings['address']['declared']);
 
         $this->assertEquals("attachments", $child->attachmentField);

@@ -33,7 +33,7 @@ class QueryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
                            ->setKey('lsmith')
                            ->execute();
 
-        $this->assertEquals(1, count($result));
+        $this->assertCount(1, $result);
         $this->assertEquals('lsmith', $result[0]->username);
 
         $result = $this->dm->createQuery('cms', 'username')
@@ -41,7 +41,7 @@ class QueryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
                            ->setKey('beberlei')
                            ->execute();
 
-        $this->assertEquals(1, count($result));
+        $this->assertCount(1, $result);
         $this->assertEquals('beberlei', $result[0]->username);
     }
 }

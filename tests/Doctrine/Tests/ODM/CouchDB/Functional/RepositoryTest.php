@@ -37,16 +37,16 @@ class RepositoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
         $this->dm->flush();
 
         $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findMany(array($user1->id, $user2->id));
-        $this->assertEquals(2, count($users));
+        $this->assertCount(2, $users);
         $this->assertSame($user1, $users[0]);
         $this->assertSame($user2, $users[1]);
 
         $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findMany(array($user1->id, $user2->id), 1, 0);
-        $this->assertEquals(1, count($users));
+        $this->assertCount(1, $users);
         $this->assertSame($user1, $users[0]);
 
         $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findMany(array($user1->id, $user2->id), 1, 1);
-        $this->assertEquals(1, count($users));
+        $this->assertCount(1, $users);
         $this->assertSame($user2, $users[1]);
 
         $this->dm->clear();
@@ -74,11 +74,11 @@ class RepositoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
         $this->dm->flush();
 
         $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findAll();
-        $this->assertEquals(10, count($users));
+        $this->assertCount(10, $users);
         $this->assertContainsOnly('Doctrine\Tests\Models\CMS\CmsUser', $users);
 
         $groups = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsGroup')->findAll();
-        $this->assertEquals(0, count($groups), "No results, group is not indexed!");
+        $this->assertCount(0, $groups, "No results, group is not indexed!");
     }
 
     public function testLoadManyWithMissingIds()
@@ -97,7 +97,7 @@ class RepositoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
         $this->dm->clear();
 
         $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findMany(array($user1->id, 'missing-id-2'));
-        $this->assertEquals(1, count($users));
+        $this->assertCount(1, $users);
     }
 
     public function testFindBy()
@@ -114,22 +114,22 @@ class RepositoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
 
         $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findBy(array('status' => 'active'));
 
-        $this->assertEquals(5, count($users));
+        $this->assertCount(5, $users);
         $this->assertContainsOnly('Doctrine\Tests\Models\CMS\CmsUser', $users);
 
         $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findBy(array('status' => 'active'), null, 2);
-        $this->assertEquals(2, count($users));
+        $this->assertCount(2, $users);
 
         $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findBy(array('status' => 'inactive'));
 
-        $this->assertEquals(5, count($users));
+        $this->assertCount(5, $users);
         $this->assertContainsOnly('Doctrine\Tests\Models\CMS\CmsUser', $users);
 
         $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findBy(array('status' => 'active', 'username' => 'beberlei0'));
-        $this->assertEquals(1, count($users));
+        $this->assertCount(1, $users);
 
         $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findBy(array('status' => 'active', 'name' => 'Benjamin'), null, 2);
-        $this->assertEquals(2, count($users));
+        $this->assertCount(2, $users);
     }
 
     public function testFindByManyConstraints()
@@ -145,7 +145,7 @@ class RepositoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
         $this->dm->flush();
 
         $users = $this->dm->getRepository('Doctrine\Tests\Models\CMS\CmsUser')->findBy(array('username' => 'beberlei0'));
-        $this->assertEquals(1, count($users));
+        $this->assertCount(1, $users);
         $this->assertEquals('beberlei0', $users[0]->username);
     }
 

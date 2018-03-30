@@ -52,7 +52,7 @@ class ManyToManyAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunct
         $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $this->userId);
         $this->assertInstanceOf('Doctrine\ODM\CouchDB\PersistentCollection', $user->groups);
         $this->assertFalse($user->groups->isInitialized);
-        $this->assertEquals(2, count($user->groups));
+        $this->assertCount(2, $user->groups);
         $this->assertTrue($user->groups->isInitialized);
 
         $group3 = new \Doctrine\Tests\Models\CMS\CmsGroup();
@@ -63,7 +63,7 @@ class ManyToManyAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunct
         $this->dm->clear();
 
         $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $user->id);
-        $this->assertEquals(3, count($user->groups));
+        $this->assertCount(3, $user->groups);
     }
 
     public function testInverseManyToManyLazyLoad()
@@ -73,7 +73,7 @@ class ManyToManyAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunct
 
         $this->assertInstanceOf('Doctrine\ODM\CouchDB\PersistentCollection', $group->users);
         $this->assertFalse($group->users->isInitialized);
-        $this->assertEquals(1, count($group->users));
+        $this->assertCount(1, $group->users);
         $this->assertTrue($group->users->isInitialized);
 
         $this->assertEquals('beberlei', $group->users[0]->getUsername());
@@ -89,7 +89,7 @@ class ManyToManyAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunct
 
         $this->assertInstanceOf('Doctrine\ODM\CouchDB\PersistentCollection', $group->users);
         $this->assertFalse($group->users->isInitialized);
-        $this->assertEquals(1, count($group->users));
+        $this->assertCount(1, $group->users);
         $this->assertTrue($group->users->isInitialized);
 
         $this->assertSame($user, $group->users[0]);
@@ -99,7 +99,7 @@ class ManyToManyAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunct
     {
         $group = $this->dm->find('Doctrine\Tests\Models\CMS\CmsGroup', $this->groupIds[1]);
 
-        $this->assertEquals(2, count($group->users));
+        $this->assertCount(2, $group->users);
         $this->assertTrue($group->users->isInitialized);
     }
 
@@ -116,7 +116,7 @@ class ManyToManyAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunct
         $this->dm->clear();
 
         $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $this->userId);
-        $this->assertEquals(2, count($user->groups));
+        $this->assertCount(2, $user->groups);
     }
 
     public function testFlushingOwningSideWithAssocationChangesTwiceOnlySavesOnce()
@@ -158,7 +158,7 @@ class ManyToManyAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunct
         $this->dm->clear();
 
         $node = $this->dm->find('Doctrine\Tests\Models\CMS\CmsNode', $node->id);
-        $this->assertEquals(4, count($node->references));
+        $this->assertCount(4, $node->references);
         $classes = array();
         foreach ($node->references AS $reference) {
             $classes[] = get_class($reference);
@@ -183,10 +183,10 @@ class ManyToManyAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunct
         $this->dm->clear();
 
         $node = $this->dm->find('Doctrine\Tests\Models\CMS\CmsNode', $node->id);
-        $this->assertEquals(2, count($node->references));
+        $this->assertCount(2, $node->references);
 
         foreach ($this->groupIds AS $groupId) {
-            $this->assertTrue(isset($node->references[$groupId]), "References array should be indexed by group id, but key does not exist");
+            $this->assertArrayHasKey($groupId, $node->references, "References array should be indexed by group id, but key does not exist");
             $this->assertInstanceOf('Doctrine\Tests\Models\CMS\CmsGroup', $node->references[$groupId]);
         }
     }

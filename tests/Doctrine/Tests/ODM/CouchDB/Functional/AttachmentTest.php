@@ -67,7 +67,7 @@ class AttachmentTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
 
         $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', 'user_with_attachment');
 
-        $this->assertEquals(2, count($user->attachments));
+        $this->assertCount(2, $user->attachments);
         $this->assertArrayHasKey('logo.jpg', $user->attachments);
         $this->assertInstanceOf('Doctrine\CouchDB\Attachment', $user->attachments['foo.txt']);
     }

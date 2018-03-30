@@ -54,7 +54,7 @@ class EmbeddedAssociationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctio
 
         $this->dm->flush();
 
-        $this->assertEquals(0, count($listener->eventArgs));
+        $this->assertCount(0, $listener->eventArgs);
     }
 
     public function testSaveModifiedEmbedded()

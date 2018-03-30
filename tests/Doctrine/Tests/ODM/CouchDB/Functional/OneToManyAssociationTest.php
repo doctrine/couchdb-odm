@@ -49,7 +49,7 @@ class OneToManyAssocationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctio
 
         $this->assertInstanceOf('Doctrine\ODM\CouchDB\PersistentCollection', $user->articles);
         $this->assertFalse($user->articles->isInitialized);
-        $this->assertEquals(2, count($user->articles));
+        $this->assertCount(2, $user->articles);
 
         $this->assertContains($user->articles[0]->id, $this->articleIds);
         $this->assertContains($user->articles[1]->id, $this->articleIds);
@@ -68,6 +68,6 @@ class OneToManyAssocationTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctio
         $this->dm->clear();
 
         $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', $this->userIds[0]);
-        $this->assertEquals(2, count($user->articles));
+        $this->assertCount(2, $user->articles);
     }
 }
