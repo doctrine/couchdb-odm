@@ -58,13 +58,16 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
      */
     protected function doLoadMetadata($class, $parent, $rootEntityFound, array $nonSuperclassParents)
     {
-        /** @var $parent ClassMetaData */
+
+        /** @var $class ClassMetadata */
+        /** @var $parent ClassMetadata */
         if ($parent) {
             $this->addAssociationsMapping($class, $parent);
             $this->addFieldMapping($class, $parent);
             $this->addIndexes($class, $parent);
             $parent->deriveChildMetadata($class);
             $class->setParentClasses($nonSuperclassParents);
+            $class->setLifecycleCallbacks($parent->lifecycleCallbacks);
         }
 
         if ($this->getDriver()) {
@@ -131,10 +134,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
     }
 
     /**
-     * Forces the factory to load the metadata of all classes known to the underlying
-     * mapping driver.
-     *
-     * @return array The ClassMetadata instances of all mapped classes.
+     * {@inheritdoc}
      */
     public function getAllMetadata()
     {
@@ -147,11 +147,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
     }
 
     /**
-     * Gets the class metadata descriptor for a class.
-     *
-     * @param string $className The name of the class.
-     * @return ClassMetadata
-     * @throws MappingException
+     * {@inheritdoc}
      */
     public function getMetadataFor($className)
     {
@@ -165,12 +161,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
     }
 
     /**
-     * Loads the metadata of the class in question and all it's ancestors whose metadata
-     * is still not loaded.
-     *
-     * @param string $className The name of the class for which the metadata should get loaded.
-     * @return array
-     * @throws MappingException
+     * {@inheritdoc}
      */
     protected function loadMetadata($className)
     {
@@ -181,10 +172,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
     }
 
     /**
-     * Creates a new ClassMetadata instance for the given class name.
-     *
-     * @param string $className
-     * @return ClassMetadata
+     * {@inheritdoc}
      */
     protected function newClassMetadataInstance($className)
     {

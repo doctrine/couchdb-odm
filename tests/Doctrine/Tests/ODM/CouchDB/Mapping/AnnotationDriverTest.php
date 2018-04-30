@@ -59,7 +59,6 @@ class AnnotationDriverTest extends AbstractMappingDriverTest
 
     protected function loadDriver()
     {
-        $cache = new \Doctrine\Common\Cache\ArrayCache();
         $reader = new \Doctrine\Common\Annotations\SimpleAnnotationReader();
         $reader->addNamespace('Doctrine\ODM\CouchDB\Mapping\Annotations');
         return new \Doctrine\ODM\CouchDB\Mapping\Driver\AnnotationDriver($reader);

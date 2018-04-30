@@ -2,10 +2,10 @@
 
 namespace Doctrine\ODM\CouchDB\Mapping;
 
-use Doctrine\Common\Persistence\Mapping\ClassMetadata AS IClassMetadata,
-    Doctrine\Instantiator\Instantiator,
-    ReflectionClass,
-    ReflectionProperty;
+use Doctrine\Common\Persistence\Mapping\ClassMetadata as IClassMetadata;
+use Doctrine\Instantiator\Instantiator;
+use ReflectionClass;
+use ReflectionProperty;
 
 /**
  * Metadata class
@@ -122,6 +122,13 @@ class ClassMetadata implements IClassMetadata
      * @var array
      */
     public $alsoLoadMethods = array();
+
+    /**
+     * READ-ONLY: The registered lifecycle callbacks for documents of this class.
+     *
+     * @var array
+     */
+    public $lifecycleCallbacks = array();
 
     /**
      * READ-ONLY: Whether this class describes the mapping of a mapped superclass.
@@ -323,6 +330,10 @@ class ClassMetadata implements IClassMetadata
         }
         if ($this->indexes) {
             $serialized[] = 'indexes';
+        }
+
+        if ($this->lifecycleCallbacks) {
+            $serialized[] = 'lifecycleCallbacks';
         }
 
         return $serialized;
@@ -544,6 +555,69 @@ class ClassMetadata implements IClassMetadata
     public function setCustomRepositoryClass($repositoryClassName)
     {
         $this->customRepositoryClassName = $repositoryClassName;
+    }
+
+    /**
+     * Dispatches the lifecycle event of the given document to the registered
+     * lifecycle callbacks and lifecycle listeners.
+     *
+     * @param string $lifecycleEvent The lifecycle event.
+     * @param object $document       The Document on which the event occurred.
+     */
+    public function invokeLifecycleCallbacks($lifecycleEvent, $document)
+    {
+        foreach ($this->lifecycleCallbacks[$lifecycleEvent] as $callback) {
+            $document->$callback();
+        }
+    }
+
+    /**
+     * Whether the class has any attached lifecycle listeners or callbacks for a lifecycle event.
+     *
+     * @param string $lifecycleEvent
+     *
+     * @return boolean
+     */
+    public function hasLifecycleCallbacks($lifecycleEvent)
+    {
+        return isset($this->lifecycleCallbacks[$lifecycleEvent]);
+    }
+
+    /**
+     * Gets the registered lifecycle callbacks for an event.
+     *
+     * @param string $event
+     *
+     * @return array
+     */
+    public function getLifecycleCallbacks($event)
+    {
+        return isset($this->lifecycleCallbacks[$event]) ? $this->lifecycleCallbacks[$event] : array();
+    }
+
+    /**
+     * Adds a lifecycle callback for documents of this class.
+     *
+     * Note: If the same callback is registered more than once, the old one
+     * will be overridden.
+     *
+     * @param string $callback
+     * @param string $event
+     */
+    public function addLifecycleCallback($callback, $event)
+    {
+        $this->lifecycleCallbacks[$event][] = $callback;
+    }
+
+    /**
+     * Sets the lifecycle callbacks for documents of this class.
+     * Any previously registered callbacks are overwritten.
+     *
+     * @param array $callbacks
+     */
+    public function setLifecycleCallbacks(array $callbacks)
+    {
+        $this->lifecycleCallbacks = $callbacks;
     }
 
     /**

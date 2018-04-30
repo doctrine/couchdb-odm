@@ -159,6 +159,13 @@ class XmlDriver extends FileDriver
                 ));
             }
         }
+
+        // Evaluate <lifecycle-callbacks...>
+        if (isset($xmlRoot->{'lifecycle-callbacks'})) {
+            foreach ($xmlRoot->{'lifecycle-callbacks'}->{'lifecycle-callback'} as $lifecycleCallback) {
+                $class->addLifecycleCallback((string)$lifecycleCallback['method'], constant('Doctrine\ODM\CouchDB\Event::' . (string)$lifecycleCallback['type']));
+            }
+        }
     }
 
     protected function loadMappingFile($file)

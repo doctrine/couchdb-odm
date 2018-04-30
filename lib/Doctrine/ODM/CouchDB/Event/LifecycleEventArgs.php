@@ -1,15 +1,16 @@
 <?php
 
-
 namespace Doctrine\ODM\CouchDB\Event;
 
-class LifecycleEventArgs extends \Doctrine\Common\EventArgs
+use Doctrine\Common\EventArgs;
+
+class LifecycleEventArgs extends EventArgs
 {
     private $document;
 
     private $documentManager;
 
-    function __construct($document, $documentManager)
+    public function __construct($document, $documentManager)
     {
         $this->document = $document;
         $this->documentManager = $documentManager;

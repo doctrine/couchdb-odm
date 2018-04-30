@@ -8,7 +8,8 @@ use Doctrine\Common\Annotations\AnnotationReader,
     Doctrine\Common\Persistence\Mapping\ClassMetadata,
     Doctrine\Common\Persistence\Mapping\Driver\AnnotationDriver as AbstractAnnotationDriver,
     Doctrine\ODM\CouchDB\Mapping\Annotations as ODM,
-    Doctrine\ODM\CouchDB\Mapping\MappingException;
+    Doctrine\ODM\CouchDB\Mapping\MappingException,
+    Doctrine\ODM\CouchDB\Event;
 
 /**
  * The AnnotationDriver reads the mapping metadata from docblock annotations.
@@ -54,6 +55,23 @@ class AnnotationDriver extends AbstractAnnotationDriver
                 $class->indexed = true;
             } else if ($classAnnotation instanceof ODM\InheritanceRoot) {
                 $class->markInheritanceRoot();
+            }
+
+            if ($classAnnotation instanceof ODM\HasLifecycleCallbacks) {
+
+                /* @var $method \ReflectionMethod */
+                foreach ($reflClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+
+                    // filter for the declaring class only, callbacks from parents will already be registered.
+                    if ($method->getDeclaringClass()->name !== $reflClass->name) {
+                        continue;
+                    }
+
+                    foreach ($this->getMethodCallbacks($method) as $value) {
+                        $class->addLifecycleCallback($value[0], $value[1]);
+                    }
+                }
+
             }
         }
 
@@ -122,4 +140,54 @@ class AnnotationDriver extends AbstractAnnotationDriver
         }
         return $cascade;
     }
+
+    /**
+     * Parses the given method.
+     *
+     * @param \ReflectionMethod $method
+     *
+     * @return array
+     */
+    private function getMethodCallbacks(\ReflectionMethod $method)
+    {
+        $callbacks   = array();
+        $annotations = $this->reader->getMethodAnnotations($method);
+
+        foreach ($annotations as $annot) {
+            if ($annot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\PrePersist) {
+                $callbacks[] = array($method->name, Event::prePersist);
+            }
+
+            if ($annot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\PostPersist) {
+                $callbacks[] = array($method->name, Event::postPersist);
+            }
+
+            if ($annot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\PreUpdate) {
+                $callbacks[] = array($method->name, Event::preUpdate);
+            }
+
+            if ($annot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\PostUpdate) {
+                $callbacks[] = array($method->name, Event::postUpdate);
+            }
+
+            if ($annot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\PreRemove) {
+                $callbacks[] = array($method->name, Event::preRemove);
+            }
+
+            if ($annot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\PostRemove) {
+                $callbacks[] = array($method->name, Event::postRemove);
+            }
+
+            if ($annot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\PostLoad) {
+                $callbacks[] = array($method->name, Event::postLoad);
+            }
+
+            if ($annot instanceof \Doctrine\ODM\CouchDB\Mapping\Annotations\PreFlush) {
+                $callbacks[] = array($method->name, Event::preFlush);
+            }
+        }
+
+        return $callbacks;
+    }
+
 }
