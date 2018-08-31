@@ -1,0 +1,18 @@
+{
+    "active": false,
+    "name": "CouchDB Object Document Mapper",
+    "shortName": "CouchDB ODM",
+    "slug": "couchdb-odm",
+    "docsSlug": "doctrine-couchdb-odm",
+    "versions": [
+        {
+            "name": "master",
+            "branchName": "master",
+            "slug": "latest",
+            "aliases": [
+                "current",
+                "stable"
+            ]
+        }
+    ]
+}

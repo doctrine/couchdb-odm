@@ -1,8 +1,16 @@
 {
     "name": "doctrine/couchdb-odm",
     "type": "library",
-    "description": "CouchDB Document Object Mapper",
-    "keywords": ["persistence", "couchdb"],
+    "description": "PHP Doctrine CouchDB Object Document Mapper (ODM) provides transparent persistence for PHP objects to CouchDB.",
+    "keywords": [
+        "persistence",
+        "couchdb",
+        "odm",
+        "data",
+        "mapper",
+        "mapping",
+        "object"
+    ],
     "homepage": "http://www.doctrine-project.org",
     "license": "MIT",
     "authors": [
