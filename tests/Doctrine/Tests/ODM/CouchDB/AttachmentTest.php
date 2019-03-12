@@ -32,7 +32,7 @@ class AttachmentTest extends CouchDBTestCase
 
     public function testCreateStub()
     {
-        $httpClient = $this->getMock('Doctrine\CouchDB\HTTP\Client');
+        $httpClient = $this->getMockBuilder('Doctrine\CouchDB\HTTP\Client')->getMock();
         $httpClient->expects($this->never())->method('request');
         $attachment = Attachment::createStub('plain/text', 28, 2, $httpClient, '/');
 
@@ -47,7 +47,7 @@ class AttachmentTest extends CouchDBTestCase
         $path = '/';
 
         $response = new \Doctrine\CouchDB\HTTP\Response(200, array(), 'Hello i am a string', true);
-        $httpClient = $this->getMock('Doctrine\CouchDB\HTTP\Client');
+        $httpClient = $this->getMockBuilder('Doctrine\CouchDB\HTTP\Client')->getMock();
         $httpClient->expects($this->once())
                    ->method('request')
                    ->with($this->equalTo('GET'), $this->equalTo($path))
@@ -65,14 +65,14 @@ class AttachmentTest extends CouchDBTestCase
         $path = '/';
 
         $errorResponse = new \Doctrine\CouchDB\HTTP\ErrorResponse(404, array(), '{"error":"not_found","reason":"missing"}');
-        $httpClient = $this->getMock('Doctrine\CouchDB\HTTP\Client');
+        $httpClient = $this->getMockBuilder('Doctrine\CouchDB\HTTP\Client')->getMock();
         $httpClient->expects($this->once())
                    ->method('request')
                    ->with($this->equalTo('GET'), $this->equalTo($path))
                    ->will($this->returnValue( $errorResponse ));
         $attachment = Attachment::createStub('plain/text', 28, 2, $httpClient, $path);
 
-        $this->setExpectedException('Doctrine\CouchDB\HTTP\HTTPException');
+        $this->expectException('Doctrine\CouchDB\HTTP\HTTPException');
         $attachment->getRawData();
     }
 
@@ -86,7 +86,7 @@ class AttachmentTest extends CouchDBTestCase
 
     public function testToArrayStub()
     {
-        $httpClient = $this->getMock('Doctrine\CouchDB\HTTP\Client');
+        $httpClient = $this->getMockBuilder('Doctrine\CouchDB\HTTP\Client')->getMock();
         $httpClient->expects($this->never())->method('request');
         $attachment = Attachment::createStub('plain/text', 28, 2, $httpClient, '/');
 

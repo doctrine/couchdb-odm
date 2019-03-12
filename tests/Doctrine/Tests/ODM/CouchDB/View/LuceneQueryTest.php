@@ -29,12 +29,12 @@ class LuceneQueryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCase
 }
 JSO;
 
-        $doc = $this->getMock('Doctrine\CouchDB\View\DesignDocument');
+        $doc = $this->getMockBuilder('Doctrine\CouchDB\View\DesignDocument')->getMock();
         $doc->expects($this->once())
             ->method('getData')
             ->will($this->returnValue(array()));
 
-        $client = $this->getMock('Doctrine\CouchDB\HTTP\Client', array(), array(), '', false);
+        $client = $this->getMockBuilder('Doctrine\CouchDB\HTTP\Client', array(), array(), '', false)->getMock();
 
         $client->expects($this->at(0))
                ->method('request')

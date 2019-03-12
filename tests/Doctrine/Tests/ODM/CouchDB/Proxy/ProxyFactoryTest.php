@@ -51,7 +51,9 @@ class ProxyFactoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCase
 
         $query = array('documentName' => '\\'.$modelClass, 'id' => 'SomeUUID');
 
-        $uowMock = $this->getMock('Doctrine\ODM\CouchDB\UnitOfWork', array('refresh'), array(), '', false);
+        $uowMock = $this->getMockBuilder('Doctrine\ODM\CouchDB\UnitOfWork', array('refresh'), array(), '', false)
+            ->disableOriginalConstructor()
+            ->getMock();
         $uowMock->expects($this->atLeastOnce())
                       ->method('refresh')
                       ->with($this->isInstanceOf($proxyClass));

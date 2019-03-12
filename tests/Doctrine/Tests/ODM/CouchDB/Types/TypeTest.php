@@ -8,14 +8,14 @@ class TypeTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCase
 {
     public function testOverwriteNonExistantType()
     {
-        $this->setExpectedException("Doctrine\ODM\CouchDB\Types\TypeException");
+        $this->expectException("Doctrine\ODM\CouchDB\Types\TypeException");
 
         Type::overrideType('foobar', 'Doctrine\ODM\CouchDB\Types\MixedType');
     }
 
     public function testAddExistantType()
     {
-        $this->setExpectedException("Doctrine\ODM\CouchDB\Types\TypeException");
+        $this->expectException("Doctrine\ODM\CouchDB\Types\TypeException");
 
         Type::addType('mixed', 'Doctrine\ODM\CouchDB\Types\MixedType');
     }

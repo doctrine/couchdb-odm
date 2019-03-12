@@ -13,7 +13,7 @@ class AnnotationDriverTest extends AbstractMappingDriverTest
         $reader->addNamespace('Doctrine\ODM\CouchDB\Mapping\Annotations');
         $annotationDriver = new \Doctrine\ODM\CouchDB\Mapping\Driver\AnnotationDriver($reader);
 
-        $this->setExpectedException('Doctrine\ODM\CouchDB\Mapping\MappingException');
+        $this->expectException('Doctrine\ODM\CouchDB\Mapping\MappingException');
         $annotationDriver->loadMetadataForClass('stdClass', $cm);
     }
 

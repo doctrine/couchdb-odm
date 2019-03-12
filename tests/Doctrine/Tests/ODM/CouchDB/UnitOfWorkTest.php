@@ -69,7 +69,7 @@ class UnitOfWorkTest extends CouchDBTestCase
 
     public function testScheduleInsertion()
     {
-        $httpClient = $this->getMock('Doctrine\CouchDB\HTTP\Client', array(), array(), '', false);
+        $httpClient = $this->getMockBuilder('Doctrine\CouchDB\HTTP\Client', array(), array(), '', false)->getMock();
         $httpClient->expects($this->once())
                    ->method('request')
                    ->will($this->returnValue(new \Doctrine\CouchDB\HTTP\Response(404, array(), "{}")));
@@ -84,7 +84,7 @@ class UnitOfWorkTest extends CouchDBTestCase
 
     public function testScheduleInsert_ForAssignedIdGenerator_WithoutId()
     {
-        $this->setExpectedException('Doctrine\ODM\CouchDB\CouchDBException');
+        $this->expectException('Doctrine\ODM\CouchDB\CouchDBException');
 
         $object = new UoWUser();
         $object->username = "bar";
@@ -102,7 +102,7 @@ class UnitOfWorkTest extends CouchDBTestCase
         );
         $uuidResponse = new \Doctrine\CouchDB\HTTP\Response(200, array(), json_encode(array('uuids' => $uuids)));
 
-        $client = $this->getMock('Doctrine\CouchDB\HTTP\Client');
+        $client = $this->getMockBuilder('Doctrine\CouchDB\HTTP\Client')->getMock();
         $client->expects($this->once())
                ->method('request')
                ->with($this->equalTo('GET'), $this->equalTo('/_uuids?count=20'))

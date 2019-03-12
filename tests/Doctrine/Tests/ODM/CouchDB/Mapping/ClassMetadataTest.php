@@ -5,7 +5,7 @@ namespace Doctrine\Tests\ODM\CouchDB\Mapping;
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 use Doctrine\Common\Persistence\Mapping\RuntimeReflectionService;
 
-class ClassMetadataTest extends \PHPUnit_Framework_TestCase
+class ClassMetadataTest extends \PHPUnit\Framework\TestCase
 {
     public function testClassName()
     {
@@ -56,7 +56,7 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
      */
     public function testmapFieldWithoutNameThrowsException($cm)
     {
-        $this->setExpectedException('Doctrine\ODM\CouchDB\Mapping\MappingException');
+        $this->expectException('Doctrine\ODM\CouchDB\Mapping\MappingException');
 
         $cm->mapField(array());
     }

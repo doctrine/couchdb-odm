@@ -71,7 +71,7 @@ class MergeTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
         
         $this->dm->remove($user);
         
-        $this->setExpectedException('InvalidArgumentException', 'Removed document detected during merge. Can not merge with a removed document.');
+        $this->expectException('InvalidArgumentException', 'Removed document detected during merge. Can not merge with a removed document.');
         $this->dm->merge($user);
     }
     

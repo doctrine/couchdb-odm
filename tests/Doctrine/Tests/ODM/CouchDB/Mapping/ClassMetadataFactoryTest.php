@@ -4,7 +4,7 @@ namespace Doctrine\Tests\ODM\CouchDB\Mapping;
 
 use Doctrine\ODM\CouchDB\Mapping\ClassMetadataFactory;
 
-class ClassMetadataFactoryTest extends \PHPUnit_Framework_TestCase
+class ClassMetadataFactoryTest extends \PHPUnit\Framework\TestCase
 {
     public function setUp()
     {
@@ -15,7 +15,7 @@ class ClassMetadataFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $cmf = new ClassMetadataFactory($this->dm);
 
-        $this->setExpectedException('Doctrine\ODM\CouchDB\Mapping\MappingException');
+        $this->expectException('Doctrine\ODM\CouchDB\Mapping\MappingException');
         $cmf->getMetadataFor('unknown');
     }
 
