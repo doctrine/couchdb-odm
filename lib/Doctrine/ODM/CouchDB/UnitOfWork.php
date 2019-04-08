@@ -1056,7 +1056,8 @@ class UnitOfWork
                         $fieldValue = (string)$fieldValue;
                     }
 
-                    $data[$class->fieldMappings[$fieldName]['jsonName']] = $fieldValue;
+                    $jsonName = $class->fieldMappings[$fieldName]['jsonName'];
+                    if ($jsonName != '_rev' && $fieldValue !== null) $data[$jsonName] = $fieldValue;
 
                 } else if (isset($class->associationsMappings[$fieldName])) {
                     if ($class->associationsMappings[$fieldName]['type'] & ClassMetadata::TO_ONE) {
