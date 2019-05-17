@@ -56,5 +56,6 @@ $cli->addCommands(array(
     new \Doctrine\CouchDB\Tools\Console\Command\MigrationCommand(),
     new \Doctrine\ODM\CouchDB\Tools\Console\Command\GenerateProxiesCommand(),
     new \Doctrine\ODM\CouchDB\Tools\Console\Command\UpdateDesignDocCommand(),
+    new \Doctrine\ODM\CouchDB\Tools\Console\Command\WarmupAllViewsCommand(),
 ));
 $cli->run();
