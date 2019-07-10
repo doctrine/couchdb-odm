@@ -184,7 +184,7 @@ class SocketClientTestCase extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctional
         $this->assertSame(
             array(
                 'error'  => 'not_found',
-                'reason' => 'no_db_file',
+                'reason' => 'Database does not exist.',
             ),
             $response->body
         );
