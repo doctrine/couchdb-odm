@@ -1008,7 +1008,10 @@ class UnitOfWork
         $config = $this->dm->getConfiguration();
 
         $bulkUpdater = $this->dm->getCouchDBClient()->createBulkUpdater();
-        $bulkUpdater->setAllOrNothing($config->getAllOrNothingFlush());
+        //v1 only
+        if (method_exists($bulkUpdater, 'setAllOrNothing')) {
+            $bulkUpdater->setAllOrNothing($config->getAllOrNothingFlush());
+        }
 
         foreach ($this->scheduledRemovals AS $oid => $document) {
             if ($document instanceof Proxy && !$document->__isInitialized__) {

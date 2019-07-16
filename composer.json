@@ -20,12 +20,13 @@
     "require": {
         "php": ">=5.4",
         "doctrine/common": "~2.2",
-        "doctrine/couchdb": "~1.0@beta",
-        "symfony/console": "~2.0|~3.0",
+        "doctrine/couchdb": "~2.0@alpha",
+        "symfony/console": "~2.0|~3.0|~4.0",
         "doctrine/instantiator": "~1.0"
     },
     "require-dev": {
-        "symfony/yaml": "^2.0|^3.0",
+        "doctrine/coding-standard": "^6.0",
+        "symfony/yaml": "^2.0|^3.0|^4.0",
         "phpunit/phpunit": "^4.8, <5.0"
     },
     "suggest": {

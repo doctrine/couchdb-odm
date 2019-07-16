@@ -52,7 +52,7 @@ class AttachmentTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCa
         $this->dm->clear(); // dont re-use identity map
 
         $user = $this->dm->find('Doctrine\Tests\Models\CMS\CmsUser', 'user_with_attachment');
-        $this->assertEquals(0, count($user->attachments));
+        $this->assertNull($user->attachments);
     }
 
     public function testAddAttachment()
