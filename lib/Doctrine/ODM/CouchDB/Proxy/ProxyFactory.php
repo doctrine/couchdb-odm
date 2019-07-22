@@ -12,6 +12,7 @@ use Doctrine\Common\Util\ClassUtils;
  * @author Roman Borschel <roman@code-factory.org>
  * @author Giorgio Sironi <piccoloprincipeazzurro@gmail.com>
  * @author Nils Adermann <naderman@naderman.de>
+ * @author Aurelien Richaud <aurelien.richaud@btoweb.fr>
  *
  * This whole thing is copy & pasted from ORM - should really be slightly
  * refactored to generate
@@ -187,12 +188,14 @@ class ProxyFactory
                         $argumentString  .= ', ';
                     }
 
-                    // We need to pick the type hint class too
-                    if (($paramClass = $param->getClass()) !== null) {
-                        $parameterString .= '\\' . $paramClass->getName() . ' ';
-                    } else if ($param->isArray()) {
-                        $parameterString .= 'array ';
-                    }
+	                // We need to pick the type hint class too
+	                if (($paramClass = $param->getClass()) !== null) {
+		                $parameterString .= ($param->allowsNull() ? '?' : '').'\\'.$paramClass->getName().' ';
+	                } elseif ($param->getType()) {
+		                $parameterString .= ($param->getType()->allowsNull() ? '?' : '').$param->getType()->getName().' ';
+	                } elseif ($param->isArray()) {
+		                $parameterString .= 'array ';
+	                }
 
                     if ($param->isPassedByReference()) {
                         $parameterString .= '&';
@@ -207,6 +210,11 @@ class ProxyFactory
                 }
 
                 $methods .= $parameterString . ')';
+	            $returnType = $method->getReturnType();
+	            if ($returnType) {
+		            $returnName = (class_exists($returnType->getName()) ? '\\' : '').$returnType->getName();
+		            $methods    .= ': '.($returnType->allowsNull() ? '?' : '').$returnName;
+	            }
                 $methods .= PHP_EOL . '    {' . PHP_EOL;
                 $methods .= '        $this->__load();' . PHP_EOL;
                 $methods .= '        return parent::' . $method->getName() . '(' . $argumentString . ');';
