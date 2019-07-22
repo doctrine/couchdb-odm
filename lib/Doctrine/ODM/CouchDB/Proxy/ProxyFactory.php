@@ -191,7 +191,7 @@ class ProxyFactory
 	                // We need to pick the type hint class too
 	                if (($paramClass = $param->getClass()) !== null) {
 		                $parameterString .= ($param->allowsNull() ? '?' : '').'\\'.$paramClass->getName().' ';
-	                } elseif ($param->getType()) {
+	                } elseif (method_exists($param, 'getType') && $param->getType()) {
 		                $parameterString .= ($param->getType()->allowsNull() ? '?' : '').$param->getType()->getName().' ';
 	                } elseif ($param->isArray()) {
 		                $parameterString .= 'array ';
@@ -210,10 +210,12 @@ class ProxyFactory
                 }
 
                 $methods .= $parameterString . ')';
-	            $returnType = $method->getReturnType();
-	            if ($returnType) {
-		            $returnName = (class_exists($returnType->getName()) ? '\\' : '').$returnType->getName();
-		            $methods    .= ': '.($returnType->allowsNull() ? '?' : '').$returnName;
+	            if ( method_exists($method, 'getReturnType') ) {
+		            $returnType = $method->getReturnType();
+		            if ( $returnType ) {
+			            $returnName = ( class_exists( $returnType->getName() ) ? '\\' : '' ) . $returnType->getName();
+			            $methods    .= ': ' . ( $returnType->allowsNull() ? '?' : '' ) . $returnName;
+		            }
 	            }
                 $methods .= PHP_EOL . '    {' . PHP_EOL;
                 $methods .= '        $this->__load();' . PHP_EOL;
