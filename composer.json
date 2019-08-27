@@ -19,7 +19,7 @@
         {"name": "Aurélien RICHAUD", "email": "aurelien.richaud@btoweb.fr"}
     ],
     "require": {
-        "php": ">=7.1",
+        "php": ">=7.2",
         "doctrine/common": "~2.2",
         "doctrine/couchdb": "~1.0@beta",
         "symfony/console": "~2.0|~3.0",
