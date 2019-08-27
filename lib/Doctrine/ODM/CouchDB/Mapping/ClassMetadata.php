@@ -419,7 +419,7 @@ class ClassMetadata implements IClassMetadata
      * Sets the document identifier of a document.
      *
      * @param object $document
-     * @param mixed $id
+     * @param string $id
      */
     public function setIdentifierValue($document, $id)
     {

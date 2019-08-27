@@ -7,3 +7,4 @@ dist/
 vendor/
 .idea/
 composer.lock
+psalm.xml

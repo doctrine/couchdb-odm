@@ -7,8 +7,8 @@ use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
 use Doctrine\ODM\CouchDB\Types\Type;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Persistence\Proxy;
 use Doctrine\CouchDB\HTTP\HTTPException;
+use ProxyManager\Proxy\GhostObjectInterface;
 
 /**
  * Unit of work class
@@ -161,6 +161,11 @@ class UnitOfWork
         $nonMappedData = array();
         $embeddedDocumentState = array();
 
+        // Empty array for attachments (default)
+        if ( $class->hasAttachments ) {
+	        $documentState[$class->attachmentField] = [];
+        }
+
         $id = $data['_id'];
         $rev = $data['_rev'];
         $conflict = false;
@@ -222,7 +227,7 @@ class UnitOfWork
 
             $this->assertValidDocumentType($documentName, $document, $type);
 
-            if ( ($document instanceof Proxy && !$document->__isInitialized__) || isset($hints['refresh'])) {
+            if ( ($document instanceof GhostObjectInterface && !$document->isProxyInitialized()) || isset($hints['refresh'])) {
                 $overrideLocalValues = true;
                 $oid = spl_object_hash($document);
                 $this->documentRevisions[$oid] = $rev;
@@ -528,7 +533,7 @@ class UnitOfWork
                         $other = $prop->getValue($document);
                         if ($other === null) {
                             $prop->setValue($managedCopy, null);
-                        } else if ($other instanceof Proxy && !$other->__isInitialized__) {
+                        } else if ($other instanceof GhostObjectInterface && !$other->isProxyInitialized()) {
                             // do not merge fields marked lazy that have not been fetched.
                             continue;
                         } else if ( $assoc2['cascade'] & ClassMetadata::CASCADE_MERGE == 0) {
@@ -537,7 +542,7 @@ class UnitOfWork
                             } else {
                                 $targetClass = $this->dm->getClassMetadata($assoc2['targetDocument']);
                                 $id = $targetClass->getIdentifierValues($other);
-                                $proxy = $this->dm->getProxyFactory()->getProxy($assoc2['targetDocument'], $id);
+                                $proxy = $this->dm->getProxyFactory()->getProxy($targetClass, $id);
                                 $prop->setValue($managedCopy, $proxy);
                                 $this->registerManaged($proxy, $id, null);
                             }
@@ -785,7 +790,7 @@ class UnitOfWork
      */
     public function computeChangeSet(ClassMetadata $class, $document)
     {
-        if ($document instanceof Proxy && !$document->__isInitialized__) {
+        if ($document instanceof GhostObjectInterface && !$document->isProxyInitialized()) {
             return;
         }
         $oid = \spl_object_hash($document);
@@ -930,7 +935,7 @@ class UnitOfWork
         // Look through the entities, and in any of their associations, for transient (new)
         // enities, recursively. ("Persistence by reachability")
         if ($assoc['type'] & ClassMetadata::TO_ONE) {
-            if ($value instanceof Proxy && ! $value->__isInitialized__) {
+            if ($value instanceof GhostObjectInterface && ! $value->isProxyInitialized()) {
                 return; // Ignore uninitialized proxy objects
             }
             $value = array($value);
@@ -1011,7 +1016,7 @@ class UnitOfWork
         $bulkUpdater->setAllOrNothing($config->getAllOrNothingFlush());
 
         foreach ($this->scheduledRemovals AS $oid => $document) {
-            if ($document instanceof Proxy && !$document->__isInitialized__) {
+            if ($document instanceof GhostObjectInterface && !$document->isProxyInitialized()) {
                 $response = $this->dm->getCouchDBClient()->findDocument($this->getDocumentIdentifier($document));
 
                 if ($response->status == 404) {
