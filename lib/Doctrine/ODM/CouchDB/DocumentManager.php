@@ -61,7 +61,7 @@ class DocumentManager implements ObjectManager
         $this->evm = $evm ?: new EventManager();
         $this->metadataFactory = new ClassMetadataFactory($this);
         $this->unitOfWork = new UnitOfWork($this);
-        $this->proxyFactory = new Proxy\ProxyFactory($this, $this->config->getProxyDir(), $this->config->getProxyNamespace(), $this->config->getAutoGenerateProxyClasses());
+        $this->proxyFactory = new Proxy\StaticProxyFactory($this, $this->config->buildGhostObjectFactory());
     }
 
     /**
@@ -291,7 +291,7 @@ class DocumentManager implements ObjectManager
         if ($document = $this->unitOfWork->tryGetById($identifier)) {
             return $document;
         }
-        $document = $this->proxyFactory->getProxy($class->name, $identifier);
+        $document = $this->proxyFactory->getProxy($class, $identifier);
         $this->unitOfWork->registerManaged($document, $identifier, null);
 
         return $document;
@@ -346,7 +346,7 @@ class DocumentManager implements ObjectManager
     {
         if ($obj instanceof PersistentCollection) {
             $obj->initialize();
-        } else if ($obj instanceof Proxy\Proxy) {
+        } else if ($obj instanceof Proxy\ProxyFactory) {
             $obj->__doctrineLoad__();
         }
     }

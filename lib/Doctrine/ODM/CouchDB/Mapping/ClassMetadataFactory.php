@@ -3,12 +3,9 @@
 namespace Doctrine\ODM\CouchDB\Mapping;
 
 use Doctrine\ODM\CouchDB\DocumentManager,
-    Doctrine\ODM\CouchDB\CouchDBException,
-    Doctrine\ODM\CouchDB\Mapping\ClassMetadata,
     Doctrine\Common\Persistence\Mapping\Driver\MappingDriver,
     Doctrine\Common\Persistence\Mapping\ClassMetadata as ClassMetadataInterface,
     Doctrine\Common\Persistence\Mapping\ReflectionService,
-    Doctrine\Common\Persistence\Mapping\RuntimeReflectionService,
     Doctrine\Common\Persistence\Mapping\AbstractClassMetadataFactory;
 
 /**

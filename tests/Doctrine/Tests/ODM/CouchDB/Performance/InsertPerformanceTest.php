@@ -4,7 +4,7 @@ namespace Doctrine\Tests\ODM\CouchDB\Performance;
 
 class InsertPerformanceTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 {
-    protected $count = 3000;
+    protected $count = 1000;
 
     public function setup()
     {

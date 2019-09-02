@@ -3,6 +3,7 @@
 namespace Doctrine\Tests\ODM\CouchDB\Functional;
 
 use Doctrine\Common\Persistence\Mapping\RuntimeReflectionService;
+use ProxyManager\Proxy\GhostObjectInterface;
 
 class ProxyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
 {
@@ -48,11 +49,11 @@ class ProxyTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCase
     {
         $proxy = $this->dm->getReference($this->type, 1);
 
-        $this->assertInstanceOf('Doctrine\ODM\CouchDB\Proxy\Proxy', $proxy);
-        $this->assertFalse($proxy->__isInitialized__);
+        $this->assertInstanceOf( GhostObjectInterface::class, $proxy);
+        $this->assertFalse($proxy->isProxyInitialized());
 
         $this->assertEquals('foo', $proxy->getTitle());
-        $this->assertTrue($proxy->__isInitialized__);
+        $this->assertTrue($proxy->isProxyInitialized());
         $this->assertEquals('bar', $proxy->getBody());
     }
 

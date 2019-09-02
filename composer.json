@@ -15,26 +15,29 @@
     "license": "MIT",
     "authors": [
         {"name": "Benjamin Eberlei", "email": "kontakt@beberlei.de"},
-        {"name": "Lukas Kahwe Smith", "email": "smith@pooteeweet.org"}
+        {"name": "Lukas Kahwe Smith", "email": "smith@pooteeweet.org"},
+        {"name": "Aurélien RICHAUD", "email": "aurelien.richaud@btoweb.fr"}
     ],
     "require": {
-        "php": ">=5.4",
+        "php": ">=7.2",
         "doctrine/common": "~2.2",
         "doctrine/couchdb": "~1.0@beta",
         "symfony/console": "~2.0|~3.0",
-        "doctrine/instantiator": "~1.0"
+        "doctrine/instantiator": "~1.0",
+        "ocramius/proxy-manager": "^2.2"
     },
     "require-dev": {
         "symfony/yaml": "^2.0|^3.0",
-        "phpunit/phpunit": "^4.8, <5.0"
+        "phpunit/phpunit": "^4.8, <5.0",
+        "vimeo/psalm": "2.0.17"
     },
     "suggest": {
         "symfony/yaml": "If you want to use YAML Mappings"
     },
     "bin": ["bin/doctrine-couchdb.php"],
     "autoload": {
-        "psr-0": {
-            "Doctrine\\ODM\\CouchDB": "lib/"
+        "psr-4": {
+            "Doctrine\\ODM\\CouchDB\\": "lib/Doctrine/ODM/CouchDB"
         }
     }
 }

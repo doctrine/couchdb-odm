@@ -12,6 +12,9 @@ use Doctrine\CouchDB\HTTP\LoggingClient;
 use Doctrine\ODM\CouchDB\Mapping\MetadataResolver\MetadataResolver;
 use Doctrine\ODM\CouchDB\Mapping\MetadataResolver\DoctrineResolver;
 use Doctrine\ODM\CouchDB\Migrations\DocumentMigration;
+use Doctrine\ODM\CouchDB\Proxy\ProxyFactory;
+use ProxyManager\Configuration as ProxyManagerConfiguration;
+use ProxyManager\Factory\LazyLoadingGhostFactory;
 
 /**
  * Configuration class
@@ -49,6 +52,9 @@ class Configuration
         'metadataResolver' => null,
         'autoGenerateProxyClasses' => false,
     );
+
+	/** @var ProxyManagerConfiguration|null */
+	private $proxyManagerConfiguration;
 
     /**
      * Sets the default UUID Generator buffer size
@@ -203,25 +209,12 @@ class Configuration
     /**
      * Sets the directory where Doctrine generates any necessary proxy class files.
      *
-     * @param string $dir
+     * @param string $directory
      */
-    public function setProxyDir($dir)
+    public function setProxyDir($directory)
     {
-        $this->attributes['proxyDir'] = $dir;
-    }
-
-    /**
-     * Gets the directory where Doctrine generates any necessary proxy class files.
-     *
-     * @return string
-     */
-    public function getProxyDir()
-    {
-        if (!isset($this->attributes['proxyDir'])) {
-            $this->attributes['proxyDir'] = \sys_get_temp_dir();
-        }
-
-        return $this->attributes['proxyDir'];
+	    $this->getProxyManagerConfiguration()->setProxiesTargetDir($directory);
+	    $this->setAutoGenerateProxyClasses(ProxyFactory::AUTOGENERATE_FILE_NOT_EXISTS);
     }
 
     /**
@@ -336,4 +329,15 @@ class Configuration
     {
         $this->attributes['migrations'] = $migration;
     }
+
+	public function buildGhostObjectFactory() : LazyLoadingGhostFactory
+	{
+		return new LazyLoadingGhostFactory(clone $this->getProxyManagerConfiguration());
+	}
+
+	public function getProxyManagerConfiguration() : ProxyManagerConfiguration
+	{
+		return $this->proxyManagerConfiguration
+		       ?? $this->proxyManagerConfiguration = new ProxyManagerConfiguration();
+	}
 }

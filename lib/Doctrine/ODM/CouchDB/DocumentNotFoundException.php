@@ -2,6 +2,8 @@
 
 namespace Doctrine\ODM\CouchDB;
 
+use Doctrine\ORM\EntityNotFoundException;
+
 /**
  * Exception thrown when a Proxy fails to retrieve a Document.
  *
@@ -12,8 +14,29 @@ namespace Doctrine\ODM\CouchDB;
  */
 class DocumentNotFoundException extends CouchDBException
 {
-    public function __construct()
+    public function __construct($message = null)
     {
-        parent::__construct('Document was not found.');
+        parent::__construct($message ?? 'Document was not found.');
     }
+
+	/**
+	 * Static constructor.
+	 *
+	 * @param string  $className
+	 * @param mixed $id
+	 *
+	 * @return self
+	 */
+	public static function fromClassNameAndIdentifier($className, $id)
+	{
+		$ids = [];
+
+		foreach ($id as $key => $value) {
+			$ids[] = $key . '(' . $value . ')';
+		}
+
+		return new self(
+			'Document of type \'' . $className . '\' for ID ' .  $id . ' was not found'
+		);
+	}
 }

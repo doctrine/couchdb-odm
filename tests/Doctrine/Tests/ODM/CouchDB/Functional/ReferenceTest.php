@@ -35,11 +35,11 @@ class ReferenceTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBFunctionalTestCas
         $dm->clear();
 
         $lazyUser = $dm->getReference('Doctrine\Tests\Models\CMS\CmsUser', $user->id);
-        $this->assertFalse($lazyUser->__isInitialized__);
+        $this->assertFalse($lazyUser->isProxyInitialized());
 
         // Trigger lazyload
         $lazyUser->getUsername();
 
-        $this->assertTrue($lazyUser->__isInitialized__);
+        $this->assertTrue($lazyUser->isProxyInitialized());
     }
 }

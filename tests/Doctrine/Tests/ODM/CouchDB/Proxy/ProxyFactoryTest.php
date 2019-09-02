@@ -3,17 +3,10 @@
 namespace Doctrine\Tests\ODM\CouchDB\Proxy;
 
 use Doctrine\Common\Persistence\Mapping\RuntimeReflectionService;
-use Doctrine\ODM\CouchDB\Proxy\ProxyFactory;
-use Doctrine\ODM\CouchDB\DocumentManager;
-use Doctrine\ODM\CouchDB\UnitOfWork;
-use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
-use Doctrine\ODM\CouchDB\Mapping\ClassMetadataFactory;
+use Doctrine\ODM\CouchDB\Configuration;
+use Doctrine\ODM\CouchDB\Proxy\StaticProxyFactory;
 
-use Doctrine\Tests\Models\ECommerce\ECommerceCart;
-use Doctrine\Tests\Models\ECommerce\ECommerceCustomer;
-use Doctrine\Tests\Models\ECommerce\ECommerceFeature;
-use Doctrine\Tests\Models\ECommerce\ECommerceProduct;
-use Doctrine\Tests\Models\ECommerce\ECommerceShipping;
+use ProxyManager\Proxy\GhostObjectInterface;
 
 /**
  * Test the proxy factory.
@@ -46,24 +39,27 @@ class ProxyFactoryTest extends \Doctrine\Tests\ODM\CouchDB\CouchDBTestCase
 
     public function testReferenceProxyDelegatesLoadingToThePersister()
     {
-        $proxyClass = 'Proxies\__CG__\Doctrine\Tests\Models\ECommerce\ECommerceFeature';
+        //$proxyClass = 'ProxyManagerGeneratedProxy\__PM__\Doctrine\Tests\Models\ECommerce\ECommerceFeature\Generated37e3d1ba7ea56b5611071c13770ad452';
         $modelClass = 'Doctrine\Tests\Models\ECommerce\ECommerceFeature';
 
         $query = array('documentName' => '\\'.$modelClass, 'id' => 'SomeUUID');
 
         $uowMock = $this->getMock('Doctrine\ODM\CouchDB\UnitOfWork', array('refresh'), array(), '', false);
         $uowMock->expects($this->atLeastOnce())
-                      ->method('refresh')
-                      ->with($this->isInstanceOf($proxyClass));
+                      ->method('refresh');
+                      //->with($this->isInstanceOf($proxyClass));
 
         $dmMock = new DocumentManagerMock();
         $dmMock->setUnitOfWorkMock($uowMock);
 
-        $this->proxyFactory = new ProxyFactory($dmMock, __DIR__ . '/generated', 'Proxies', true);
+        $configuration = new Configuration();
+	    $configuration->setProxyDir(__DIR__ . '/generated');
 
-        $proxy = $this->proxyFactory->getProxy($modelClass, $query['id'], $query['documentName']);
+        $this->proxyFactory = new StaticProxyFactory($dmMock, $configuration->buildGhostObjectFactory());
 
-        $this->assertInstanceOf('Doctrine\ODM\CouchDB\Proxy\Proxy', $proxy);
+        $proxy = $this->proxyFactory->getProxy($dmMock->getClassMetadata($modelClass), $query['id']);
+
+        $this->assertInstanceOf( GhostObjectInterface::class, $proxy);
 
         $proxy->getDescription();
     }
@@ -81,6 +77,7 @@ class DocumentManagerMock extends \Doctrine\ODM\CouchDB\DocumentManager
     public function getClassMetadata($class)
     {
         $metadata = new \Doctrine\ODM\CouchDB\Mapping\ClassMetadata($class);
+	    $metadata->mapField(array('fieldName' => 'id', 'id' => true));
         $metadata->initializeReflection(new RuntimeReflectionService());
         $metadata->wakeupReflection(new RuntimeReflectionService());
 
