@@ -4,18 +4,8 @@ namespace Doctrine\Tests\ODM\CouchDB\Proxy;
 
 use Doctrine\Common\Persistence\Mapping\RuntimeReflectionService;
 use Doctrine\ODM\CouchDB\Configuration;
-use Doctrine\ODM\CouchDB\Proxy\ProxyFactory;
-use Doctrine\ODM\CouchDB\DocumentManager;
 use Doctrine\ODM\CouchDB\Proxy\StaticProxyFactory;
-use Doctrine\ODM\CouchDB\UnitOfWork;
-use Doctrine\ODM\CouchDB\Mapping\ClassMetadata;
-use Doctrine\ODM\CouchDB\Mapping\ClassMetadataFactory;
 
-use Doctrine\Tests\Models\ECommerce\ECommerceCart;
-use Doctrine\Tests\Models\ECommerce\ECommerceCustomer;
-use Doctrine\Tests\Models\ECommerce\ECommerceFeature;
-use Doctrine\Tests\Models\ECommerce\ECommerceProduct;
-use Doctrine\Tests\Models\ECommerce\ECommerceShipping;
 use ProxyManager\Proxy\GhostObjectInterface;
 
 /**
